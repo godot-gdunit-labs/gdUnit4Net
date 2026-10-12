@@ -120,6 +120,7 @@ public class BoolAssertTest
         // we disable failure reporting until we simulate an failure
         if (ExecutionContext.Current != null)
             ExecutionContext.Current.FailureReporting = false;
+
         // try to fail
         AssertBool(true).IsFalse();
 

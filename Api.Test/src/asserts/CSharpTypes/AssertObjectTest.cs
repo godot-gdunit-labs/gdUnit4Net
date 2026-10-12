@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Asserts.CSharpTypes;
+namespace GdUnit4.Tests.Asserts.CSharpTypes;
 
 using System;
 using System.Collections.Generic;
@@ -18,6 +18,7 @@ public class AssertObjectTest
         var player4 = player1; // Same reference
 
         AssertObject(player1).IsNotEqual(player3);
+
         // Test reference equality
         AssertObject(player1)
             .IsNotSame(player2) // Different instances
@@ -150,6 +151,7 @@ public class SpyEqualityComparerPlayer(string name, int level, float health, boo
     : Player(name, level, health, isAlive), IEqualityComparer<Player>
 {
     public int EqualsCallCount { get; private set; }
+
     public Player? LastEqualsArgument { get; private set; }
 
     public bool LastEqualsResult { get; private set; }
@@ -235,8 +237,10 @@ public class EquatablePlayer(string name, int level, float health, bool isAlive)
 {
     public virtual bool Equals(EquatablePlayer? other)
     {
-        if (other is null) return false;
-        if (ReferenceEquals(this, other)) return true;
+        if (other is null)
+            return false;
+        if (ReferenceEquals(this, other))
+            return true;
 
         return Level == other.Level &&
                Math.Abs(Health - other.Health) < 0.001f &&

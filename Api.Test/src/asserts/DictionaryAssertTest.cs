@@ -22,9 +22,11 @@ public class DictionaryAssertTest
     // TODO: replace it by https://github.com/MikeSchulze/gdUnit4Net/issues/46
     private static readonly object[] TestDataPointA =
     [
+
         // system dictionary types
         new object[] { new Hashtable { { "a1", new object() } } }, new object[] { new System.Collections.Generic.Dictionary<string, object> { { "a1", new object() } } },
         new object[] { new SortedDictionary<string, object> { { "a1", new object() } } },
+
         // Godot dictionary types
         new object[] { new Godot.Collections.Dictionary<string, Variant> { { "a1", new RefCounted() } } }, new object[] { new Dictionary { { "a1", new RefCounted() } } }
     ];
@@ -32,6 +34,7 @@ public class DictionaryAssertTest
     // TODO: replace it by https://github.com/MikeSchulze/gdUnit4Net/issues/46
     public static readonly object[] TestDataPointB =
     [
+
         // system dictionary types
         new object[]
         {
@@ -72,6 +75,7 @@ public class DictionaryAssertTest
                 { "a2", 200 }
             }
         },
+
         // Godot dictionary types
         new object[]
         {
@@ -105,6 +109,7 @@ public class DictionaryAssertTest
 
     private static readonly object[] TestDataPointKeys =
     [
+
         // system dictionary types
         new ListDictionary
         {
@@ -116,6 +121,7 @@ public class DictionaryAssertTest
             { TestKeys[0], 100 },
             { TestKeys[1], 200 }
         },
+
         // Godot dictionary types
         new Dictionary
         {
@@ -147,9 +153,8 @@ public class DictionaryAssertTest
                 .OverrideFailureMessage("Custom failure message")
                 .IsNotNull())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(146)
+            .HasFileLineNumber(152)
             .HasMessage("Custom failure message");
-
 
     [TestCase]
     public void AppendFailureMessage()
@@ -157,7 +162,7 @@ public class DictionaryAssertTest
                 .AppendFailureMessage("custom data")
                 .IsNotNull())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(156)
+            .HasFileLineNumber(161)
             .HasMessage("""
                         Expecting be NOT <Null>:
 
@@ -187,7 +192,7 @@ public class DictionaryAssertTest
         current.Add("a3", 300);
         AssertThrown(() => AssertThat(current).IsEqual(expected))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(188)
+            .HasFileLineNumber(193)
             .HasMessage("""
                         Expecting be equal:
                             {"a1", "100"}; {"a2", "200"}
@@ -511,6 +516,7 @@ public class DictionaryAssertTest
         var key3 = TestKeys[2];
         var key4 = TestKeys[3];
         AssertThat(current).ContainsSameKeys(key1, key2);
+
         // we handle strings by equal regardless of object reference
         var key_1 = new string(key1.ToCharArray());
         AssertThat(current).ContainsSameKeys(key_1, key2);
@@ -579,7 +585,6 @@ public class DictionaryAssertTest
             .HasMessage("Expecting be NOT <Null>:");
     }
 
-
     [TestCase(0, TestName = "IDictionary")]
     [TestCase(1, TestName = "IDictionary<string, int>")]
     [TestCase(2, TestName = "GodotDictionary")]
@@ -593,6 +598,7 @@ public class DictionaryAssertTest
         var key3 = TestKeys[2];
         var key4 = TestKeys[3];
         AssertThat(current).NotContainsSameKeys(key3, key4);
+
         // we handle strings by equal regardless of object reference
         var key_3 = new string(key3.ToCharArray());
         AssertThat(current).NotContainsSameKeys(key_3, key4);

@@ -61,6 +61,7 @@ public partial class TestSceneWithButton : Control
         }
 
         if (@event is InputEventKey keyEvent)
+        {
             if (keyEvent.Pressed)
             {
                 LastKeyPressed = keyEvent.Keycode;
@@ -69,13 +70,13 @@ public partial class TestSceneWithButton : Control
                 if (keyEvent.Keycode == Key.E)
                     LetsThrowAnException = true;
             }
+        }
     }
 
     public override async void _Process(double delta)
     {
         var deltaMs = delta * 1000.0;
         GD.Print($" Delta time: {deltaMs:F2} ms");
-
 
         if (LetsThrowAnException)
         {
@@ -87,6 +88,7 @@ public partial class TestSceneWithButton : Control
         {
             GameState = GState.Running;
             GD.PrintS("Try Game stopping");
+
             // We wait 100ms before we emit game stopped signal
             var timer = GetTree().CreateTimer(.2);
             await ToSignal(timer, Timer.SignalName.Timeout);

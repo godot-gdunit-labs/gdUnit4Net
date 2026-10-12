@@ -1,8 +1,7 @@
 namespace GdUnit4.Tests.Extractors;
 
-using static Assertions;
-using GdUnit4.Asserts;
 using GdUnit4.Extractors;
+using static Assertions;
 
 [TestSuite]
 public class ValueExtractorTest
@@ -14,6 +13,7 @@ public class ValueExtractorTest
             INIT,
             RUN
         }
+
         public TestObject()
         {
             State = STATE.INIT;
@@ -22,7 +22,6 @@ public class ValueExtractorTest
             TypeC = "ccc";
             Value = "none";
         }
-
 
         public STATE State { get; private set; }
 
@@ -36,7 +35,9 @@ public class ValueExtractorTest
 #pragma warning disable IDE0051 // Remove unused private members
 #pragma warning disable IDE0052 // Remove unread private members
         protected string TypeB { get; private set; }
+
         private string TypeC { get; set; }
+
         public string GetA() => "getA";
 
         protected string GetB() => "getB";
@@ -47,7 +48,6 @@ public class ValueExtractorTest
 #pragma warning restore IDE0052 // Remove unread private members
     }
 
-
     [TestCase]
     public void ExtractValueNotExists()
     {
@@ -55,14 +55,12 @@ public class ValueExtractorTest
         AssertString(new ValueExtractor("GetNNN").ExtractValue(obj) as string).IsEqual("n.a.");
     }
 
-
     [TestCase]
     public void ExtractValuePublicMethod()
     {
         var obj = new TestObject();
         AssertString(new ValueExtractor("GetA").ExtractValue(obj) as string).IsEqual("getA");
     }
-
 
     [TestCase]
     public void ExtractValueProtectedMethod()
@@ -103,7 +101,6 @@ public class ValueExtractorTest
 
         AssertString(new ValueExtractor("TypeC").ExtractValue(obj) as string).IsEqual("ccc");
     }
-
 
     [TestCase]
     public void ExtractValueEnum()

@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core.Execution.Monitoring;
+namespace GdUnit4.Tests.Core.Execution.Monitoring;
 
 using System;
 using System.Collections.Generic;
@@ -17,42 +17,50 @@ using static Assertions;
 public class GodotExceptionMonitorOnClassLevelTest
 {
     [Before]
-    public void Before() { }
+    public void Before()
+    {
+    }
 
     [After]
-    public void After() { }
+    public void After()
+    {
+    }
 
     [BeforeTest]
-    public void BeforeTest() { }
+    public void BeforeTest()
+    {
+    }
 
     [AfterTest]
-    public void AfterTest() { }
+    public void AfterTest()
+    {
+    }
 
     [TestCase]
     public void IsExceptionMonitorIsEnabledOnBeforeStage()
     {
-        var stage = new BeforeExecutionStage(new TestSuite(typeof(GodotExceptionMonitorOnClassLevelTest), new List<TestCaseNode>(), ""));
+        var stage = new BeforeExecutionStage(new TestSuite(typeof(GodotExceptionMonitorOnClassLevelTest), new List<TestCaseNode>(), string.Empty));
         AssertBool(stage.IsMonitoringOnGodotExceptionsEnabled).IsTrue();
     }
 
     [TestCase]
     public void IsExceptionMonitorIsEnabledOnAfterStage()
     {
-        var stage = new AfterExecutionStage(new TestSuite(typeof(GodotExceptionMonitorOnClassLevelTest), new List<TestCaseNode>(), ""));
+        var stage = new AfterExecutionStage(new TestSuite(typeof(GodotExceptionMonitorOnClassLevelTest), new List<TestCaseNode>(), string.Empty));
         AssertBool(stage.IsMonitoringOnGodotExceptionsEnabled).IsTrue();
     }
 
     [TestCase]
     public void IsExceptionMonitorIsEnabledOnBeforeTestStage()
     {
-        var stage = new BeforeTestExecutionStage(new TestSuite(typeof(GodotExceptionMonitorOnClassLevelTest), new List<TestCaseNode>(), ""));
+        var stage = new BeforeTestExecutionStage(new TestSuite(typeof(GodotExceptionMonitorOnClassLevelTest), new List<TestCaseNode>(), string.Empty));
         AssertBool(stage.IsMonitoringOnGodotExceptionsEnabled).IsTrue();
     }
 
     [TestCase]
     public void IsExceptionMonitorIsEnabledOnAfterTestStage()
     {
-        var stage = new AfterTestExecutionStage(new TestSuite(typeof(GodotExceptionMonitorOnClassLevelTest), new List<TestCaseNode>(), ""));
+        var stage = new AfterTestExecutionStage(new TestSuite(typeof(GodotExceptionMonitorOnClassLevelTest), new List<TestCaseNode>(), string.Empty));
         AssertBool(stage.IsMonitoringOnGodotExceptionsEnabled).IsTrue();
     }
 
@@ -69,6 +77,7 @@ public class GodotExceptionMonitorOnClassLevelTest
         tree.Root.AddChild(myClass);
 
         myClass.Register(eventBus);
+
         // The emitting of the signal do results into a NullReferenceException
         eventBus.Emit();
     }

@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Asserts.CSharpTypes;
+namespace GdUnit4.Tests.Asserts.CSharpTypes;
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
             "Array",
             new object[] { new SimpleObject("A1"), new SimpleObject("A2"), new SimpleObject("A3"), new SimpleObject("A4") },
             new object[] { new SimpleObject("A1"), new SimpleObject("A2"), new SimpleObject("A3"), new SimpleObject("A4") },
-            new object[] { },
+            Array.Empty<object>(),
             new SimpleObject("X")
         ],
         [
@@ -30,7 +30,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
             "Array<string>",
             new[] { "A1", "A2", "A3", "A4" },
             new[] { "A1", "A2", "A3", "A4" },
-            new string[] { },
+            Array.Empty<string>(),
             "X"
         ]
     ];
@@ -195,7 +195,8 @@ public class AssertEnumerableTest : AssertEnumerableConditions
 
     [TestCase]
     public void ContainsUsingDictionaryWithDifferentOrder()
-        => ContainsUsingDictionaryWithDifferentOrder(new object[]
+        => ContainsUsingDictionaryWithDifferentOrder(
+            new object[]
         {
             new Dictionary<string, object>
             {
@@ -300,7 +301,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
     public void Extract()
     {
         // extracting by a func without arguments
-        AssertArray([new object(), 2, new DateTime()])
+        AssertArray([new object(), 2, default(DateTime)])
             .Extract("GetType")
             .ContainsExactly(typeof(object), typeof(int), typeof(DateTime));
 
@@ -316,7 +317,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
 
         // try extract on object via a func that has no return value
         AssertArray([new SimpleObject("sig1"), 2])
-            .Extract("RemoveMeta", "")
+            .Extract("RemoveMeta", string.Empty)
             .ContainsExactly(null, "n.a.");
 
         // must fail we can't extract from a null instance
@@ -351,8 +352,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
                 "root_a",
                 "root_a",
                 "root_b",
-                "root_b"
-            );
+                "root_b");
     }
 
     [TestCase]
@@ -400,8 +400,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
                 Tuple("B", "root_a"),
                 Tuple("C", "root_a"),
                 Tuple("X", "root_b"),
-                Tuple("Y", "root_b")
-            );
+                Tuple("Y", "root_b"));
     }
 
     [TestCase]
@@ -446,22 +445,33 @@ internal sealed class TestObj
     }
 
     public string GetName() => name;
+
     public object? GetValue() => value;
+
     public object? GetX() => x;
+
     public string GetX1() => "x1";
+
     public string GetX2() => "x2";
+
     public string GetX3() => "x3";
+
     public string GetX4() => "x4";
+
     public string GetX5() => "x5";
+
     public string GetX6() => "x6";
+
     public string GetX7() => "x7";
+
     public string GetX8() => "x8";
+
     public string GetX9() => "x9";
 }
 
 internal class SimpleObject(string name)
 {
-    internal string Name = name;
+    internal string Name { get; } = name;
 
     public bool HasSignal(string name)
         => name == Name;

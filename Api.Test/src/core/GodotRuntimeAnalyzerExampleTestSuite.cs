@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core;
+namespace GdUnit4.Tests.Core;
 
 [TestSuite]
 public class GodotRuntimeAnalyzerExampleTestSuite

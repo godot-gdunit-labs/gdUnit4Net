@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core.Discovery;
+namespace GdUnit4.Tests.Core.Discovery;
 
 using System;
 using System.Collections.Generic;

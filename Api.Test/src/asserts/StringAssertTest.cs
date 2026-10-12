@@ -14,10 +14,11 @@ public class StringAssertTest
     public void IsNull()
     {
         AssertString(null).IsNull();
+
         // should fail because the current is not null
         AssertThrown(() => AssertString("abc").IsNull())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(18)
+            .HasFileLineNumber(19)
             .StartsWithMessage("""
                                Expecting be <Null>:
                                 but is
@@ -29,10 +30,11 @@ public class StringAssertTest
     public void IsNotNull()
     {
         AssertString("abc").IsNotNull();
+
         // should fail because the current is null
         AssertThrown(() => AssertString(null).IsNotNull())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(33)
+            .HasFileLineNumber(35)
             .HasMessage("Expecting be NOT <Null>:");
     }
 
@@ -42,7 +44,7 @@ public class StringAssertTest
         AssertString("This is a test message").IsEqual("This is a test message");
         AssertThrown(() => AssertString("This is a test message").IsEqual("This is a test Message"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(43)
+            .HasFileLineNumber(45)
             .HasMessage("""
                         Expecting be equal:
                             "This is a test Message"
@@ -51,7 +53,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString(null).IsEqual("This is a test Message"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(52)
+            .HasFileLineNumber(54)
             .HasMessage("""
                         Expecting be equal:
                             "This is a test Message"
@@ -66,7 +68,7 @@ public class StringAssertTest
         AssertString("This is a test message").IsEqualIgnoringCase("This is a test Message");
         AssertThrown(() => AssertString("This is a test message").IsEqualIgnoringCase("This is a Message"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(67)
+            .HasFileLineNumber(69)
             .HasMessage("""
                         Expecting be equal (ignoring case):
                             "This is a Message"
@@ -75,7 +77,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString(null).IsEqualIgnoringCase("This is a Message"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(76)
+            .HasFileLineNumber(78)
             .HasMessage("""
                         Expecting be equal (ignoring case):
                             "This is a Message"
@@ -91,7 +93,7 @@ public class StringAssertTest
         AssertString("This is a test message").IsNotEqual("This is a test Message");
         AssertThrown(() => AssertString("This is a test message").IsNotEqual("This is a test message"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(92)
+            .HasFileLineNumber(94)
             .HasMessage("""
                         Expecting be NOT equal:
                             "This is a test message"
@@ -107,7 +109,7 @@ public class StringAssertTest
         AssertString("This is a test message").IsNotEqualIgnoringCase("This is a Message");
         AssertThrown(() => AssertString("This is a test message").IsNotEqualIgnoringCase("This is a test Message"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(108)
+            .HasFileLineNumber(110)
             .HasMessage("""
                         Expecting be NOT equal (ignoring case):
                             "This is a test Message"
@@ -119,11 +121,12 @@ public class StringAssertTest
     [TestCase]
     public void IsEmpty()
     {
-        AssertString("").IsEmpty();
+        AssertString(string.Empty).IsEmpty();
+
         // should fail because the current value is not empty it contains a space
         AssertThrown(() => AssertString(" ").IsEmpty())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(124)
+            .HasFileLineNumber(127)
             .HasMessage("""
                         Expecting be empty:
                          but is
@@ -131,7 +134,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString("abc").IsEmpty())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(132)
+            .HasFileLineNumber(135)
             .HasMessage("""
                         Expecting be empty:
                          but is
@@ -139,7 +142,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString(null).IsEmpty())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(140)
+            .HasFileLineNumber(143)
             .HasMessage("""
                         Expecting be empty:
                          but is
@@ -154,10 +157,11 @@ public class StringAssertTest
         AssertString(" ").IsNotEmpty();
         AssertString("	").IsNotEmpty();
         AssertString("abc").IsNotEmpty();
+
         // should fail because current is empty
-        AssertThrown(() => AssertString("").IsNotEmpty())
+        AssertThrown(() => AssertString(string.Empty).IsNotEmpty())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(158)
+            .HasFileLineNumber(162)
             .HasMessage("""
                         Expecting being NOT empty:
                          but is empty
@@ -168,10 +172,11 @@ public class StringAssertTest
     public void Contains()
     {
         AssertString("This is a test message").Contains("a test");
+
         // must fail because of camel case difference
         AssertThrown(() => AssertString("This is a test message").Contains("a Test"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(172)
+            .HasFileLineNumber(177)
             .HasMessage("""
                         Expecting:
                             "This is a test message"
@@ -180,7 +185,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString(null).Contains("a Test"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(181)
+            .HasFileLineNumber(186)
             .HasMessage("""
                         Expecting:
                             <Null>
@@ -196,7 +201,7 @@ public class StringAssertTest
         AssertString("This is a test message").NotContains("a text");
         AssertThrown(() => AssertString("This is a test message").NotContains("a test"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(197)
+            .HasFileLineNumber(202)
             .HasMessage("""
                         Expecting:
                             "This is a test message"
@@ -211,7 +216,7 @@ public class StringAssertTest
         AssertString("This is a test message").ContainsIgnoringCase("a Test");
         AssertThrown(() => AssertString("This is a test message").ContainsIgnoringCase("a Text"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(212)
+            .HasFileLineNumber(217)
             .HasMessage("""
                         Expecting:
                             "This is a test message"
@@ -220,7 +225,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString(null).ContainsIgnoringCase("a Text"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(221)
+            .HasFileLineNumber(226)
             .HasMessage("""
                         Expecting:
                             <Null>
@@ -236,7 +241,7 @@ public class StringAssertTest
         AssertString("This is a test message").NotContainsIgnoringCase("a Text");
         AssertThrown(() => AssertString("This is a test message").NotContainsIgnoringCase("a Test"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(237)
+            .HasFileLineNumber(242)
             .HasMessage("""
                         Expecting:
                             "This is a test message"
@@ -251,7 +256,7 @@ public class StringAssertTest
         AssertString("This is a test message").StartsWith("This is");
         AssertThrown(() => AssertString("This is a test message").StartsWith("This iss"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(252)
+            .HasFileLineNumber(257)
             .HasMessage("""
                         Expecting:
                             "This is a test message"
@@ -260,7 +265,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString("This is a test message").StartsWith("this is"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(261)
+            .HasFileLineNumber(266)
             .HasMessage("""
                         Expecting:
                             "This is a test message"
@@ -269,7 +274,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString("This is a test message").StartsWith("test"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(270)
+            .HasFileLineNumber(275)
             .HasMessage("""
                         Expecting:
                             "This is a test message"
@@ -278,7 +283,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString(null).StartsWith("test"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(279)
+            .HasFileLineNumber(284)
             .HasMessage("""
                         Expecting:
                             <Null>
@@ -293,7 +298,7 @@ public class StringAssertTest
         AssertString("This is a test message").EndsWith("test message");
         AssertThrown(() => AssertString("This is a test message").EndsWith("tes message"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(294)
+            .HasFileLineNumber(299)
             .HasMessage("""
                         Expecting:
                             "This is a test message"
@@ -302,7 +307,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString("This is a test message").EndsWith("a test"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(303)
+            .HasFileLineNumber(308)
             .HasMessage("""
                         Expecting:
                             "This is a test message"
@@ -311,7 +316,7 @@ public class StringAssertTest
                         """);
         AssertThrown(() => AssertString(null).EndsWith("a test"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(312)
+            .HasFileLineNumber(317)
             .HasMessage("""
                         Expecting:
                             <Null>
@@ -324,17 +329,17 @@ public class StringAssertTest
     public void HasLength()
     {
         AssertString("This is a test message").HasLength(22);
-        AssertString("").HasLength(0);
+        AssertString(string.Empty).HasLength(0);
         AssertThrown(() => AssertString("This is a test message").HasLength(23))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(328)
+            .HasFileLineNumber(333)
             .HasMessage("""
                         Expecting length:
                             '23' but is '22'
                         """);
         AssertThrown(() => AssertString(null).HasLength(23))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(335)
+            .HasFileLineNumber(340)
             .HasMessage("""
                         Expecting length:
                             '23' but is unknown
@@ -348,14 +353,14 @@ public class StringAssertTest
         AssertString("This is a test message").HasLength(42, LESS_THAN);
         AssertThrown(() => AssertString("This is a test message").HasLength(22, LESS_THAN))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(349)
+            .HasFileLineNumber(354)
             .HasMessage("""
                         Expecting length to be less than:
                             '22' but is '22'
                         """);
         AssertThrown(() => AssertString(null).HasLength(22, LESS_THAN))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(356)
+            .HasFileLineNumber(361)
             .HasMessage("""
                         Expecting length to be less than:
                             '22' but is unknown
@@ -369,14 +374,14 @@ public class StringAssertTest
         AssertString("This is a test message").HasLength(23, LESS_EQUAL);
         AssertThrown(() => AssertString("This is a test message").HasLength(21, LESS_EQUAL))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(370)
+            .HasFileLineNumber(375)
             .HasMessage("""
                         Expecting length to be less than or equal:
                             '21' but is '22'
                         """);
         AssertThrown(() => AssertString(null).HasLength(21, LESS_EQUAL))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(377)
+            .HasFileLineNumber(382)
             .HasMessage("""
                         Expecting length to be less than or equal:
                             '21' but is unknown
@@ -389,14 +394,14 @@ public class StringAssertTest
         AssertString("This is a test message").HasLength(21, GREATER_THAN);
         AssertThrown(() => AssertString("This is a test message").HasLength(22, GREATER_THAN))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(390)
+            .HasFileLineNumber(395)
             .HasMessage("""
                         Expecting length to be greater than:
                             '22' but is '22'
                         """);
         AssertThrown(() => AssertString(null).HasLength(22, GREATER_THAN))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(397)
+            .HasFileLineNumber(402)
             .HasMessage("""
                         Expecting length to be greater than:
                             '22' but is unknown
@@ -410,14 +415,14 @@ public class StringAssertTest
         AssertString("This is a test message").HasLength(22, GREATER_EQUAL);
         AssertThrown(() => AssertString("This is a test message").HasLength(23, GREATER_EQUAL))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(411)
+            .HasFileLineNumber(416)
             .HasMessage("""
                         Expecting length to be greater than or equal:
                             '23' but is '22'
                         """);
         AssertThrown(() => AssertString(null).HasLength(23, GREATER_EQUAL))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(418)
+            .HasFileLineNumber(423)
             .HasMessage("""
                         Expecting length to be greater than or equal:
                             '23' but is unknown
@@ -433,18 +438,18 @@ public class StringAssertTest
 
     [TestCase]
     public void OverrideFailureMessage()
-        => AssertThrown(() => AssertString("").OverrideFailureMessage("Custom failure message").IsNull())
+        => AssertThrown(() => AssertString(string.Empty).OverrideFailureMessage("Custom failure message").IsNull())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(436)
+            .HasFileLineNumber(441)
             .HasMessage("Custom failure message");
 
     [TestCase]
     public void AppendFailureMessage()
-        => AssertThrown(() => AssertString("")
+        => AssertThrown(() => AssertString(string.Empty)
                 .AppendFailureMessage("custom data")
                 .IsNotEmpty())
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(443)
+            .HasFileLineNumber(448)
             .HasMessage("""
                         Expecting being NOT empty:
                          but is empty
@@ -459,8 +464,9 @@ public class StringAssertTest
         // we disable failure reporting until we simulate an failure
         if (ExecutionContext.Current != null)
             ExecutionContext.Current.FailureReporting = false;
+
         // try to fail
-        AssertString("").IsNotEmpty();
+        AssertString(string.Empty).IsNotEmpty();
 
         // expect this line will never called because of the test is interrupted by a failing assert
         AssertBool(true).OverrideFailureMessage("This line should never be called").IsFalse();

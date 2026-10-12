@@ -1,4 +1,4 @@
-﻿namespace Examples.Test.Api.GodotTypes;
+namespace Examples.Test.Api.GodotTypes;
 
 using GdUnit4;
 
@@ -197,7 +197,7 @@ public partial class SpyEqualityComparerPlayer(string name, int level, float hea
 public partial class SpyEquatablePlayer(string name, int level, float health, bool isAlive)
     : EquatablePlayer(name, level, health, isAlive)
 {
-    private readonly List<EquatablePlayer?> equalsCallHistory = new();
+    private readonly List<EquatablePlayer?> equalsCallHistory = [];
 
     // Tracking properties
     public int EqualsCallCount { get; private set; }
@@ -237,8 +237,10 @@ public partial class EquatablePlayer(string name, int level, float health, bool 
 {
     public virtual bool Equals(EquatablePlayer? other)
     {
-        if (other is null) return false;
-        if (ReferenceEquals(this, other)) return true;
+        if (other is null)
+            return false;
+        if (ReferenceEquals(this, other))
+            return true;
 
         return Level == other.Level &&
                Math.Abs(Health - other.Health) < 0.001f &&

@@ -6,7 +6,6 @@ using static Assertions;
 // used by executor integration test
 public class TestSuiteAllStagesSuccess
 {
-
     [TestCase]
     public void TestCase1()
         => AssertBool(true).IsEqual(true);

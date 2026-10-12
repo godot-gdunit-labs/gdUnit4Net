@@ -10,7 +10,8 @@ using static Assertions;
 // will be ignored because of missing `[TestSuite]` annotation
 // used by executor integration test
 [RequireGodotRuntime]
-//[TestSuite]
+
+// [TestSuite]
 public class TestSuiteFailAndOrphansDetected : IDisposable
 {
     private readonly List<Node> orphans = new();

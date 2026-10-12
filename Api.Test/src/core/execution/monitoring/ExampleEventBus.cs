@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core.Execution.Monitoring;
+namespace GdUnit4.Tests.Core.Execution.Monitoring;
 
 using Godot;
 

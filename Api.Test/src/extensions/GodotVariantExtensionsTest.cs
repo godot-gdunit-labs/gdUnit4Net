@@ -23,13 +23,14 @@ public class GodotVariantExtensionsTest
     [TestCase(double.MaxValue, Variant.Type.Float)]
     [TestCase("HalloWorld", Variant.Type.String)]
     [TestCase(true, Variant.Type.Bool)]
-    //[TestCase(Decimal.MaxValue, Variant.Type.Float)]
+
+    // [TestCase(Decimal.MaxValue, Variant.Type.Float)]
     [RequireGodotRuntime]
     public void ToVariant(dynamic? value, Variant.Type type)
     {
         object? val = value;
         var v = val.ToVariant();
-        AssertObject(v).IsEqual(value == null ? new Variant() : Variant.CreateFrom(value));
+        AssertObject(v).IsEqual(value == null ? default(Variant) : Variant.CreateFrom(value));
         AssertObject(v.VariantType).IsEqual(type);
     }
 }

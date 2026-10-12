@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Asserts.CSharpTypes;
+namespace GdUnit4.Tests.Asserts.CSharpTypes;
 
 using System;
 using System.Collections;
@@ -51,7 +51,7 @@ public class AssertThatCoverageTest
     public void Structs()
     {
         AssertObject(AssertThat(TimeSpan.FromMilliseconds(124))).IsInstanceOf<IObjectAssert<TimeSpan>>();
-        AssertObject(AssertThat(new KeyValuePair<string, object>())).IsInstanceOf<IObjectAssert<KeyValuePair<string, object>>>();
+        AssertObject(AssertThat(default(KeyValuePair<string, object>))).IsInstanceOf<IObjectAssert<KeyValuePair<string, object>>>();
     }
 
     [TestCase]
@@ -72,9 +72,9 @@ public class AssertThatCoverageTest
     [TestCase]
     public void Arrays()
     {
-        //AssertObject(AssertThat([byte.MaxValue])).IsInstanceOf<IEnumerableAssert<byte>>();
-        //AssertObject(AssertThat([1, 2])).IsInstanceOf<IEnumerableAssert<int>>();
-        //AssertObject(AssertThat(["a", "b"])).IsInstanceOf<IEnumerableAssert<string>>();
+        // AssertObject(AssertThat([byte.MaxValue])).IsInstanceOf<IEnumerableAssert<byte>>();
+        // AssertObject(AssertThat([1, 2])).IsInstanceOf<IEnumerableAssert<int>>();
+        // AssertObject(AssertThat(["a", "b"])).IsInstanceOf<IEnumerableAssert<string>>();
         AssertObject(AssertThat(Array.Empty<object>())).IsInstanceOf<IEnumerableAssert<object>>();
         AssertObject(AssertThat(Array.Empty<byte>())).IsInstanceOf<IEnumerableAssert<byte>>();
         AssertObject(AssertThat(Array.Empty<string>())).IsInstanceOf<IEnumerableAssert<string>>();

@@ -1,6 +1,6 @@
 namespace GdUnit4.Tests.Asserts;
-// GdUnit generated TestSuite
 
+// GdUnit generated TestSuite
 using System.Threading.Tasks;
 
 using GdUnit4.Asserts;
@@ -78,7 +78,7 @@ public partial class SignalAssertTest
         await AssertSignal(node).IsEmitted("visibility_changed").WithTimeout(200);
 
         // expecting to fail, we have not changed the visibility
-        //node.Visible = false;
+        // node.Visible = false;
         await AssertThrown(AssertSignal(node).IsEmitted("visibility_changed").WithTimeout(200))
             .ContinueWith(result => result.Result?
                 .IsInstanceOf<TestFailedException>()
@@ -129,9 +129,9 @@ public partial class SignalAssertTest
         AssertThat(GodotSignalCollector.Instance.IsSignalCollecting(emitterB, MyEmitter.SignalName.SignalA)).IsFalse();
         AssertThat(GodotSignalCollector.Instance.IsSignalCollecting(emitterB, MyEmitter.SignalName.SignalB)).IsFalse();
 
-
         // start monitoring on the emitter A
         AssertSignal(emitterA).StartMonitoring();
+
         // verify the emitters are now monitored
         AssertThat(GodotSignalCollector.Instance.IsSignalCollecting(emitterA, MyEmitter.SignalName.SignalA)).IsTrue();
         AssertThat(GodotSignalCollector.Instance.IsSignalCollecting(emitterA, MyEmitter.SignalName.SignalB)).IsTrue();
@@ -151,6 +151,7 @@ public partial class SignalAssertTest
         // emit signal `my_signal_b` on emitter_a
         emitterA.DoEmitSignalB();
         await AssertSignal(emitterA).IsEmitted(MyEmitter.SignalName.SignalB, "foo").WithTimeout(50);
+
         // verify emitter_b still has nothing emitted
         await AssertSignal(emitterB).IsNotEmitted(MyEmitter.SignalName.SignalA).WithTimeout(50);
         await AssertSignal(emitterB).IsNotEmitted(MyEmitter.SignalName.SignalB).WithTimeout(50);
@@ -170,6 +171,7 @@ public partial class SignalAssertTest
 
         // start monitoring on the emitter
         AssertSignal(emitter).StartMonitoring();
+
         // verify the emitters are now monitored
         AssertThat(GodotSignalCollector.Instance.IsSignalCollecting(emitter, NonNodeEmitter.SignalName.SignalA)).IsTrue();
 
@@ -206,7 +208,7 @@ public partial class SignalAssertTest
                 .OverrideFailureMessage("custom error")
                 .IsSignalExists("foo"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(205)
+            .HasFileLineNumber(207)
             .HasMessage("custom error");
     }
 
@@ -218,7 +220,7 @@ public partial class SignalAssertTest
                 .AppendFailureMessage("custom data")
                 .IsSignalExists("foo"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(217)
+            .HasFileLineNumber(219)
             .HasMessage($"""
                          Expecting signal exists:
                              "foo()"
@@ -237,7 +239,6 @@ public partial class SignalAssertTest
         AssertSignal(emitter).IsNotNull().IsSignalExists("OnFinished");
         AssertSignal(emitter).IsSignalExists("OnFinished").IsNotNull();
     }
-
 
     [TestCase]
     public async Task TestAwaitSignalOnSceneTree()
@@ -286,9 +287,7 @@ public partial class SignalAssertTest
         [Signal]
         public delegate void SignalBEventHandler(string value);
 
-
         public void DoEmitSignalA() => EmitSignal(SignalName.SignalA);
-
 
         public void DoEmitSignalB() => EmitSignal(SignalName.SignalB, "foo");
     }

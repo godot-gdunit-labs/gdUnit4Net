@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core;
+namespace GdUnit4.Tests.Core;
 
 using static Assertions;
 
@@ -14,7 +14,6 @@ public sealed class TestSuiteTestAttributeUsage
     [TestCase]
     public void TestBar()
         => AssertBool(true).IsEqual(true);
-
 
     [TestCase(TestName = "Customized")]
     public void TestFooBar()
@@ -33,7 +32,7 @@ public sealed class TestSuiteTestAttributeUsage
     [TestCase("")]
     [TestCase(null)]
     public void ParameterizedSingleNullValue(object? value)
-        => AssertThat(value == null || value.Equals("")).IsTrue();
+        => AssertThat(value == null || value.Equals(string.Empty)).IsTrue();
 
     [TestCase("foo", null)]
     public void ParameterizedSingleTestNullValues(object? value1, object? value2)

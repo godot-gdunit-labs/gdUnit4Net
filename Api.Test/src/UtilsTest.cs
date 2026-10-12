@@ -2,12 +2,9 @@ namespace GdUnit4.Tests;
 
 #if GDUNIT4NET_API_V5
 using System.IO;
-
 using Godot;
-
-using static Utils;
-
 using static Assertions;
+using static Utils;
 
 [TestSuite]
 public class UtilsTest
@@ -32,6 +29,7 @@ public class UtilsTest
     public void CreateTempDirAtTwice()
     {
         var tempDir = CreateTempDir("foo");
+
         // create again
         CreateTempDir("foo");
 

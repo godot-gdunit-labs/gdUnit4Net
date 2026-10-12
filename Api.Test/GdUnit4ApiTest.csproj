@@ -16,7 +16,7 @@
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <!--Disable warning/error of invalid/incompatible GodotSharp version, the package GdUnit4.API is build by V4.2.0-->
-        <NoWarn>NU1605,CS8785</NoWarn>
+        <NoWarn>$(NoWarn);NU1605;CS8785</NoWarn>
         <!-- Prevent MSTest adapter from being discovered -->
         <VSTestTestAdapterPath>none</VSTestTestAdapterPath>
         <TestFramework>GdUnit4</TestFramework>

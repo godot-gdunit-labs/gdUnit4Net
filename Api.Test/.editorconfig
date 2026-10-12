@@ -1,5 +1,0 @@
-﻿# Temporary ignore the global editor config for this sub project
-root = true
-
-# Apply to all files in this directory and subdirectories
-[*]

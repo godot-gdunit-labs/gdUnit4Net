@@ -2,7 +2,6 @@ namespace GdUnit4.Example.Test.Resources;
 
 public class TestPerson
 {
-
     public TestPerson(string firstName, string lastName)
     {
         FirstName = firstName;

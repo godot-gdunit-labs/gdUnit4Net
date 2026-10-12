@@ -6,7 +6,6 @@ using static Assertions;
 // used by executor integration test
 public class TestSuiteFailOnStageBeforeTest
 {
-
     [Before]
     public void Before()
         => AssertString("Suite Before()").IsEqual("Suite Before()");

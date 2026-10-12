@@ -38,8 +38,10 @@ public class ObjectAssertTest
     {
         var obj = new object();
         var boxMesh1 = new BoxMesh();
-        var boxMesh2 = new BoxMesh();
-        boxMesh2.FlipFaces = true;
+        var boxMesh2 = new BoxMesh
+        {
+            FlipFaces = true
+        };
         AssertObject(boxMesh1).IsEqual(boxMesh1);
         AssertObject(boxMesh1).IsEqual(new BoxMesh());
         AssertObject(obj).IsEqual(obj);
@@ -70,8 +72,10 @@ public class ObjectAssertTest
     {
         var obj = new object();
         var boxMesh = new BoxMesh();
-        var boxMesh2 = new BoxMesh();
-        boxMesh2.FlipFaces = true;
+        var boxMesh2 = new BoxMesh
+        {
+            FlipFaces = true
+        };
         AssertObject(boxMesh).IsNotEqual(boxMesh2);
         AssertObject(obj).IsNotEqual(new List<object>());
 
@@ -99,13 +103,15 @@ public class ObjectAssertTest
         // engine class test
         AssertObject(AutoFree(new Path2D())).IsInstanceOf<Node>();
         AssertObject(AutoFree(new Camera2D())).IsInstanceOf<Camera2D>();
+
         // script class test
         // inner class test
         AssertObject(AutoFree(new CustomClass.InnerClassA())).IsInstanceOf<Node>();
         AssertObject(AutoFree(new CustomClass.InnerClassB())).IsInstanceOf<CustomClass.InnerClassA>();
+
         // c# class
         AssertObject(new object()).IsInstanceOf<object>();
-        AssertObject("").IsInstanceOf<object>();
+        AssertObject(string.Empty).IsInstanceOf<object>();
         AssertObject(new CustomClass()).IsInstanceOf<object>();
         AssertObject(new CustomClassB()).IsInstanceOf<object>();
         AssertObject(new CustomClassB()).IsInstanceOf<CustomClass>();
@@ -130,11 +136,14 @@ public class ObjectAssertTest
     public void IsNotInstanceOf()
     {
         AssertObject(null).IsNotInstanceOf<Node>();
+
         // engine class test
         AssertObject(AutoFree(new Path2D())).IsNotInstanceOf<Tree>();
+
         // inner class test
         AssertObject(AutoFree(new CustomClass.InnerClassA())).IsNotInstanceOf<Tree>();
         AssertObject(AutoFree(new CustomClass.InnerClassB())).IsNotInstanceOf<CustomClass.InnerClassC>();
+
         // c# class
         AssertObject(new CustomClass()).IsNotInstanceOf<CustomClassB>();
 
@@ -154,6 +163,7 @@ public class ObjectAssertTest
     public void IsNull()
     {
         AssertObject(null).IsNull();
+
         // should fail because the current is not null
         AssertThrown(() => AssertObject(AutoFree(new Node())).IsNull())
             .IsInstanceOf<TestFailedException>()
@@ -173,6 +183,7 @@ public class ObjectAssertTest
     {
         AssertObject(AutoFree(new Node())).IsNotNull();
         AssertObject(new object()).IsNotNull();
+
         // should fail because the current is null
         AssertThrown(() => AssertObject(null).IsNotNull())
             .IsInstanceOf<TestFailedException>()
@@ -293,12 +304,9 @@ public class ObjectAssertTest
     public void AppendFailureMessage()
     {
         var node = AutoFree(new Node());
-        AssertThrown(() =>
-            {
-                AssertObject(node)
+        AssertThrown(() => AssertObject(node)
                     .AppendFailureMessage("custom data")
-                    .IsNull();
-            })
+                    .IsNull())
             .IsInstanceOf<TestFailedException>()
             .HasMessage($"""
                          Expecting be <Null>:
@@ -316,6 +324,7 @@ public class ObjectAssertTest
         // we disable failure reporting until we simulate an failure
         if (ExecutionContext.Current != null)
             ExecutionContext.Current.FailureReporting = false;
+
         // try to fail
         AssertObject(null).IsNotNull();
 

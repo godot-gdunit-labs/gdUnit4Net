@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Asserts.CSharpTypes;
+namespace GdUnit4.Tests.Asserts.CSharpTypes;
 
 // Original Player class (without IEquatable for comparison)
 public class Player
@@ -14,7 +14,9 @@ public class Player
     public string Name { get; }
 
     public int Level { get; }
+
     public float Health { get; }
+
     public bool IsAlive { get; }
 
     public override string ToString()

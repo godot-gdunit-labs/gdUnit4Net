@@ -2,5 +2,4 @@
 public class TestSuiteWithoutNamespace
 #pragma warning restore CA1050 // Declare types in namespaces
 {
-
 }

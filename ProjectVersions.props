@@ -6,6 +6,12 @@
     <GdUnitTestAdapterVersion>3.1.1</GdUnitTestAdapterVersion>
   </PropertyGroup>
 
+  <!-- Code Analyzers (also referenced by the Godot test project, which cannot use Central Package Management) -->
+  <PropertyGroup>
+    <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>4.14.0</MicrosoftCodeAnalysisAnalyzersVersion>
+  </PropertyGroup>
+
   <!-- Godot Configuration -->
   <PropertyGroup>
     <!-- Note: Keep GodotVersion in sync with global.json msbuild-sdks.Godot.NET.Sdk -->

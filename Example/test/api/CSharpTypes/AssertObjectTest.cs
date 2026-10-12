@@ -1,4 +1,4 @@
-﻿namespace Examples.Test.Api.CSharpTypes;
+namespace Examples.Test.Api.CSharpTypes;
 
 using GdUnit4;
 
@@ -194,7 +194,7 @@ public class SpyEqualityComparerPlayer(string name, int level, float health, boo
 public class SpyEquatablePlayer(string name, int level, float health, bool isAlive)
     : EquatablePlayer(name, level, health, isAlive)
 {
-    private readonly List<EquatablePlayer?> equalsCallHistory = new();
+    private readonly List<EquatablePlayer?> equalsCallHistory = [];
 
     // Tracking properties
     public int EqualsCallCount { get; private set; }
@@ -234,8 +234,10 @@ public class EquatablePlayer(string name, int level, float health, bool isAlive)
 {
     public virtual bool Equals(EquatablePlayer? other)
     {
-        if (other is null) return false;
-        if (ReferenceEquals(this, other)) return true;
+        if (other is null)
+            return false;
+        if (ReferenceEquals(this, other))
+            return true;
 
         return Level == other.Level &&
                Math.Abs(Health - other.Health) < 0.001f &&

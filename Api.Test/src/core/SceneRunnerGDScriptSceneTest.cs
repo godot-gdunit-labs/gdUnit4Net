@@ -22,6 +22,7 @@ public class SceneRunnerGDScriptSceneTest
 
     [Before]
     public void Setup() =>
+
         // use a dedicated FPS because we calculate frames by time
         Engine.PhysicsTicksPerSecond = 60;
 
@@ -81,6 +82,7 @@ public class SceneRunnerGDScriptSceneTest
         stopwatch.Start();
         await sceneRunner.AwaitMillis(1000);
         stopwatch.Stop();
+
         // verify we wait around 1000 ms (using 100ms offset because timing is not 100% accurate)
         AssertInt((int)stopwatch.ElapsedMilliseconds).IsBetween(900, 1100);
     }
@@ -89,6 +91,7 @@ public class SceneRunnerGDScriptSceneTest
     public async Task SimulateFrames()
     {
         var box1 = sceneRunner.GetProperty<ColorRect>("_box1")!;
+
         // initial is white
         AssertObject(box1.Color).IsEqual(Colors.White);
 
@@ -97,11 +100,13 @@ public class SceneRunnerGDScriptSceneTest
 
         // we wait for 10 frames
         await sceneRunner.SimulateFrames(10);
+
         // after 10 frame is still white
         AssertObject(box1.Color).IsEqual(Colors.White);
 
         // we wait 90 more frames
         await sceneRunner.SimulateFrames(90);
+
         // after 100 frames the box one should be changed the color
         AssertObject(box1.Color).IsNotEqual(Colors.White);
     }
@@ -110,6 +115,7 @@ public class SceneRunnerGDScriptSceneTest
     public async Task SimulateFramesWithDelay()
     {
         var box1 = sceneRunner.GetProperty<ColorRect>("_box1")!;
+
         // initial is white
         AssertObject(box1.Color).IsEqual(Colors.White);
 
@@ -118,6 +124,7 @@ public class SceneRunnerGDScriptSceneTest
 
         // we wait for 10 frames each with a 50ms delay
         await sceneRunner.SimulateFrames(10, 50);
+
         // after 10 frame and in sum 500ms is should be changed to red
         AssertObject(box1.Color).IsEqual(Colors.Red);
     }
@@ -128,6 +135,7 @@ public class SceneRunnerGDScriptSceneTest
         sceneRunner.MaximizeView();
 
         var box1 = sceneRunner.GetProperty<ColorRect>("_box1")!;
+
         // verify initial color
         AssertObject(box1.Color).IsEqual(Colors.White);
 
@@ -153,8 +161,8 @@ public class SceneRunnerGDScriptSceneTest
                         $sceneId
                     """
                     .Replace("$colorRectId", AssertFailures.AsObjectId(box1))
-                    .Replace("$sceneId", AssertFailures.AsObjectId(sceneRunner.Scene()))
-                ));
+                    .Replace("$sceneId", AssertFailures.AsObjectId(sceneRunner.Scene()))));
+
         // verify the box is still green
         AssertObject(box1.Color).IsEqual(Colors.Green);
     }
@@ -167,6 +175,7 @@ public class SceneRunnerGDScriptSceneTest
 
         // fire spell be pressing enter key
         sceneRunner.SimulateKeyPressed(Key.Enter);
+
         // wait until next frame
         await sceneRunner.AwaitInputProcessed();
 
@@ -175,6 +184,7 @@ public class SceneRunnerGDScriptSceneTest
 
         // wait until spell is explode after around 1s
         var spell = sceneRunner.FindChild("Spell");
+
         // wait spell is exploded
         await spell.AwaitSignal("spell_explode", spell).WithTimeout(1100);
 
@@ -212,6 +222,7 @@ public class SceneRunnerGDScriptSceneTest
         // set mouse position to button two and simulate is pressed
         sceneRunner.SetMousePos(new Vector2(160, 20))
             .SimulateMouseButtonPressed(MouseButton.Left);
+
         // verify box two is changed to Gray
         AssertObject(box1.Color).IsEqual(Colors.Gray);
         AssertObject(box2.Color).IsEqual(Colors.Gray);
@@ -220,6 +231,7 @@ public class SceneRunnerGDScriptSceneTest
         // set mouse position to button three and simulate is pressed
         sceneRunner.SetMousePos(new Vector2(260, 20))
             .SimulateMouseButtonPressed(MouseButton.Left);
+
         // verify box three is changed to red and after around 1s to Gray
         AssertObject(box3.Color).IsEqual(Colors.Red);
         await sceneRunner.AwaitSignal("panel_color_change", box3, Colors.Gray).WithTimeout(1100);
@@ -240,8 +252,8 @@ public class SceneRunnerGDScriptSceneTest
                     "red"
                  but is
                     "black"
-                """
-            ));
+                """));
+
         // wait again for returns 'red' but with using a custom timeout of 500ms and expect is interrupted after 500ms
         await AssertThrown(sceneRunner.AwaitMethod<string>("color_cycle").IsEqual("red").WithTimeout(500))
             .ContinueWith(result => result.Result?.HasMessage("Assertion: Timed out after 500ms."));
@@ -251,6 +263,7 @@ public class SceneRunnerGDScriptSceneTest
     public async Task AwaitMethodWithTimeFactor()
     {
         sceneRunner.SetTimeFactor(10);
+
         // wait until 'color_cycle()' returns 'black' (using small timeout we expect the method will now processes 10 times faster)
         await sceneRunner.AwaitMethod<string>("color_cycle").IsEqual("black").WithTimeout(300);
 
@@ -259,7 +272,7 @@ public class SceneRunnerGDScriptSceneTest
             .ContinueWith(result
                 => result.Result?
                     .HasMessage("Assertion: Timed out after 150ms.")
-                    .HasFileLineNumber(258));
+                    .HasFileLineNumber(271));
     }
 
     [TestCase]

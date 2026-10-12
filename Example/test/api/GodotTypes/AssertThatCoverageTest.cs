@@ -1,4 +1,4 @@
-﻿namespace Examples.Test.Api.GodotTypes;
+namespace Examples.Test.Api.GodotTypes;
 
 using GdUnit4;
 using GdUnit4.Asserts;

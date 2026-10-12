@@ -19,13 +19,13 @@ public sealed class ExampleTestSuite
     [After]
     public void After()
     {
-        //GD.PrintS("calling After");
+        // GD.PrintS("calling After");
     }
 
     [BeforeTest]
     public void BeforeTest()
     {
-        //GD.PrintS("calling BeforeTest");
+        // GD.PrintS("calling BeforeTest");
     }
 
     [AfterTest]

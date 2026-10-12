@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core.Discovery;
+namespace GdUnit4.Tests.Core.Discovery;
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -175,8 +175,7 @@ public class TestCaseDiscovererTest
                     CodeFilePath = codeFilePath,
                     AttributeIndex = 2,
                     RequireRunningGodotEngine = false
-                }
-            );
+                });
     }
 
     [TestCase]
@@ -226,8 +225,7 @@ public class TestCaseDiscovererTest
                     CodeFilePath = codeFilePath,
                     AttributeIndex = 2,
                     RequireRunningGodotEngine = false
-                }
-            );
+                });
     }
 
     [TestCase]
@@ -284,46 +282,48 @@ public class TestCaseDiscovererTest
         var tests = TestCaseDiscoverer.DiscoverTestCasesFromScript(script);
         AssertArray(tests)
             .HasSize(15)
+
             // Verify just exemplar for certain tests
-            .Contains(new TestCaseDescriptor
-            {
-                SimpleName = "TestFoo",
-                FullyQualifiedName = "GdUnit4.Tests.Core.ExampleTestSuite.TestFoo",
-                AssemblyPath = assemblyPath,
-                ManagedType = "GdUnit4.Tests.Core.ExampleTestSuite",
-                ManagedMethod = "TestFoo",
-                Id = tests[11].Id,
-                LineNumber = 41,
-                CodeFilePath = codeFilePath,
-                AttributeIndex = 0,
-                RequireRunningGodotEngine = false,
-                Categories = new List<string> { "CategoryA" },
-                Traits = new Dictionary<string, List<string>> { ["Category"] = ["Foo"] }
-            }, new TestCaseDescriptor
-            {
-                SimpleName = "TestCaseA:0 (1, 2, 3, 6)",
-                FullyQualifiedName = "GdUnit4.Tests.Core.ExampleTestSuite.TestCaseArguments.TestCaseA:0 (1, 2, 3, 6)",
-                AssemblyPath = assemblyPath,
-                ManagedType = "GdUnit4.Tests.Core.ExampleTestSuite",
-                ManagedMethod = "TestCaseArguments",
-                Id = tests[5].Id,
-                LineNumber = 63,
-                CodeFilePath = codeFilePath,
-                AttributeIndex = 0,
-                RequireRunningGodotEngine = false
-            }, new TestCaseDescriptor
-            {
-                SimpleName = "TestCaseB:1 (3, 4, 5, 12)",
-                FullyQualifiedName = "GdUnit4.Tests.Core.ExampleTestSuite.TestCaseArguments.TestCaseB:1 (3, 4, 5, 12)",
-                AssemblyPath = assemblyPath,
-                ManagedType = "GdUnit4.Tests.Core.ExampleTestSuite",
-                ManagedMethod = "TestCaseArguments",
-                Id = tests[6].Id,
-                LineNumber = 63,
-                CodeFilePath = codeFilePath,
-                AttributeIndex = 1,
-                RequireRunningGodotEngine = false
-            });
+            .Contains(
+                new TestCaseDescriptor
+                {
+                    SimpleName = "TestFoo",
+                    FullyQualifiedName = "GdUnit4.Tests.Core.ExampleTestSuite.TestFoo",
+                    AssemblyPath = assemblyPath,
+                    ManagedType = "GdUnit4.Tests.Core.ExampleTestSuite",
+                    ManagedMethod = "TestFoo",
+                    Id = tests[11].Id,
+                    LineNumber = 41,
+                    CodeFilePath = codeFilePath,
+                    AttributeIndex = 0,
+                    RequireRunningGodotEngine = false,
+                    Categories = new List<string> { "CategoryA" },
+                    Traits = new Dictionary<string, List<string>> { ["Category"] = ["Foo"] }
+                }, new TestCaseDescriptor
+                {
+                    SimpleName = "TestCaseA:0 (1, 2, 3, 6)",
+                    FullyQualifiedName = "GdUnit4.Tests.Core.ExampleTestSuite.TestCaseArguments.TestCaseA:0 (1, 2, 3, 6)",
+                    AssemblyPath = assemblyPath,
+                    ManagedType = "GdUnit4.Tests.Core.ExampleTestSuite",
+                    ManagedMethod = "TestCaseArguments",
+                    Id = tests[5].Id,
+                    LineNumber = 63,
+                    CodeFilePath = codeFilePath,
+                    AttributeIndex = 0,
+                    RequireRunningGodotEngine = false
+                }, new TestCaseDescriptor
+                {
+                    SimpleName = "TestCaseB:1 (3, 4, 5, 12)",
+                    FullyQualifiedName = "GdUnit4.Tests.Core.ExampleTestSuite.TestCaseArguments.TestCaseB:1 (3, 4, 5, 12)",
+                    AssemblyPath = assemblyPath,
+                    ManagedType = "GdUnit4.Tests.Core.ExampleTestSuite",
+                    ManagedMethod = "TestCaseArguments",
+                    Id = tests[6].Id,
+                    LineNumber = 63,
+                    CodeFilePath = codeFilePath,
+                    AttributeIndex = 1,
+                    RequireRunningGodotEngine = false
+                });
     }
 
     [TestCase]
@@ -389,7 +389,7 @@ public class TestCaseDiscovererTest
             methodDefinition,
             "/path/to/test_assembly.dll",
             false,
-            clazzType.FullName ?? "",
+            clazzType.FullName ?? string.Empty,
             ImmutableList.Create<string>(),
             ImmutableDictionary.Create<string, List<string>>());
     }

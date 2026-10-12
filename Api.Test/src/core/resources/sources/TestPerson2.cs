@@ -2,7 +2,6 @@
 public class TestPerson2
 #pragma warning restore CA1050 // Declare types in namespaces
 {
-
     public TestPerson2(string firstName, string lastName)
     {
         FirstName = firstName;

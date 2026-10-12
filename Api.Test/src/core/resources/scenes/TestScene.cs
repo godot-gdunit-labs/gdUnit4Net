@@ -10,8 +10,7 @@ public partial class TestScene : Control
     [Signal]
     public delegate void PanelColorChangeEventHandler(ColorRect box, Color color);
 
-    //private static readonly Color[] ColorCycle = { Colors.RoyalBlue, Colors.Chartreuse, Colors.YellowGreen };
-
+    // private static readonly Color[] ColorCycle = { Colors.RoyalBlue, Colors.Chartreuse, Colors.YellowGreen };
     private Color initial_color = Colors.Red;
 
     private RefCounted? nullable;
@@ -124,7 +123,9 @@ public partial class TestScene : Control
 #pragma warning disable CS8618
 
     public ColorRect Box1 { get; set; }
+
     private ColorRect Box2 { get; set; }
+
     private ColorRect Box3 { get; set; }
 
 #pragma warning restore CS8618

@@ -1,13 +1,11 @@
 // Copyright (c) 2025 Mike Schulze
 // MIT License - See LICENSE file in the repository root for full license text
 
-using static GdUnit4.Assertions;
-
 namespace GdUnit4.Tests.Core.Logging;
 
 using Api;
-
 using GdUnit4.Core.Logging;
+using static GdUnit4.Assertions;
 
 [TestSuite]
 public class LogCaptureTest

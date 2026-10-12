@@ -62,9 +62,16 @@ dotnet format TestAdapter/GdUnit4TestAdapter.csproj --verify-no-changes --verbos
 dotnet format TestAdapter.Test/GdUnit4TestAdapter.Tests.csproj --verify-no-changes --verbosity diagnostic
 dotnet format Analyzers/GdUnit4Analyzers.csproj --verify-no-changes --verbosity diagnostic
 dotnet format Analyzers.Test/GdUnit4Analyzers.Tests.csproj --verify-no-changes --verbosity diagnostic
+dotnet format Api.Test/GdUnit4ApiTest.csproj --verify-no-changes --verbosity diagnostic
+dotnet format Example/ExampleProject.csproj --verify-no-changes --verbosity diagnostic
 ```
 
-`Api.Test` and `Example` have their own `.editorconfig` with `root = true` and are not format-checked yet.
+Test projects relax rules that do not fit test code through their `test.ruleset`. `Example` is the consumer
+sample: it follows the `.editorconfig` but does not use the repository build settings, so it stays copyable.
+
+Many `Api.Test` tests assert source line numbers (`HasFileLineNumber`, expected stack traces, exception
+attributes). Moving lines in a test file means updating those numbers, so run the `Api.Test` suite after
+formatting changes.
 
 ### C# Linting
 

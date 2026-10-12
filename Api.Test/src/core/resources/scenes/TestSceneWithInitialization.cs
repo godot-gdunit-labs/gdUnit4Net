@@ -1,15 +1,13 @@
-using Godot;
-
-namespace GdUnit4.Tests.core.resources.scenes;
+namespace GdUnit4.Tests.Core.Resources.Scenes;
 
 using System.Collections.Generic;
+using Godot;
 
 public partial class TestSceneWithInitialization : Node2D
 {
-    private readonly List<string> methodCalls = new();
-    public List<string> MethodCalls => methodCalls;
-    public void Initialize() => methodCalls.Add("Initialize");
+    public List<string> MethodCalls { get; } = new();
 
-    public override void _Ready() => methodCalls.Add("_Ready");
+    public void Initialize() => MethodCalls.Add("Initialize");
+
+    public override void _Ready() => MethodCalls.Add("_Ready");
 }
-

@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core.Extensions;
+namespace GdUnit4.Tests.Core.Extensions;
 
 using GdUnit4.Core.Extensions;
 
@@ -38,8 +38,10 @@ public class GodotObjectExtensionsTest
 
         AssertThat(GodotObjectExtensions.DeepEquals(player1, player2)).IsTrue();
         AssertThat(GodotObjectExtensions.DeepEquals(player1, player5)).IsTrue();
+
         // difference at name and health
         AssertThat(GodotObjectExtensions.DeepEquals(player1, player3)).IsFalse();
+
         // difference at items `ItemC`
         AssertThat(GodotObjectExtensions.DeepEquals(player1, player4)).IsFalse();
     }
@@ -105,8 +107,10 @@ public class GodotObjectExtensionsTest
         };
 
         AssertThat(GodotObjectExtensions.DeepEquals(items1, items2)).IsTrue();
+
         // difference on player
         AssertThat(GodotObjectExtensions.DeepEquals(items1, items3)).IsFalse();
+
         // difference on itemC
         AssertThat(GodotObjectExtensions.DeepEquals(items1, items4)).IsFalse();
     }
@@ -121,6 +125,7 @@ public partial class Item : RefCounted
     }
 
     public int Count { get; set; }
+
     public string Name { get; set; }
 }
 
@@ -128,7 +133,6 @@ public partial class Player : Node
 {
     private readonly Array<Item> items;
     private int myField;
-
 
     public Player(string name, int level, float health, bool isAlive, Array<Item> items)
     {

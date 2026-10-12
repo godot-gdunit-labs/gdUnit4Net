@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Asserts.GodotTypes;
+namespace GdUnit4.Tests.Asserts.GodotTypes;
 
 using System.Collections.Generic;
 
@@ -208,7 +208,8 @@ public class AssertEnumerableTest : AssertEnumerableConditions
 
     [TestCase]
     public void ContainsUsingDictionaryWithDifferentOrder()
-        => ContainsUsingDictionaryWithDifferentOrder(new Array
+        => ContainsUsingDictionaryWithDifferentOrder(
+            new Array
         {
             new Dictionary
             {
@@ -315,7 +316,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
 
         // try extract on object via a func that has no return value
         AssertArray([new RefCounted(), 2, new AStarGrid2D(), AutoFree(new Node())])
-            .Extract("RemoveMeta", "")
+            .Extract("RemoveMeta", string.Empty)
             .ContainsExactly(null, "n.a.", null, null);
 
         // must fail we can't extract from a null instance
@@ -350,8 +351,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
                 "root_a",
                 "root_a",
                 "root_b",
-                "root_b"
-            );
+                "root_b");
     }
 
     [TestCase]
@@ -399,8 +399,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
                 Tuple("B", "root_a"),
                 Tuple("C", "root_a"),
                 Tuple("X", "root_b"),
-                Tuple("Y", "root_b")
-            );
+                Tuple("Y", "root_b"));
     }
 
     [TestCase]
@@ -445,20 +444,31 @@ internal sealed partial class TestObj : RefCounted
     }
 
     public string GetName() => name;
+
     public object? GetValue() => value;
+
     public object? GetX() => x;
+
     public string GetX1() => "x1";
+
     public string GetX2() => "x2";
+
     public string GetX3() => "x3";
+
     public string GetX4() => "x4";
+
     public string GetX5() => "x5";
+
     public string GetX6() => "x6";
+
     public string GetX7() => "x7";
+
     public string GetX8() => "x8";
+
     public string GetX9() => "x9";
 }
 
 internal partial class SimpleObject(string name) : RefCounted
 {
-    internal string Name = name;
+    internal string Name { get; } = name;
 }

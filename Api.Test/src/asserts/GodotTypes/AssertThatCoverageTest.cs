@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Asserts.GodotTypes;
+namespace GdUnit4.Tests.Asserts.GodotTypes;
 
 using GdUnit4.Asserts;
 
@@ -25,9 +25,9 @@ public class AssertThatCoverageTest
         AssertObject(AssertThat(Variant.From(ulong.MaxValue))).IsInstanceOf<INumberAssert<int>>();
         AssertObject(AssertThat(Variant.From(float.MaxValue))).IsInstanceOf<INumberAssert<float>>();
         AssertObject(AssertThat(Variant.From(double.MaxValue))).IsInstanceOf<INumberAssert<float>>();
+
         // not supported
         // AssertObject(AssertThat(Variant.From(decimal.MaxValue))).IsInstanceOf<INumberAssert<float>>();
-
         AssertObject(AssertThat(Variant.From("foo"))).IsInstanceOf<IStringAssert>();
         AssertObject(AssertThat(Variant.From(new StringName("foo")))).IsInstanceOf<IStringAssert>();
 
@@ -43,8 +43,8 @@ public class AssertThatCoverageTest
     [TestCase]
     public void Structs()
     {
-        AssertObject(AssertThat(new Rect2())).IsInstanceOf<IObjectAssert<Rect2>>();
-        AssertObject(AssertThat(new Color())).IsInstanceOf<IObjectAssert<Color>>();
+        AssertObject(AssertThat(default(Rect2))).IsInstanceOf<IObjectAssert<Rect2>>();
+        AssertObject(AssertThat(default(Color))).IsInstanceOf<IObjectAssert<Color>>();
     }
 
     [TestCase]

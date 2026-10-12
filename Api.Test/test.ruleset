@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Test Rules" Description="Rules for test projects" ToolsVersion="16.0">
+
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp.Features" RuleNamespace="Microsoft.CodeAnalysis.CSharp.Features">
+    <Rule Id="IDE0073" Action="None"/> <!-- Disable Require file header -->
+    <Rule Id="CS1591" Action="None"/> <!-- Disable Require Class documentaion -->
+
+    <!-- Disable C# 12 collection expression suggestions -->
+    <Rule Id="IDE0028" Action="None"/>
+    <Rule Id="IDE0290" Action="None"/>
+    <Rule Id="IDE0300" Action="None"/>
+    <Rule Id="IDE0301" Action="None"/>
+    <Rule Id="IDE0303" Action="None"/>
+    <Rule Id="IDE0305" Action="None"/>
+    <Rule Id="IDE0306" Action="None"/>
+
+    <!-- Fluent assertions return the assert only for chaining -->
+    <Rule Id="IDE0058" Action="None"/>
+    <!-- Test case rows may ignore their parameters -->
+    <Rule Id="IDE0060" Action="None"/>
+  </Rules>
+
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.CodeAnalysis.NetAnalyzers">
+    <Rule Id="CA2007" Action="None"/> <!-- Godot tests must continue on the main thread, no ConfigureAwait(false) -->
+    <Rule Id="CA2000" Action="None"/> <!-- Nodes are freed by the scene tree or AutoFree, not by Dispose -->
+    <Rule Id="CA1707" Action="None"/> <!-- Underscores in test names -->
+    <Rule Id="CA1034" Action="None"/> <!-- Nested helper types next to the tests using them -->
+    <Rule Id="CA1812" Action="None"/> <!-- Helper types created by reflection or Godot -->
+    <Rule Id="CA1852" Action="None"/> <!-- Helper types need not be sealed -->
+    <Rule Id="CA1062" Action="None"/> <!-- No argument validation in test helpers -->
+    <Rule Id="CA1849" Action="None"/> <!-- Scene runner calls run synchronously on the Godot main thread -->
+    <Rule Id="CA2008" Action="None"/> <!-- Tasks in tests use the default scheduler -->
+    <Rule Id="CA1002" Action="None"/> <!-- Test scenes expose plain lists -->
+    <Rule Id="CA1063" Action="None"/> <!-- Test suites implement IDisposable to test the dispose hook -->
+    <Rule Id="CA2213" Action="None"/> <!-- Godot objects are freed by the engine -->
+    <Rule Id="CA1031" Action="None"/> <!-- Test cleanup may catch all exceptions -->
+    <Rule Id="CA1052" Action="None"/> <!-- Test suites are instantiated by the test engine, never static -->
+    <Rule Id="CA1711" Action="None"/> <!-- Godot signal delegates must end with EventHandler -->
+    <Rule Id="CA1859" Action="None"/> <!-- Performance hint, not relevant for test helpers -->
+    <Rule Id="CA1307" Action="None"/> <!-- Expected messages are built with ordinal string replacement -->
+  </Rules>
+
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA1633" Action="None"/> <!-- File should have header -->
+    <Rule Id="SA1635" Action="None"/> <!-- File header must have copyright text -->
+    <Rule Id="SA1600" Action="None"/> <!-- Disable ElementsMustBeDocumented -->
+    <Rule Id="SA1601" Action="None"/> <!-- Disable Partial elements should be documented -->
+    <Rule Id="SA1206" Action="None"/> <!-- Disable StyleCop specific Ordering Rules-->
+    <Rule Id="SA1124" Action="None"/> <!-- Regions group the tests of one feature -->
+    <Rule Id="SA1201" Action="None"/> <!-- Helpers stay next to the tests using them; reordering would shift asserted line numbers -->
+    <Rule Id="SA1202" Action="None"/>
+    <Rule Id="SA1204" Action="None"/>
+    <Rule Id="SA1402" Action="None"/> <!-- Test helper types next to the tests using them -->
+    <Rule Id="SA1602" Action="None"/> <!-- Documentation is off for tests -->
+    <Rule Id="SA1117" Action="None"/> <!-- Test data layouts; reflowing would shift asserted line numbers -->
+    <Rule Id="SA1027" Action="None"/> <!-- Expected generated code in raw strings uses tabs -->
+    <Rule Id="SA1649" Action="None"/> <!-- Discovery fixtures come first in their test file -->
+  </Rules>
+</RuleSet>

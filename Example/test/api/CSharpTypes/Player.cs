@@ -1,4 +1,4 @@
-﻿namespace Examples.Test.Api.CSharpTypes;
+namespace Examples.Test.Api.CSharpTypes;
 
 // Original Player class (without IEquatable for comparison)
 public class Player

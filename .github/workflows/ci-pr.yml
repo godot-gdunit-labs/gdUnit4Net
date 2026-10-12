@@ -124,7 +124,7 @@ jobs:
     name: "🔍 Check Style: API"
     needs: setup-dotnet
     runs-on: 'ubuntu-24.04'
-    timeout-minutes: 2
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
       - name: Setup .NET SDK
@@ -136,7 +136,8 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           dotnet format Api/GdUnit4Api.csproj --verify-no-changes --verbosity diagnostic
-        # dotnet format Api.Test/GdUnit4ApiTest.csproj --verify-no-changes --verbosity diagnostic
+          dotnet format Api.Test/GdUnit4ApiTest.csproj --verify-no-changes --verbosity diagnostic
+          dotnet format Example/ExampleProject.csproj --verify-no-changes --verbosity diagnostic
 
   # Test Adapter
   adapter-style-check:

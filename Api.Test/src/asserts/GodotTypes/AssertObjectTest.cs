@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Asserts.GodotTypes;
+namespace GdUnit4.Tests.Asserts.GodotTypes;
 
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,7 @@ public class AssertObjectTest
         var player4 = player1; // Same reference
 
         AssertObject(player1).IsNotEqual(player3);
+
         // Test reference equality
         AssertObject(player1)
             .IsNotSame(player2) // Different instances
@@ -153,6 +154,7 @@ public partial class SpyEqualityComparerPlayer(string name, int level, float hea
     : Player(name, level, health, isAlive), IEqualityComparer<Player>
 {
     public int EqualsCallCount { get; private set; }
+
     public Player? LastEqualsArgument { get; private set; }
 
     public bool LastEqualsResult { get; private set; }
@@ -238,8 +240,10 @@ public partial class EquatablePlayer(string name, int level, float health, bool 
 {
     public virtual bool Equals(EquatablePlayer? other)
     {
-        if (other is null) return false;
-        if (ReferenceEquals(this, other)) return true;
+        if (other is null)
+            return false;
+        if (ReferenceEquals(this, other))
+            return true;
 
         return Level == other.Level &&
                Math.Abs(Health - other.Health) < 0.001f &&
@@ -266,7 +270,9 @@ public partial class Player : Node
     }
 
     public int Level { get; private set; }
+
     public float Health { get; private set; }
+
     public bool IsAlive { get; private set; }
 
     public override string ToString()

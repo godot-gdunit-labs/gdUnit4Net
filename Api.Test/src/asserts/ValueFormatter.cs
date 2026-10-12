@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.asserts;
+namespace GdUnit4.Tests.Asserts;
 
 using GdUnit4.Asserts;
 

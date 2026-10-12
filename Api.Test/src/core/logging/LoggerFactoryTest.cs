@@ -104,14 +104,14 @@ public class LoggerFactoryTest
 
         var taskA = Task.Run(() =>
         {
-            using var _ = LoggerFactory.Instance.CreateScope("task-a");
+            using var scope = LoggerFactory.Instance.CreateScope("task-a");
             barrier.SignalAndWait(TimeSpan.FromSeconds(5));
             seenByA = LoggerFactory.Instance.GetScope();
         });
 
         var taskB = Task.Run(() =>
         {
-            using var _ = LoggerFactory.Instance.CreateScope("task-b");
+            using var scope = LoggerFactory.Instance.CreateScope("task-b");
             barrier.SignalAndWait(TimeSpan.FromSeconds(5));
             seenByB = LoggerFactory.Instance.GetScope();
         });
@@ -143,7 +143,7 @@ public class LoggerFactoryTest
         var taskA = Task.Run(() =>
         {
             bStarted.Wait(TimeSpan.FromSeconds(5));
-            using var _ = LoggerFactory.Instance.CreateScope("task-a");
+            using var scope = LoggerFactory.Instance.CreateScope("task-a");
             aBegan.Set();
         });
 
@@ -166,14 +166,14 @@ public class LoggerFactoryTest
 
             var taskA = Task.Run(() =>
             {
-                using var _ = LoggerFactory.Instance.CreateScope("task-a");
+                using var scope = LoggerFactory.Instance.CreateScope("task-a");
                 barrier.SignalAndWait(TimeSpan.FromSeconds(5));
                 LoggerFactory.GetLogger<TaskSourceA>().LogInfo("hello");
             });
 
             var taskB = Task.Run(() =>
             {
-                using var _ = LoggerFactory.Instance.CreateScope("task-b");
+                using var scope = LoggerFactory.Instance.CreateScope("task-b");
                 barrier.SignalAndWait(TimeSpan.FromSeconds(5));
                 LoggerFactory.GetLogger<TaskSourceB>().LogInfo("hello");
             });

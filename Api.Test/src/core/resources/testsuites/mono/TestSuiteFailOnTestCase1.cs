@@ -1,11 +1,11 @@
 namespace GdUnit4.Tests.Resources;
 
 using static Assertions;
+
 // will be ignored because of missing `[TestSuite]` annotation
 // used by executor integration test
 public class TestSuiteFailOnTestCase1
 {
-
     [Before]
     public void Before()
         => AssertString("Suite Before()").IsEqual("Suite Before()");

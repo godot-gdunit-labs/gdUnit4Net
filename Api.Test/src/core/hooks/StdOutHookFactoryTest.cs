@@ -10,7 +10,7 @@ using Godot;
 
 using static Assertions;
 
-using Environment = System.Environment;
+using Environment = Environment;
 
 [RequireGodotRuntime]
 [TestSuite]
@@ -43,6 +43,7 @@ public class StdOutHookFactoryTest
     public void CaptureStdOutConsole()
     {
         var stdOutHook = StdOutHookFactory.CreateStdOutHook();
+
         // it should not be captured before `StartCapture`
         Console.WriteLine("Console: Short before 'StartCapture'");
 
@@ -51,8 +52,10 @@ public class StdOutHookFactoryTest
         Console.WriteLine("Console: Short after 'StartCapture'");
         Console.WriteLine("Console: A message");
         Console.WriteLine("Console: Short before 'StopCapture'");
+
         // stop it
         stdOutHook.StopCapture();
+
         // it should not be captured after `StopCapture`
         Console.WriteLine("Console: Short after 'StopCapture'");
 
@@ -67,6 +70,7 @@ public class StdOutHookFactoryTest
     public async Task CaptureStdOutGodot()
     {
         var stdOutHook = StdOutHookFactory.CreateStdOutHook();
+
         // it should not be captured before `StartCapture`
         GD.PrintS("Godot: Short before 'StartCapture'");
 
@@ -78,8 +82,10 @@ public class StdOutHookFactoryTest
 
         // need to await sync stdout from Godot engine is written
         await ISceneRunner.SyncProcessFrame;
+
         // stop it
         stdOutHook.StopCapture();
+
         // it should not be captured after `StopCapture`
         GD.PrintS("Godot: Short after 'StopCapture'");
 
@@ -107,15 +113,16 @@ public class StdOutHookFactoryTest
         GD.PrintS("Godot: A message");
         Console.WriteLine("Console: Short before 'StopCapture'");
         GD.PrintS("Godot: Short before 'StopCapture'");
+
         // need to await sync stdout from Godot engine is written
         await ISceneRunner.SyncProcessFrame;
+
         // stop it
         stdOutHook.StopCapture();
 
         // it should not be captured after `StopCapture`
         Console.WriteLine("Console: Do not be captured");
         GD.PrintS("Godot: Do not be captured");
-
 
         // verify the captured output contains all lines, but we cant guaranty the same order
         var capturedOutput = stdOutHook.GetCapturedOutput();
@@ -126,6 +133,7 @@ public class StdOutHookFactoryTest
             .Contains("Godot: A message")
             .Contains("Console: Short before 'StopCapture'")
             .Contains("Godot: Short before 'StopCapture'")
+
             // and verify before and after capture messages are not caught
             .NotContains("Console: Do not be captured")
             .NotContains("Godot: Do not be captured");

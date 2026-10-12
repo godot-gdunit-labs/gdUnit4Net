@@ -1,4 +1,4 @@
-﻿namespace Examples.Test.Api.CSharpTypes;
+namespace Examples.Test.Api.CSharpTypes;
 
 using System.Collections;
 using System.Collections.Immutable;

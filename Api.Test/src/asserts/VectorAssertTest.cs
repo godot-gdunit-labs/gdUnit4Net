@@ -4,37 +4,39 @@ namespace GdUnit4.Tests.Asserts;
 
 using System.Collections.Generic;
 using System.Globalization;
-
 using GdUnit4.Asserts;
 using GdUnit4.Core.Execution.Exceptions;
-
 using Godot;
-
+using static Assertions;
 using SystemVector2 = System.Numerics.Vector2;
 using SystemVector3 = System.Numerics.Vector3;
 using SystemVector4 = System.Numerics.Vector4;
-
-using static Assertions;
 
 [TestSuite]
 public class VectorAssertTest
 {
     private static IEnumerable<object[]> GodotVectorApproximateDataPoints =>
     [
+
         // Vector2
         [new Vector2(0, 1), new Vector2(0.04f, 0.04f)], [new Vector2(3, 3), new Vector2(0.04f, 0.04f)],
         [new Vector2(-3, -3), new Vector2(0.04f, 0.04f)],
+
         // Vector2I
         [new Vector2I(1, 1), new Vector2I(1, 1)], [new Vector2I(3, 3), new Vector2I(1, 1)], [new Vector2I(-3, -3), new Vector2I(1, 1)],
+
         // Vector3
         [new Vector3(0, 1, 0), new Vector3(0.04f, 0.04f, 0.04f)], [new Vector3(3, 3, 3), new Vector3(0.04f, 0.04f, 0.04f)],
         [new Vector3(-3, -3, -3), new Vector3(0.04f, 0.04f, 0.04f)],
+
         // Vector3I
         [new Vector3I(1, 1, 1), new Vector3I(1, 1, 1)], [new Vector3I(3, 3, 3), new Vector3I(1, 1, 1)],
         [new Vector3I(-3, -3, -3), new Vector3I(1, 1, 1)],
+
         // Vector4
         [new Vector4(0, 1, 0, 0), new Vector4(0.04f, 0.04f, 0.04f, 0.04f)], [new Vector4(3, 3, 3, 3), new Vector4(0.04f, 0.04f, 0.04f, 0.04f)],
         [new Vector4(-3, -3, -3, -3), new Vector4(0.04f, 0.04f, 0.04f, 0.04f)],
+
         // Vector4I
         [new Vector4I(0, 1, 0, 0), new Vector4I(1, 1, 1, 1)], [new Vector4I(3, 3, 3, 3), new Vector4I(1, 1, 1, 1)],
         [new Vector4I(-3, -3, -3, -3), new Vector4I(1, 1, 1, 1)]
@@ -42,12 +44,15 @@ public class VectorAssertTest
 
     private static IEnumerable<object[]> SystemVectorApproximateDataPoints =>
     [
+
         // System Vector2
         [new SystemVector2(0, 1), new SystemVector2(0.04f, 0.04f)], [new SystemVector2(3, 3), new SystemVector2(0.04f, 0.04f)],
         [new SystemVector2(-3, -3), new SystemVector2(0.04f, 0.04f)],
+
         // System Vector3
         [new SystemVector3(0, 1, 0), new SystemVector3(0.04f, 0.04f, 0.04f)], [new SystemVector3(3, 3, 3), new SystemVector3(0.04f, 0.04f, 0.04f)],
         [new SystemVector3(-3, -3, -3), new SystemVector3(0.04f, 0.04f, 0.04f)],
+
         // System Vector4
         [new SystemVector4(0, 1, 0, 0), new SystemVector4(0.04f, 0.04f, 0.04f, 0.04f)],
         [new SystemVector4(3, 3, 3, 3), new SystemVector4(0.04f, 0.04f, 0.04f, 0.04f)],
@@ -56,9 +61,9 @@ public class VectorAssertTest
 
     [BeforeTest]
     public void Setup() =>
+
         // we need for testing assert failure messages to run on 'en-US' locale
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US", true);
-
 
     [TestCase]
     [RequireGodotRuntime]
@@ -78,6 +83,7 @@ public class VectorAssertTest
     {
         AssertThat(Vector2.Zero).IsBetween(Vector2.Zero, Vector2.One);
         AssertThat(Vector2.One).IsBetween(Vector2.Zero, Vector2.One);
+
         // false test
         AssertThrown(() => AssertThat(new Vector2(0, -.1f)).IsBetween(Vector2.Zero, Vector2.One))
             .HasFileLineNumber(ExpectedLineNumber())
@@ -103,6 +109,7 @@ public class VectorAssertTest
         AssertThat(Vector2.One).IsEqual(Vector2.One);
         AssertThat(Vector2.Inf).IsEqual(Vector2.Inf);
         AssertThat(new Vector2(1.2f, 1.000001f)).IsEqual(new Vector2(1.2f, 1.000001f));
+
         // false test
         AssertThrown(() => AssertThat(Vector2.One).IsEqual(new Vector2(1.2f, 1.000001f)))
             .HasFileLineNumber(ExpectedLineNumber())
@@ -119,6 +126,7 @@ public class VectorAssertTest
         AssertThat(Vector2.One).IsNotEqual(Vector2.Inf);
         AssertThat(Vector2.Inf).IsNotEqual(Vector2.One);
         AssertThat(new Vector2(1.2f, 1.000001f)).IsNotEqual(new Vector2(1.2f, 1.000002f));
+
         // false test
         AssertThrown(() => AssertThat(new Vector2(1.2f, 1.000001f)).IsNotEqual(new Vector2(1.2f, 1.000001f)))
             .HasFileLineNumber(ExpectedLineNumber())
@@ -136,8 +144,8 @@ public class VectorAssertTest
         AssertThat(vector + epsilon).IsEqualApprox(vector, epsilon);
         AssertThat(vector - epsilon).IsEqualApprox(vector, epsilon);
 
-        var lessValue = vector - epsilon * 2;
-        var greaterValue = vector + epsilon * 2;
+        var lessValue = vector - (epsilon * 2);
+        var greaterValue = vector + (epsilon * 2);
         var min = vector - epsilon;
         var max = vector + epsilon;
         AssertThrown(() => AssertThat(lessValue).IsEqualApprox(vector, epsilon))
@@ -167,8 +175,8 @@ public class VectorAssertTest
         AssertThat(vector + epsilon).IsEqualApprox(vector, epsilon);
         AssertThat(vector - epsilon).IsEqualApprox(vector, epsilon);
 
-        var lessValue = vector - epsilon * 2;
-        var greaterValue = vector + epsilon * 2;
+        var lessValue = vector - (epsilon * 2);
+        var greaterValue = vector + (epsilon * 2);
         var min = vector - epsilon;
         var max = vector + epsilon;
         AssertThrown(() => AssertThat(lessValue).IsEqualApprox(vector, epsilon))
@@ -297,6 +305,7 @@ public class VectorAssertTest
     public void IsNotBetween()
     {
         AssertThat(new Vector2(1f, 1.0002f)).IsNotBetween(Vector2.Zero, Vector2.One);
+
         // false test
         AssertThrown(() => AssertThat(Vector2.One).IsNotBetween(Vector2.Zero, Vector2.One))
             .HasFileLineNumber(ExpectedLineNumber())
@@ -324,7 +333,7 @@ public class VectorAssertTest
                 .AppendFailureMessage("custom data")
                 .IsEqual(Vector2.Zero))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(323)
+            .HasFileLineNumber(332)
             .HasMessage("""
                         Expecting be equal:
                             '(0, 0)' but is '(1, 1)'

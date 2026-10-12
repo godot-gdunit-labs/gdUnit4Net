@@ -24,7 +24,7 @@ public class AssertionsTest
 {
     [TestCase]
     public void DoAssertNotYetImplemented()
-        => AssertThrown(() => AssertNotYetImplemented())
+        => AssertThrown(AssertNotYetImplemented)
             .HasFileLineNumber(27)
             .HasMessage("Test not yet implemented!");
 
@@ -40,7 +40,6 @@ public class AssertionsTest
         AssertObject(AssertThat(Variant.From(1.5d))).IsInstanceOf<INumberAssert<float>>();
     }
 
-
     [TestCase]
     public void AssertThatString()
     {
@@ -53,7 +52,7 @@ public class AssertionsTest
     {
         AssertObject(AssertThat(true)).IsInstanceOf<IBoolAssert>();
         AssertObject(AssertThat(false)).IsInstanceOf<IBoolAssert>();
-        AssertObject(AssertThat(new bool())).IsInstanceOf<IBoolAssert>();
+        AssertObject(AssertThat(default(bool))).IsInstanceOf<IBoolAssert>();
     }
 
     [TestCase]
@@ -107,6 +106,7 @@ public class AssertionsTest
         // without overrides ToString
         var obj7 = new ClassWithoutToString("Custom");
         AssertThat(AssertFailures.AsObjectId(obj7)).IsEqual($"<GdUnit4.Tests.Asserts.AssertionsTest+ClassWithoutToString> (objId: {obj7.GetHashCode()})");
+
         // with overrides ToString
         var obj8 = new ClassWithToString("Custom");
         AssertThat(AssertFailures.AsObjectId(obj8)).IsEqual($"Custom (objId: {obj8.GetHashCode()})");
@@ -143,7 +143,6 @@ public class AssertionsTest
         Console.WriteLine("Console.WriteLine: first message");
         GD.PrintS("Godot:PrintS: first message");
 
-
         Console.Write("Console.Write: message");
         Console.WriteLine("Console.Write: message");
 
@@ -164,7 +163,6 @@ public class AssertionsTest
         GD.PrintS("Godot:PrintS last message");
     }
 
-
     private static IStringAssert AssertTrimmedExceptionStackTrace(IExceptionAssert? exceptionAssert)
     {
         var stackTrace = (exceptionAssert as ExceptionAssert<Exception>)?.GetExceptionStackTrace()!;
@@ -174,17 +172,15 @@ public class AssertionsTest
 
     private class ClassWithoutToString
     {
-        public ClassWithoutToString(string value)
-        {
-            Value = value;
-        }
+        public ClassWithoutToString(string value) => Value = value;
 
         protected string Value { get; }
     }
 
     private sealed class ClassWithToString : ClassWithoutToString
     {
-        public ClassWithToString(string value) : base(value)
+        public ClassWithToString(string value)
+            : base(value)
         {
         }
 

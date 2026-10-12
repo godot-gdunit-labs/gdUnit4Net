@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core.Runners;
+namespace GdUnit4.Tests.Core.Runners;
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +14,7 @@ using Moq;
 using static Assertions;
 
 /// <summary>
-///     Tests for GodotRuntimeTestRunner's InstallTestRunnerClasses method
+///     Tests for GodotRuntimeTestRunner's InstallTestRunnerClasses method.
 /// </summary>
 [TestSuite]
 public class GodotRuntimeTestRunnerTest
@@ -24,11 +24,11 @@ public class GodotRuntimeTestRunnerTest
     private string? TestTempDirectory { get; set; }
 
     public required string MockGodotBinPath { get; set; }
+
     public required Mock<IDebuggerFramework> DebuggerFrameworkMock { get; set; }
 
-
     /// <summary>
-    ///     Set up test environment and create mocks
+    ///     Set up test environment and create mocks.
     /// </summary>
     [Before]
     public void Before()
@@ -41,6 +41,7 @@ public class GodotRuntimeTestRunnerTest
         // Windows batch script
         MockGodotBinPath = Path.Combine(TestTempDirectory, Environment.OSVersion.Platform == PlatformID.Win32NT
             ? "mock_godot.bat"
+
             // Unix shell script
             : "mock_godot.sh");
 
@@ -53,7 +54,7 @@ public class GodotRuntimeTestRunnerTest
         new TestEngineSettings { CompileProcessTimeout = compileTimeout });
 
     /// <summary>
-    ///     Clean up after tests
+    ///     Clean up after tests.
     /// </summary>
     [After]
     public void After()
@@ -77,7 +78,7 @@ public class GodotRuntimeTestRunnerTest
     public void AfterTest() => DebuggerFrameworkMock.Reset();
 
     /// <summary>
-    ///     Test successful execution of InstallTestRunnerClasses
+    ///     Test successful execution of InstallTestRunnerClasses.
     /// </summary>
     [TestCase]
     public void ReCompileGodotProject()
@@ -103,7 +104,7 @@ public class GodotRuntimeTestRunnerTest
     }
 
     /// <summary>
-    ///     Test a process that takes nearly the full timeout but still completes successfully
+    ///     Test a process that takes nearly the full timeout but still completes successfully.
     /// </summary>
     [TestCase]
     public void ReCompileGodotProjectNearTimeout()
@@ -133,7 +134,7 @@ public class GodotRuntimeTestRunnerTest
     }
 
     /// <summary>
-    ///     Test timeout scenario in InstallTestRunnerClasses
+    ///     Test timeout scenario in InstallTestRunnerClasses.
     /// </summary>
     [TestCase]
     public void ReCompileGodotProjectTimeout()
@@ -180,7 +181,7 @@ public class GodotRuntimeTestRunnerTest
     }
 
     /// <summary>
-    ///     Test compilation failure scenario
+    ///     Test compilation failure scenario.
     /// </summary>
     [TestCase]
     public void TestInstallTestRunnerCompilationFailure()
@@ -260,6 +261,7 @@ public class GodotRuntimeTestRunnerTest
             AssertThat(result).OverrideFailureMessage("InstallTestRunnerClasses should fail").IsFalse();
 
             VerifyLoggerInfo(capture, "Installing GdUnit4TestRunner at");
+
             // Verify error messages
             VerifyLoggerError(capture, "`dotnet build` did not complete within the configured timeout of 1000ms.");
             var dotnetExitCode = Environment.OSVersion.Platform == PlatformID.Win32NT ? -1 : 137;
@@ -293,12 +295,13 @@ public class GodotRuntimeTestRunnerTest
     }
 
     /// <summary>
-    ///     Create a script that succeeds quickly
+    ///     Create a script that succeeds quickly.
     /// </summary>
     private void CreateSuccessScript()
     {
         var content = Environment.OSVersion.Platform == PlatformID.Win32NT
             ?
+
             // Windows batch file that succeeds immediately
             """
             @echo off
@@ -310,6 +313,7 @@ public class GodotRuntimeTestRunnerTest
             exit 0
             """
             :
+
             // Unix shell script that succeeds immediately
             """
             #!/bin/bash
@@ -326,12 +330,13 @@ public class GodotRuntimeTestRunnerTest
     }
 
     /// <summary>
-    ///     Create a script that takes nearly the full timeout (4 seconds) but still completes
+    ///     Create a script that takes nearly the full timeout (4 seconds) but still completes.
     /// </summary>
     private void CreateNearTimeoutScript()
     {
         var content = Environment.OSVersion.Platform == PlatformID.Win32NT
             ?
+
             // Windows batch file that sleeps for 4 seconds
             """
             @echo off
@@ -345,6 +350,7 @@ public class GodotRuntimeTestRunnerTest
             exit 0
             """
             :
+
             // Unix shell script that sleeps for 4 seconds
             """
             #!/bin/bash
@@ -363,12 +369,13 @@ public class GodotRuntimeTestRunnerTest
     }
 
     /// <summary>
-    ///     Create a script that times out
+    ///     Create a script that times out.
     /// </summary>
     private void CreateTimeoutScript()
     {
         var content = Environment.OSVersion.Platform == PlatformID.Win32NT
             ?
+
             // Windows batch file that sleeps longer than our timeout
             """
             @echo off
@@ -380,6 +387,7 @@ public class GodotRuntimeTestRunnerTest
             exit 0
             """
             :
+
             // Unix shell script that sleeps longer than our timeout
             """
             #!/bin/bash
@@ -395,46 +403,17 @@ public class GodotRuntimeTestRunnerTest
         SetAsExecutable(MockGodotBinPath);
     }
 
-    /// <summary>
-    ///     Create a script that fails with an error code
-    /// </summary>
-    private void CreateFailureScript()
-    {
-        var content = Environment.OSVersion.Platform == PlatformID.Win32NT
-            ?
-            // Windows batch file that exits with error code 1
-            """
-            echo off
-            echo Godot Engine v4 .1.stable.mono - https: //godotengine.org
-            echo Godot Engine v4 .1.stable.mono
-            echo Running...
-            echo
-            echo ERROR: Compilation failed
-            exit 1
-            """
-            :
-            // Unix shell script that exits with error code 1
-            """
-            #!/bin/bash
-            echo 'Godot Engine v4.1.stable.mono - https://godotengine.org'
-            echo 'Godot Engine v4.1.stable.mono'
-            echo 'Running...'
-            echo 'ERROR: Compilation failed'
-            exit 1
-            """;
-
-        File.WriteAllText(MockGodotBinPath, content);
-        SetAsExecutable(MockGodotBinPath);
-    }
-
-    [SuppressMessage("Interoperability", "CA1416")]
+    [SuppressMessage("Interoperability", "CA1416", Justification = "Guarded by the platform check, runs only on Unix")]
     private static void SetAsExecutable(string filePath)
     {
         if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-            File.SetUnixFileMode(filePath,
+        {
+            File.SetUnixFileMode(
+                filePath,
                 UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
                 UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
                 UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
     }
 
     private static void VerifyLoggerInfo(LogCapture capture, string expectedText)

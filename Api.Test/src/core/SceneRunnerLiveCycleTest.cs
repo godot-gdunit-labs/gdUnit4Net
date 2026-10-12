@@ -49,6 +49,7 @@ public sealed class SceneRunnerLiveCycleTest
 
         // verify scene is still valid
         AssertThat(sceneRunner.Scene()).IsNotNull();
+
         // verify it fails when try to load a scene using null argument
 #pragma warning disable CS8625, CS8600 // Converting null literal or possible null value to non-nullable type.
         AssertThrown(() => ISceneRunner.Load((Node)null, true))
@@ -64,6 +65,7 @@ public sealed class SceneRunnerLiveCycleTest
 
         var currentScene = runner.Scene();
         var nodePath = currentScene?.GetPath();
+
         // check scene is loaded and added to the root node
         AssertThat(GodotObject.IsInstanceValid(currentScene)).IsTrue();
         AssertThat(tree.Root.GetNodeOrNull(nodePath)).IsNotNull();
@@ -72,6 +74,7 @@ public sealed class SceneRunnerLiveCycleTest
         runner.Dispose();
 
         await ISceneRunner.SyncProcessFrame;
+
         // check scene is freed and removed from the root node
         AssertThat(GodotObject.IsInstanceValid(currentScene)).IsFalse();
         AssertThat(tree.Root.GetNodeOrNull(nodePath)).IsNull();

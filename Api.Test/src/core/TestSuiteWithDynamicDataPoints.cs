@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core;
+namespace GdUnit4.Tests.Core;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,22 +8,26 @@ using GdUnit4.Core.Data;
 using static Assertions;
 
 /// <summary>
-///     The test are similar to https://github.com/microsoft/testfx/blob/cdc374674477f23502f58b5be503ed609ba4057c/docs/RFCs/006-DynamicData-Attribute.md
+///     The test are similar to https://github.com/microsoft/testfx/blob/cdc374674477f23502f58b5be503ed609ba4057c/docs/RFCs/006-DynamicData-Attribute.md.
 /// </summary>
 [TestSuite]
 public class TestSuiteWithDynamicDataPoints
 {
     public static IEnumerable<object[]> ArrayDataPointProperty => [[1, 2, 3], [4, 5, 9]];
+
     public static IEnumerable<int> SingleDataPointProperty => [1, 2, 3];
+
     public static IEnumerable<object[]> ArrayDataPointMethod() => [[1, 2, 3], [4, 5, 9]];
+
     public static IEnumerable<object[]> PublicTestDataFactory(int factor) => [[1 * factor, 1 * factor], [2 * factor, 2 * factor]];
 
 #pragma warning disable CA1859 // #warning directive
     private static IEnumerable<object[]> PrivateArrayDataPointProperty => [[1, 2, 3], [4, 5, 9]];
+
     private static IEnumerable<object[]> PrivateArrayDataPointMethod() => [[1, 2, 3], [4, 5, 9]];
+
     private static IEnumerable<object[]> PrivateTestDataFactory(int factor) => [[1 * factor, 1 * factor], [2 * factor, 2 * factor]];
 #pragma warning restore CS1030 // #warning directive
-
 
     internal static IEnumerable<object[]> YieldedDataPointMethod()
     {

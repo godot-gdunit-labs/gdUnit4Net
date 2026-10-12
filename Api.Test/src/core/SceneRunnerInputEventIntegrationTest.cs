@@ -1,3 +1,5 @@
+// The expected input events document the spy verifications that are not implemented yet
+#pragma warning disable IDE0059
 namespace GdUnit4.Tests.Core;
 
 using System;
@@ -31,29 +33,33 @@ public sealed class SceneRunnerInputEventIntegrationTest
         sceneRunner = ISceneRunner.Load("res://src/core/resources/scenes/TestSceneCSharp.tscn", true);
         AssertInitialMouseState();
         AssertInitialKeyState();
+
         // we need to maximize the view, a minimized view cannot handle mouse events see (https://github.com/godotengine/godot/issues/73461)
         sceneRunner.MaximizeView();
     }
 
     private void AssertInitialMouseState()
     {
-        foreach (MouseButton button in Enum.GetValues(typeof(MouseButton)))
+        foreach (var button in Enum.GetValues<MouseButton>())
         {
             // MouseButton.None is not a valid button; Godot 4.5+ throws an error when passed to mouse_button_to_mask
-            if (button == MouseButton.None) continue;
+            if (button == MouseButton.None)
+                continue;
             AssertThat(Input.IsMouseButtonPressed(button))
                 .OverrideFailureMessage($"Expect MouseButton {button} is not 'IsMouseButtonPressed'")
                 .IsFalse();
         }
+
         AssertThat((long)Input.GetMouseButtonMask()).IsEqual(0L);
     }
 
     private void AssertInitialKeyState()
     {
-        foreach (Key key in Enum.GetValues(typeof(Key)))
+        foreach (var key in Enum.GetValues<Key>())
         {
             // Key.None is not a physical key; querying it triggers a Godot error
-            if (key == Key.None) continue;
+            if (key == Key.None)
+                continue;
             AssertThat(Input.IsKeyPressed(key))
                 .OverrideFailureMessage($"Expect key {key} is not 'IsKeyPressed'")
                 .IsFalse();
@@ -70,12 +76,13 @@ public sealed class SceneRunnerInputEventIntegrationTest
     {
         var scene = ResourceLoader.Load<PackedScene>("res://src/core/resources/scenes/TestSceneCSharp.tscn").Instantiate();
         var sceneMock = new Mock<TestScene> { CallBase = true };
-        //var sceneSpy = sceneMock.Object;
 
+        // var sceneSpy = sceneMock.Object;
         var sceneTree = (SceneTree)Engine.GetMainLoop();
-        //sceneTree.Root.AddChild(sceneSpy);
 
-        //sceneSpy.StartColorCycle();
+        // sceneTree.Root.AddChild(sceneSpy);
+
+        // sceneSpy.StartColorCycle();
         sceneMock.Verify(m => m.ColorCycle(), Times.Once);
         scene.Free();
     }
@@ -99,6 +106,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
     {
         // move mouse out of button range to avoid scene button interactions
         sceneRunner.SetMousePos(new Vector2(400, 400));
+
         // simulate mouse buttons and key press but we never released it
         sceneRunner.SimulateMouseButtonPress(MouseButton.Left);
         sceneRunner.SimulateMouseButtonPress(MouseButton.Right);
@@ -163,9 +171,11 @@ public sealed class SceneRunnerInputEventIntegrationTest
 
         // other actions are not pressed
         foreach (var action in new[] { "ui_accept", "ui_select", "ui_cancel" })
+        {
             AssertThat(Input.IsActionPressed(action))
                 .OverrideFailureMessage($"Expect the action '{action}' is NOT pressed")
                 .IsFalse();
+        }
     }
 
     [TestCase]
@@ -183,9 +193,11 @@ public sealed class SceneRunnerInputEventIntegrationTest
             AssertThat(Input.IsActionPressed(action))
                 .OverrideFailureMessage($"Expect the action '{action}' is pressed")
                 .IsTrue();
+
             // test
             sceneRunner.SimulateActionRelease(action);
             await ISceneRunner.SyncProcessFrame;
+
             // validate
             AssertThat(Input.IsActionPressed(action))
                 .OverrideFailureMessage($"Expect the action '{action}' is released")
@@ -209,7 +221,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
                 PhysicalKeycode = key,
                 Pressed = true
             };
-            //Verify(_scene_spy, 1)._input(eventKey);
+
+            // Verify(_scene_spy, 1)._input(eventKey);
             AssertThat(Input.IsKeyPressed(key)).IsTrue();
         }
 
@@ -240,7 +253,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
     [TestCase]
     public async Task SimulateManyKeysPress()
     {
-        //press and hold keys W and Z
+        // press and hold keys W and Z
         sceneRunner
             .SimulateKeyPress(Key.W)
             .SimulateKeyPress(Key.Z);
@@ -266,6 +279,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
     {
         // save current global mouse pos
         var gmp = sceneRunner.GetGlobalMousePosition();
+
         // set mouse to pos 100, 100
         sceneRunner.SetMousePos(new Vector2(100, 100));
         await ISceneRunner.SyncProcessFrame;
@@ -277,7 +291,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             Position = new Vector2(100, 100),
             GlobalPosition = gmp
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
 
         // set mouse to pos 800, 400
         gmp = sceneRunner.GetGlobalMousePosition();
@@ -291,7 +306,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             Position = new Vector2(800, 400),
             GlobalPosition = gmp
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
 
         // and again back to 100,100
         gmp = sceneRunner.GetGlobalMousePosition();
@@ -305,7 +321,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             Position = new Vector2(100, 100),
             GlobalPosition = gmp
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
     }
 
     [TestCase]
@@ -320,9 +337,9 @@ public sealed class SceneRunnerInputEventIntegrationTest
 
         foreach (var modifier in modifiers)
         {
-            isAlt = isAlt || Key.Alt == modifier;
-            isControl = isControl || Key.Ctrl == modifier;
-            isShift = isShift || Key.Shift == modifier;
+            isAlt = isAlt || modifier == Key.Alt;
+            isControl = isControl || modifier == Key.Ctrl;
+            isShift = isShift || modifier == Key.Shift;
 
             foreach (var mouse_button in buttons)
             {
@@ -345,7 +362,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
                     ButtonIndex = mouse_button,
                     ButtonMask = SceneRunner.ToMouseButtonMask(mouse_button)
                 };
-                //verify(_scene_spy, 1)._input(mouseEvent)
+
+                // verify(_scene_spy, 1)._input(mouseEvent)
                 AssertThat(ActualMousePos()).IsEqual(Vector2.Zero);
                 AssertThat(Input.IsMouseButtonPressed(mouse_button)).IsTrue();
                 AssertThat(Input.GetMouseButtonMask()).IsEqual(mouseEvent.ButtonMask);
@@ -374,7 +392,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             GlobalPosition = gmp,
             Relative = new Vector2(400, 100) - new Vector2(10, 10)
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
 
         // move mouse to next pos
         gmp = sceneRunner.GetGlobalMousePosition();
@@ -388,7 +407,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             GlobalPosition = gmp,
             Relative = new Vector2(55, 42) - new Vector2(400, 100)
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
     }
 
     [TestCase(Timeout = 2000)]
@@ -397,11 +417,13 @@ public sealed class SceneRunnerInputEventIntegrationTest
         var sourcePosition = new Vector2(10, 10);
         sceneRunner.SimulateMouseMove(sourcePosition);
         await ISceneRunner.SyncProcessFrame;
+
         // initial pos
         AssertThat(ActualMousePos()).IsEqual(sourcePosition);
 
         // now move it from source position with offset, in 1s
         await sceneRunner.SimulateMouseMoveRelative(new Vector2(900, 400));
+
         // check relative position is reached
         AssertThat(ActualMousePos()).IsEqual(new Vector2(910, 410));
 
@@ -416,11 +438,13 @@ public sealed class SceneRunnerInputEventIntegrationTest
         var sourcePosition = new Vector2(10, 10);
         sceneRunner.SimulateMouseMove(sourcePosition);
         await ISceneRunner.SyncProcessFrame;
+
         // initial pos
         AssertThat(ActualMousePos()).IsEqual(sourcePosition);
 
         // now move it to a new position, in 1 s
         await sceneRunner.SimulateMouseMoveAbsolute(new Vector2(900, 400));
+
         // check relative position is reached
         AssertThat(ActualMousePos()).IsEqual(new Vector2(900, 400));
 
@@ -446,7 +470,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Left,
             ButtonMask = MouseButtonMask.Left
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Left)).IsTrue();
         AssertThat(Input.GetMouseButtonMask()).IsEqual(MouseButtonMask.Left);
     }
@@ -468,7 +493,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Left,
             ButtonMask = MouseButtonMask.Left
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Left)).IsTrue();
         AssertThat(Input.GetMouseButtonMask()).IsEqual(MouseButtonMask.Left);
     }
@@ -490,7 +516,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Right,
             ButtonMask = MouseButtonMask.Right
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Right)).IsTrue();
         AssertThat(Input.GetMouseButtonMask()).IsEqual(MouseButtonMask.Right);
     }
@@ -512,7 +539,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Right,
             ButtonMask = MouseButtonMask.Right
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Right)).IsTrue();
         AssertThat(Input.GetMouseButtonMask()).IsEqual(MouseButtonMask.Right);
     }
@@ -526,7 +554,6 @@ public sealed class SceneRunnerInputEventIntegrationTest
         sceneRunner.SimulateMouseButtonPress(MouseButton.Right);
         await ISceneRunner.SyncProcessFrame;
 
-
         // results in two events, first is left mouse button
         var mouseEvent = new InputEventMouseButton
         {
@@ -536,7 +563,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Left,
             ButtonMask = MouseButtonMask.Left
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
 
         // second is left+right and combined mask
         mouseEvent = new InputEventMouseButton
@@ -547,7 +575,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Right,
             ButtonMask = MouseButtonMask.Left | MouseButtonMask.Right
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Left)).IsTrue();
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Right)).IsTrue();
         AssertThat(Input.GetMouseButtonMask()).IsEqual(MouseButtonMask.Left | MouseButtonMask.Right);
@@ -572,7 +601,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Left,
             ButtonMask = MouseButtonMask.Left
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
 
         // second is left+right and combined mask
         mouseEvent = new InputEventMouseButton
@@ -583,7 +613,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Right,
             ButtonMask = MouseButtonMask.Left | MouseButtonMask.Right
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Left)).IsTrue();
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Right)).IsTrue();
         AssertThat(Input.GetMouseButtonMask()).IsEqual(MouseButtonMask.Left | MouseButtonMask.Right);
@@ -592,6 +623,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
         gmp = sceneRunner.GetGlobalMousePosition();
         sceneRunner.SimulateMouseButtonPressed(MouseButton.Right);
         await ISceneRunner.SyncProcessFrame;
+
         // will result in right button press false but stay with mask for left pressed
         mouseEvent = new InputEventMouseButton
         {
@@ -601,7 +633,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Right,
             ButtonMask = MouseButtonMask.Left
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Left)).IsTrue();
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Right)).IsFalse();
         AssertThat(Input.GetMouseButtonMask()).IsEqual(MouseButtonMask.Left);
@@ -610,6 +643,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
         gmp = sceneRunner.GetGlobalMousePosition();
         sceneRunner.SimulateMouseButtonPressed(MouseButton.Left);
         await ISceneRunner.SyncProcessFrame;
+
         // will result in right button press false but stay with mask for left pressed
         mouseEvent = new InputEventMouseButton
         {
@@ -619,7 +653,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
             ButtonIndex = MouseButton.Left,
             ButtonMask = 0
         };
-        //verify(_scene_spy, 1)._input(mouseEvent)
+
+        // verify(_scene_spy, 1)._input(mouseEvent)
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Left)).IsFalse();
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Right)).IsFalse();
         AssertThat(Input.GetMouseButtonMask()).IsEqual((MouseButtonMask)0L);
@@ -645,9 +680,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
                 ButtonIndex = mouse_button,
                 ButtonMask = SceneRunner.ToMouseButtonMask(mouse_button)
             };
-            //verify(_scene_spy, 1)._input(mouseEvent)
 
-
+            // verify(_scene_spy, 1)._input(mouseEvent)
             mouseEvent = new InputEventMouseButton
             {
                 Position = Vector2.Zero,
@@ -656,11 +690,13 @@ public sealed class SceneRunnerInputEventIntegrationTest
                 ButtonIndex = mouse_button,
                 ButtonMask = 0L
             };
-            //verify(_scene_spy, 1)._input(mouseEvent)
+
+            // verify(_scene_spy, 1)._input(mouseEvent)
             AssertThat(Input.IsMouseButtonPressed(mouse_button)).IsFalse();
             AssertThat(Input.GetMouseButtonMask()).IsEqual((MouseButtonMask)0L);
-            //verify(_scene_spy, 2)._input(any_class(InputEventMouseButton))
-            //reset(_scene_spy)
+
+            // verify(_scene_spy, 2)._input(any_class(InputEventMouseButton))
+            // reset(_scene_spy)
         }
     }
 
@@ -685,8 +721,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
                 ButtonIndex = mouse_button,
                 ButtonMask = SceneRunner.ToMouseButtonMask(mouse_button)
             };
-            //verify(_scene_spy, 1)._input(mouseEvent)
 
+            // verify(_scene_spy, 1)._input(mouseEvent)
             mouseEvent = new InputEventMouseButton
             {
                 Position = Vector2.Zero,
@@ -696,12 +732,13 @@ public sealed class SceneRunnerInputEventIntegrationTest
                 ButtonIndex = mouse_button,
                 ButtonMask = 0L
             };
-            //verify(_scene_spy, 1)._input(mouseEvent)
 
+            // verify(_scene_spy, 1)._input(mouseEvent)
             AssertThat(Input.IsMouseButtonPressed(mouse_button)).IsFalse();
             AssertThat(Input.GetMouseButtonMask()).IsEqual((MouseButtonMask)0L);
-            //verify(_scene_spy, 2)._input(any_class(InputEventMouseButton))
-            //reset(_scene_spy)
+
+            // verify(_scene_spy, 2)._input(any_class(InputEventMouseButton))
+            // reset(_scene_spy)
         }
     }
 
@@ -712,6 +749,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
         foreach (var mouse_button in buttons)
         {
             var gmp = sceneRunner.GetGlobalMousePosition();
+
             // simulate mouse button press and release
             sceneRunner.SimulateMouseButtonPress(mouse_button);
             await ISceneRunner.SyncProcessFrame;
@@ -724,7 +762,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
                 ButtonIndex = mouse_button,
                 ButtonMask = SceneRunner.ToMouseButtonMask(mouse_button)
             };
-            //verify(_scene_spy, 1)._input(mouseEvent)
+
+            // verify(_scene_spy, 1)._input(mouseEvent)
             AssertThat(Input.IsMouseButtonPressed(mouse_button)).IsTrue();
             AssertThat(Input.GetMouseButtonMask()).IsEqual(mouseEvent.ButtonMask);
 
@@ -741,7 +780,8 @@ public sealed class SceneRunnerInputEventIntegrationTest
                 ButtonIndex = mouse_button,
                 ButtonMask = 0L
             };
-            //verify(_scene_spy, 1)._input(mouseEvent)
+
+            // verify(_scene_spy, 1)._input(mouseEvent)
             AssertThat(Input.IsMouseButtonPressed(mouse_button)).IsFalse();
             AssertThat(Input.GetMouseButtonMask()).IsEqual(mouseEvent.ButtonMask);
         }
@@ -778,8 +818,9 @@ public sealed class SceneRunnerInputEventIntegrationTest
     public async Task MouseDragAndDrop()
     {
         var dragAndDropSceneRunner = ISceneRunner.Load("res://src/core/resources/scenes/DragAndDrop/DragAndDropTestScene.tscn", true);
-        //var spy_scene = spy("res://addons/gdUnit4/test/core/resources/scenes/drag_and_drop/DragAndDropTestScene.tscn")
-        //var runner := scene_runner(spy_scene)
+
+        // var spy_scene = spy("res://addons/gdUnit4/test/core/resources/scenes/drag_and_drop/DragAndDropTestScene.tscn")
+        // var runner := scene_runner(spy_scene)
 
         // ReSharper disable once NullableWarningSuppressionIsUsed
         var scene = dragAndDropSceneRunner.Scene()!;
@@ -787,6 +828,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
         var slot_right = scene.GetNode<TextureRect>(new NodePath("/root/DragAndDropScene/right/TextureRect"));
 
         var save_mouse_pos = dragAndDropSceneRunner.GetMousePosition();
+
         // set initial mouse pos over the left slot
         var mouse_pos = slot_left.GlobalPosition + new Vector2(10, 10);
 
@@ -799,14 +841,14 @@ public sealed class SceneRunnerInputEventIntegrationTest
             Position = mouse_pos,
             GlobalPosition = save_mouse_pos
         };
-        //verify(spy_scene, 1)._gui_input(mouseEvent)
 
+        // verify(spy_scene, 1)._gui_input(mouseEvent)
         dragAndDropSceneRunner.SimulateMouseButtonPress(MouseButton.Left);
         await ISceneRunner.SyncProcessFrame;
 
         AssertThat(Input.IsMouseButtonPressed(MouseButton.Left)).IsTrue();
 
-        //# start drag&drop to left panel
+        // # start drag&drop to left panel
         foreach (var i in Enumerable.Range(0, 20))
         {
             dragAndDropSceneRunner.SimulateMouseMove(mouse_pos + new Vector2(i * .5f * i, 0));

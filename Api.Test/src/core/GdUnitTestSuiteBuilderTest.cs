@@ -32,6 +32,7 @@ public class GdUnitTestSuiteBuilderTest
     {
         AssertObject(GdUnitTestSuiteBuilder.ParseType("src/core/resources/testsuites/mono/spaceA/TestSuite.cs")).IsEqual(typeof(TestSuite));
         AssertObject(GdUnitTestSuiteBuilder.ParseType("src/core/resources/testsuites/mono/spaceB/TestSuite.cs")).IsEqual(typeof(SpaceB.TestSuite));
+
         // source file doesn't exist
         AssertObject(GdUnitTestSuiteBuilder.ParseType("src/core/resources/testsuites/mono/spaceC/TestSuite.cs")).IsNull();
     }
@@ -148,7 +149,6 @@ public class GdUnitTestSuiteBuilderTest
         AssertThat((int)dictionary["line"]).IsEqual(16);
     }
 
-
     [TestCase]
     [RequireGodotRuntime]
     public void CreateTestSuiteTestCaseAlreadyExists()
@@ -170,6 +170,7 @@ public class GdUnitTestSuiteBuilderTest
         dictionary = GdUnitTestSuiteBuilder.Build(sourceClass, 24, testSuite);
         AssertThat(dictionary["path"]).IsEqual(testSuite);
         AssertThat((int)dictionary["line"]).IsEqual(16);
+
         // we expect that the contents of the test-suite will not be changed
         AssertThat(File.ReadAllText(testSuite, Encoding.UTF8)).IsEqual(expected);
     }

@@ -5,8 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
-using core.resources.scenes;
-
 using GdUnit4.Asserts;
 using GdUnit4.Core.Execution.Exceptions;
 
@@ -26,6 +24,7 @@ public sealed class SceneRunnerCSharpSceneTest
 
     [Before]
     public void Setup() =>
+
         // use a dedicated FPS because we calculate frames by time
         Engine.PhysicsTicksPerSecond = 60;
 
@@ -81,7 +80,6 @@ public sealed class SceneRunnerCSharpSceneTest
             .IsNotNull();
     }
 
-
     [TestCase]
     public void InitializeSceneBeforeAddingToSceneTree()
     {
@@ -109,6 +107,7 @@ public sealed class SceneRunnerCSharpSceneTest
     {
         // try access to a public property
         AssertObject(sceneRunner.GetProperty("Box1")).IsInstanceOf<ColorRect>().IsNotNull();
+
         // try access to a private property
         AssertObject(sceneRunner.GetProperty("Box2")).IsInstanceOf<ColorRect>().IsNotNull();
         AssertObject(sceneRunner.GetProperty<ColorRect>("Box1")).IsInstanceOf<ColorRect>().IsNotNull();
@@ -145,6 +144,7 @@ public sealed class SceneRunnerCSharpSceneTest
         stopwatch.Start();
         await sceneRunner.AwaitMillis(1000);
         stopwatch.Stop();
+
         // verify we wait around 1000 ms (using 100ms offset because timing is not 100% accurate)
         AssertInt((int)stopwatch.ElapsedMilliseconds).IsBetween(900, 1100);
     }
@@ -153,6 +153,7 @@ public sealed class SceneRunnerCSharpSceneTest
     public async Task SimulateFrames()
     {
         var box1 = sceneRunner.GetProperty<ColorRect>("Box1")!;
+
         // initial is white
         AssertObject(box1.Color).IsEqual(Colors.White);
 
@@ -161,11 +162,13 @@ public sealed class SceneRunnerCSharpSceneTest
 
         // we wait for 10 frames
         await sceneRunner.SimulateFrames(10);
+
         // after 10 frame is still white
         AssertObject(box1.Color).IsEqual(Colors.White);
 
         // we wait 90 more frames
         await sceneRunner.SimulateFrames(90);
+
         // after 100 frames the box one should be changed the color
         AssertObject(box1.Color).IsNotEqual(Colors.White);
     }
@@ -174,6 +177,7 @@ public sealed class SceneRunnerCSharpSceneTest
     public async Task SimulateFramesWithDelay()
     {
         var box1 = sceneRunner.GetProperty<ColorRect>("Box1")!;
+
         // initial is white
         AssertObject(box1.Color).IsEqual(Colors.White);
 
@@ -182,6 +186,7 @@ public sealed class SceneRunnerCSharpSceneTest
 
         // we wait for 10 frames each with a 50ms delay
         await sceneRunner.SimulateFrames(10, 50);
+
         // after 10 frame and in sum 500ms it should be changed to red
         AssertObject(box1.Color).IsEqual(Colors.Red);
     }
@@ -192,6 +197,7 @@ public sealed class SceneRunnerCSharpSceneTest
         sceneRunner.MaximizeView();
 
         var box1 = sceneRunner.GetProperty<ColorRect>("Box1")!;
+
         // verify initial color
         AssertObject(box1.Color).IsEqual(Colors.White);
 
@@ -217,8 +223,8 @@ public sealed class SceneRunnerCSharpSceneTest
                         $sceneId
                     """
                     .Replace("$colorRectId", AssertFailures.AsObjectId(box1))
-                    .Replace("$sceneId", AssertFailures.AsObjectId(sceneRunner.Scene()))
-                ));
+                    .Replace("$sceneId", AssertFailures.AsObjectId(sceneRunner.Scene()))));
+
         // verify the box is still green
         AssertObject(box1.Color).IsEqual(Colors.Green);
     }
@@ -231,6 +237,7 @@ public sealed class SceneRunnerCSharpSceneTest
 
         // fire spell be pressing an enter key
         sceneRunner.SimulateKeyPressed(Key.Enter);
+
         // wait until the next frame
         await sceneRunner.AwaitInputProcessed();
 
@@ -239,6 +246,7 @@ public sealed class SceneRunnerCSharpSceneTest
 
         // wait until the spell is exploded after around 1 s
         var spell = sceneRunner.FindChild("Spell");
+
         // wait spell is exploded
         await spell.AwaitSignal(Spell.SignalName.SpellExplode, spell.GetInstanceId()).WithTimeout(1100);
 
@@ -276,6 +284,7 @@ public sealed class SceneRunnerCSharpSceneTest
         // set mouse position to button two and simulate is pressed
         sceneRunner.SetMousePos(new Vector2(160, 20))
             .SimulateMouseButtonPressed(MouseButton.Left);
+
         // verify box two is changed to Gray
         AssertObject(box1.Color).IsEqual(Colors.Gray);
         AssertObject(box2.Color).IsEqual(Colors.Gray);
@@ -284,6 +293,7 @@ public sealed class SceneRunnerCSharpSceneTest
         // set mouse position to button three and simulate is pressed
         sceneRunner.SetMousePos(new Vector2(260, 20))
             .SimulateMouseButtonPressed(MouseButton.Left);
+
         // verify box three is changed to red and after around 1s to Gray
         AssertObject(box3.Color).IsEqual(Colors.Red);
         await sceneRunner.AwaitSignal(TestScene.SignalName.PanelColorChange, box3, Colors.Gray).WithTimeout(1100);
@@ -304,8 +314,8 @@ public sealed class SceneRunnerCSharpSceneTest
                     "red"
                  but is
                     "black"
-                """
-            ));
+                """));
+
         // wait again for returns 'red' but with using a custom timeout of 500ms and expect is interrupted after 500ms
         await AssertThrown(sceneRunner.AwaitMethod<string>("ColorCycle").IsEqual("red").WithTimeout(500))
             .ContinueWith(result => result.Result?.HasMessage("Assertion: Timed out after 500ms."));
@@ -315,6 +325,7 @@ public sealed class SceneRunnerCSharpSceneTest
     public async Task AwaitMethodWithTimeFactor()
     {
         sceneRunner.SetTimeFactor(10);
+
         // wait until 'ColorCycle()' returns 'black' (using small timeout we expect the method will now process 10 times faster)
         await sceneRunner.AwaitMethod<string>("ColorCycle").IsEqual("black").WithTimeout(300);
 
@@ -323,7 +334,7 @@ public sealed class SceneRunnerCSharpSceneTest
             .ContinueWith(result
                 => result.Result?
                     .HasMessage("Assertion: Timed out after 150ms.")
-                    .HasFileLineNumber(322));
+                    .HasFileLineNumber(333));
     }
 
     [TestCase]
@@ -387,18 +398,22 @@ public sealed class SceneRunnerCSharpSceneTest
     {
         // fire spell be pressing an enter key
         sceneRunner.SimulateKeyPressed(Key.Enter);
+
         // wait until the next frame
         await sceneRunner.AwaitInputProcessed();
 
         var spell = sceneRunner.FindChild("Spell");
+
         // wait until the spell is exploded after around 1 s
         await ISceneRunner.AwaitSignalOn(spell, Spell.SignalName.SpellExplode, spell.GetInstanceId()).WithTimeout(1100);
 
         // fire next spell be pressing an enter key
         sceneRunner.SimulateKeyPressed(Key.Enter);
+
         // wait until the next frame
         await sceneRunner.AwaitInputProcessed();
         spell = sceneRunner.FindChild("Spell");
+
         // use global AwaitSignalOn
         await AwaitSignalOn(spell, Spell.SignalName.SpellExplode, spell.GetInstanceId()).WithTimeout(1100);
     }

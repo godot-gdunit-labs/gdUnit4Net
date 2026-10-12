@@ -1,9 +1,17 @@
-﻿<Project>
-    <PropertyGroup>
-        <!-- Temporay disable analyzers -->
-        <EnableNETAnalyzers>false</EnableNETAnalyzers>
-        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    </PropertyGroup>
+<Project>
+  <!-- Apply the repository build settings (analyzers, StyleCop, warnings as errors) to this Godot test project -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"/>
+
+  <PropertyGroup>
+    <!-- Relaxed rules for test code, like the other test projects -->
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)test.ruleset</CodeAnalysisRuleSet>
+    <!-- The test adapter reads source locations from portable PDBs; the repository Debug default 'full' breaks test discovery and execution -->
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <!-- Godot projects cannot use Central Package Management, so the analyzer versions are set here -->
+  <ItemGroup>
+    <PackageReference Update="StyleCop.Analyzers" Version="$(StyleCopAnalyzersVersion)"/>
+    <PackageReference Update="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)"/>
+  </ItemGroup>
 </Project>

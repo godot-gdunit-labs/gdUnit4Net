@@ -1,6 +1,4 @@
-﻿namespace GdUnit4.Tests.Asserts;
-
-using asserts;
+namespace GdUnit4.Tests.Asserts;
 
 using GdUnit4.Asserts;
 using GdUnit4.Core.Execution.Exceptions;
@@ -77,7 +75,6 @@ public class AssertEnumerableConditions
                             '4' but is unknown
                         """);
     }
-
 
     protected void DoContains(dynamic current, dynamic obj5)
     {
@@ -244,6 +241,7 @@ public class AssertEnumerableConditions
         // test against only one element
         AssertArray(current).ContainsSameExactly(obj1, obj2, obj3, obj4);
         AssertArray(current).ContainsSameExactly(current);
+
         // when compare by reference equal obj1 != obj4
         AssertThrown(() => AssertArray(current).ContainsSameExactly(obj1, obj2, obj3, obj1))
             .IsInstanceOf<TestFailedException>()
@@ -322,7 +320,8 @@ public class AssertEnumerableConditions
                 .Replace("$obj3", ValueFormatter.AsString(obj3))
                 .Replace("$obj4", ValueFormatter.AsString(obj4))
                 .Replace("$obj5", ValueFormatter.AsString(obj5)));
-        //should fail because it contains not all elements
+
+        // should fail because it contains not all elements
         AssertThrown(() => AssertArray(current)
                 .ContainsExactlyInAnyOrder(obj1, obj2, obj4))
             .IsInstanceOf<TestFailedException>()
@@ -370,7 +369,8 @@ public class AssertEnumerableConditions
                 .Replace("$obj3", ValueFormatter.AsString(obj3))
                 .Replace("$obj4", ValueFormatter.AsString(obj4))
                 .Replace("$obj5", ValueFormatter.AsString(obj5)));
-        //should fail because it contains not all elements
+
+        // should fail because it contains not all elements
         AssertThrown(() => AssertArray(current)
                 .ContainsSameExactlyInAnyOrder(obj1, obj2, obj4))
             .IsInstanceOf<TestFailedException>()

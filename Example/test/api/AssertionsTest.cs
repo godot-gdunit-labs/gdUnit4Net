@@ -13,7 +13,7 @@ public class AssertionsTest
 {
     [TestCase]
     public void DoAssertNotYetImplemented()
-        => AssertThrown(() => AssertNotYetImplemented())
+        => AssertThrown(AssertNotYetImplemented)
             .HasFileLineNumber(16)
             .HasMessage("Test not yet implemented!");
 

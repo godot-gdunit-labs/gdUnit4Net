@@ -6,7 +6,6 @@ using static Assertions;
 // used by executor integration test
 public class TestSuiteFailOnStageBefore
 {
-
     [Before]
     public void Before()
         => AssertString("Suite Before()").OverrideFailureMessage("failed on Before()").IsEmpty();

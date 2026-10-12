@@ -1,4 +1,4 @@
-﻿namespace GdUnit4.Tests.Core;
+namespace GdUnit4.Tests.Core;
 
 using System;
 using System.Threading.Tasks;
@@ -15,6 +15,7 @@ public class TestSuiteWithExpectedExceptions
     public async Task ExpectExecutionTimeoutException()
     {
         await Task.Delay(500);
+
         // will never be executed because the test is interrupted after a timeout of 100ms
         AssertBool(true).IsFalse();
     }
@@ -23,7 +24,6 @@ public class TestSuiteWithExpectedExceptions
     [ThrowsException(typeof(TestFailedException), "Expecting: 'False' but is 'True'")]
     public void ExpectTestFailedException() =>
         AssertBool(true).IsFalse();
-
 
     [TestCase]
     [ThrowsException(typeof(TestFailedException), "Expecting: 'False' but is 'True'", 31)]
@@ -40,7 +40,8 @@ public class TestSuiteWithExpectedExceptions
     public void ExpectNullException()
     {
         string? value = null;
+
         // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-        value!.Contains(""); // This will throw NullReferenceException
+        value!.Contains(string.Empty); // This will throw NullReferenceException
     }
 }

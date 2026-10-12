@@ -442,6 +442,12 @@ dotnet_diagnostic.IDE0290.severity = suggestion # Use primary constructor
 [**/*Test.cs]
 dotnet_diagnostic.CA1515.severity = none
 
+# Consumer sample: no repository file header, fluent assertions return the assert only for chaining
+[Example/**.cs]
+dotnet_diagnostic.IDE0073.severity = none
+dotnet_diagnostic.IDE0058.severity = none
+dotnet_diagnostic.IDE0060.severity = none # Test case rows may ignore their parameters
+
 # Runner scene the gdUnit4 test adapter writes into the Godot test projects on each run.
 [**/gdunit4_testadapter*/**.cs]
 generated_code = true
