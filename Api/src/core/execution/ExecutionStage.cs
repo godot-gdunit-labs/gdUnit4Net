@@ -20,8 +20,6 @@ using Reporting;
 
 using static Api.ReportType;
 
-using Environment = Environment;
-
 internal abstract class ExecutionStage<T> : IExecutionStage
 {
     private GodotExceptionMonitor? godotExceptionMonitor;

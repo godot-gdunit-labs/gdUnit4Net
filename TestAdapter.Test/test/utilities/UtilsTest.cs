@@ -6,8 +6,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using static TestAdapter.Utilities.Utils;
 
-using Environment = Environment;
-
 [TestClass]
 public class UtilsTest
 {

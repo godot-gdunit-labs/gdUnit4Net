@@ -10,8 +10,6 @@ using Godot;
 
 using static Assertions;
 
-using Environment = Environment;
-
 [RequireGodotRuntime]
 [TestSuite]
 public class StdOutHookFactoryTest
@@ -61,9 +59,9 @@ public class StdOutHookFactoryTest
 
         // verify
         AssertThat(stdOutHook.GetCapturedOutput())
-            .IsEqual($"Console: Short after 'StartCapture'{Environment.NewLine}" +
-                     $"Console: A message{Environment.NewLine}" +
-                     $"Console: Short before 'StopCapture'{Environment.NewLine}");
+            .IsEqual($"Console: Short after 'StartCapture'{System.Environment.NewLine}" +
+                     $"Console: A message{System.Environment.NewLine}" +
+                     $"Console: Short before 'StopCapture'{System.Environment.NewLine}");
     }
 
     [TestCase]
@@ -91,9 +89,9 @@ public class StdOutHookFactoryTest
 
         // verify
         AssertThat(stdOutHook.GetCapturedOutput())
-            .IsEqual($"Godot: Short after 'StartCapture'{Environment.NewLine}" +
-                     $"Godot: A message{Environment.NewLine}" +
-                     $"Godot: Short before 'StopCapture'{Environment.NewLine}");
+            .IsEqual($"Godot: Short after 'StartCapture'{System.Environment.NewLine}" +
+                     $"Godot: A message{System.Environment.NewLine}" +
+                     $"Godot: Short before 'StopCapture'{System.Environment.NewLine}");
     }
 
     [TestCase]

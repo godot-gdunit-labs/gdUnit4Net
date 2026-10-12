@@ -14,8 +14,6 @@ using Extensions;
 
 using Godot;
 
-using FileAccess = FileAccess;
-
 internal class GodotExceptionMonitor
 {
     // Types of exceptions that should be ignored during test execution
@@ -49,7 +47,7 @@ internal class GodotExceptionMonitor
 
         try
         {
-            using var fileStream = new FileStream(godotLogFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var fileStream = new FileStream(godotLogFile, FileMode.Open, System.IO.FileAccess.Read, FileShare.ReadWrite);
             using var reader = new StreamReader(fileStream);
             _ = fileStream.Seek(0, SeekOrigin.End);
             eof = fileStream.Length;
@@ -187,7 +185,7 @@ internal class GodotExceptionMonitor
         var logEntries = new List<ErrorLogEntry?>();
         try
         {
-            using var fileStream = new FileStream(godotLogFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var fileStream = new FileStream(godotLogFile, FileMode.Open, System.IO.FileAccess.Read, FileShare.ReadWrite);
             using var reader = new StreamReader(fileStream);
 
             // Seek to the last known position

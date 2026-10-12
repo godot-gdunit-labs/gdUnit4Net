@@ -14,8 +14,6 @@ using Execution;
 
 using Logging;
 
-using Environment = Environment;
-
 /// <summary>
 ///     Test runner implementation that executes tests in a separate Godot runtime process.
 ///     Handles process management, IPC, and test execution coordination with the Godot engine.
