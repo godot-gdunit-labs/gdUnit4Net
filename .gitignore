@@ -32,3 +32,9 @@ gdUnit4Net.sln.DotSettings.user
 test/godot.log
 
 **/format-report.json
+
+# Claude Code (local, machine-specific settings)
+.claude/settings.local.json
+
+# Crash artifacts
+*.stackdump

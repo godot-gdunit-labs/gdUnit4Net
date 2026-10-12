@@ -10,7 +10,7 @@
     Language and Framework Configuration:
     Set target framework and language version for modern C# features
     -->
-    <LangVersion>12.0</LangVersion>
+    <LangVersion Condition="'$(LangVersion)' == ''">12.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 

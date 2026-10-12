@@ -41,3 +41,6 @@
 *.dll binary
 *.pdb binary
 *.zip binary
+
+# Keep C# sources LF in the working tree too (.editorconfig end_of_line = lf)
+*.cs text eol=lf

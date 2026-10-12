@@ -40,7 +40,7 @@ public partial class VerifyDocumentationTest
 
         var records = ParseMarkdownTable(lines.GetRange(tableStart, lines.Count - tableStart));
 
-        foreach (var (descriptor, _) in diagnostics)
+        foreach ((var descriptor, var _) in diagnostics)
         {
             var ruleId = $"[{descriptor.Id}]({descriptor.Id}.md)";
             var recordIndex = records.Find(record => record.Id.Equals(ruleId, StringComparison.Ordinal));
@@ -66,7 +66,8 @@ public partial class VerifyDocumentationTest
         var docPath = Path.Combine(Path.DirectorySeparatorChar.ToString(), ProjectRoot, docLink);
         Assert.IsTrue(File.Exists(docPath), $"Documentation file not found: {docPath}\nExpected documentation for rule {descriptor.Id}");
 
-        var docContent = File.ReadAllText(docPath);
+        // Compare with normalized line endings: the documentation follows the checkout line endings, the C# sources are always LF
+        var docContent = File.ReadAllText(docPath).ReplaceLineEndings("\n");
 
         // Check if the first line of the document contains the required header
         var lines = docContent.Split('\r', '\n');
@@ -77,7 +78,7 @@ public partial class VerifyDocumentationTest
         Assert.IsTrue(lines.Length > 2 && string.IsNullOrEmpty(lines[1]), $"Expected an empty line after the header in {docPath}.");
         StringAssert.Contains(docContent, "# Problem Description", $"Documentation should contain ` Problem Description` section in {docPath}", StringComparison.Ordinal);
         StringAssert.Contains(docContent, $"## {descriptor.Title}", $"Documentation should contain the diagnostic title in {docPath}", StringComparison.Ordinal);
-        StringAssert.Contains(docContent, descriptor.Description.ToString(), $"Documentation should contain the diagnostic description in {docPath}", StringComparison.Ordinal);
+        StringAssert.Contains(docContent, descriptor.Description.ToString().ReplaceLineEndings("\n"), $"Documentation should contain the diagnostic description in {docPath}", StringComparison.Ordinal);
     }
 
     private static IEnumerable<(DiagnosticDescriptor Descriptor, string Name)> GetAllDiagnosticDescriptors()

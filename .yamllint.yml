@@ -1,0 +1,10 @@
+extends: default
+
+rules:
+  line-length:
+    max: 180
+  document-start: disable
+  # GitHub Actions workflow files use "on:" as a top-level key - yamllint's
+  # default truthy check flags that key itself as a boolean under YAML 1.1.
+  truthy:
+    check-keys: false
