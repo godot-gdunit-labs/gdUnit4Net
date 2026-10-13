@@ -371,8 +371,9 @@ public sealed class SceneRunnerCSharpSceneTest
         // Trigger game start
         scene.OnButtonPressed();
 
-        // game start signal should be emitted and the state is running
+        // game start signal should be emitted, the state switches to running on the next processed frame
         await monitor.IsEmitted(TestSceneWithButton.SignalName.GameStarted).WithTimeout(1);
+        await runner.SimulateFrames(1);
         AssertThat(scene.GameState).IsEqual(TestSceneWithButton.GState.Running);
 
         // the game will run about 500ms, so no stop signal is emitted yet
