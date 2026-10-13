@@ -2,8 +2,8 @@
   <!-- GdUnit4 Component Versions -->
   <PropertyGroup>
     <GdUnitAnalyzersVersion>1.0.0</GdUnitAnalyzersVersion>
-    <GdUnitAPIVersion>5.1.0-rc5</GdUnitAPIVersion>
-    <GdUnitTestAdapterVersion>3.1.1</GdUnitTestAdapterVersion>
+    <GdUnitAPIVersion>5.1.0-rc6</GdUnitAPIVersion>
+    <GdUnitTestAdapterVersion>3.2.0</GdUnitTestAdapterVersion>
   </PropertyGroup>
 
   <!-- Code Analyzers (also referenced by the Godot test project, which cannot use Central Package Management) -->

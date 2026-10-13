@@ -10,7 +10,7 @@ v3.2.0
             <TolerateExitCodeAfterCompletion>true</TolerateExitCodeAfterCompletion>
        </GdUnit4>
    ```
-          Requires `gdUnit4.api` v5.1.0.
+          Requires `gdUnit4.api` v5.1.0-rc6 or newer.
 
 v3.1.1
 * GD-448: Fix non-16KB-aligned native libs being included in Android export publish output.
