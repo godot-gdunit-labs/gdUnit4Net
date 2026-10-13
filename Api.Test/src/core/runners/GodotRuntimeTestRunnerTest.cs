@@ -192,15 +192,17 @@ public class GodotRuntimeTestRunnerTest
 
         using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
 
-        // Act
-        var result = CreateTestRunner(1000).InstallTestRunnerClasses(workingDirectory);
+        // Act, the working directory has no project file, so `dotnet build` fails on its own.
+        // The timeout is generous so a slow `dotnet` start is not killed and reported as a timeout instead.
+        var result = CreateTestRunner(30000).InstallTestRunnerClasses(workingDirectory);
 
         // Assert
         AssertThat(result).OverrideFailureMessage("InstallTestRunnerClasses should return false on compilation failure").IsFalse();
 
-        // Verify error message was logged
-        var dotnetExitCode = Environment.OSVersion.Platform == PlatformID.Win32NT ? 1 : 137;
-        VerifyLoggerError(capture, $"dotnet build failed with exit code: {dotnetExitCode}");
+        // Verify the build failed by itself and was not killed by the timeout
+        AssertThat(capture.EntriesOf(LogLevel.Error).Any(e => e.Message.Contains("did not complete within the configured timeout", StringComparison.Ordinal)))
+            .OverrideFailureMessage("Timeout error should not have been logged").IsFalse();
+        VerifyLoggerError(capture, "dotnet build failed with exit code: 1");
 
         // Verify the runner file was cleaned up after failure
         var runnerPath = Path.Combine(workingDirectory, GodotRuntimeTestRunner.TEMP_TEST_RUNNER_DIR, "GdUnit4TestRunnerScene.cs");
