@@ -18,7 +18,6 @@ using Array = Godot.Collections.Array;
 /// </summary>
 internal static class GodotVariantExtensions
 {
-    // private static readonly bool IsGodot43OrHigher = (int)Engine.GetVersionInfo()["hex"] >= 0x040300;
     public static bool IsGenericGodotDictionary(this Type type) => type
         .GetInterfaces()
         .Any(interfaceType => interfaceType.FullName == "Godot.Collections.IGenericGodotDictionary");
@@ -204,11 +203,9 @@ internal static class GodotVariantExtensions
         Variant.Type.PackedStringArray => v.AsStringArray(),
         Variant.Type.PackedVector2Array => v.AsVector2Array(),
         Variant.Type.PackedVector3Array => v.AsVector3Array(),
-
-        // Variant.Type.PackedVector4Array when IsGodot43OrHigher => v.AsVector4Array(),
+        Variant.Type.PackedVector4Array => v.AsVector4Array(),
         Variant.Type.PackedColorArray => v.AsColorArray(),
         Variant.Type.Max => throw new NotImplementedException(),
-        Variant.Type.PackedVector4Array => throw new NotImplementedException(),
         _ => throw new NotImplementedException($"The UnboxVariant for {nameof(v)} is not implemented!")
     };
 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using GdUnit4.Asserts;
 using GdUnit4.Core.Execution;
+using GdUnit4.Core.Execution.Exceptions;
 using GdUnit4.Core.Extensions;
 
 using Godot;
@@ -25,7 +26,7 @@ public class AssertionsTest
     [TestCase]
     public void DoAssertNotYetImplemented()
         => AssertThrown(AssertNotYetImplemented)
-            .HasFileLineNumber(27)
+            .HasFileLineNumber(28)
             .HasMessage("Test not yet implemented!");
 
     [TestCase]
@@ -38,6 +39,17 @@ public class AssertionsTest
         AssertObject(AssertThat(Variant.From(12L))).IsInstanceOf<INumberAssert<int>>();
         AssertObject(AssertThat(Variant.From(1.4f))).IsInstanceOf<INumberAssert<float>>();
         AssertObject(AssertThat(Variant.From(1.5d))).IsInstanceOf<INumberAssert<float>>();
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void AssertThatPackedVector4ArrayVariant()
+    {
+        Vector4[] values = [new(1, 2, 3, 4), new(5, 6, 7, 8)];
+
+        AssertThat(Variant.From(values)).IsEqual(values);
+        AssertThrown(() => AssertThat(Variant.From(values)).IsEqual(new Vector4[] { new(1, 2, 3, 4) }))
+            .IsInstanceOf<TestFailedException>();
     }
 
     [TestCase]

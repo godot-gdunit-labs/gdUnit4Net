@@ -84,7 +84,7 @@ Create a `.runsettings` file in your solution root:
         
         <!-- Environment variables available to tests -->
         <EnvironmentVariables>
-            <GODOT_BIN>C:\Path\To\Godot_v4.4-stable_mono_win64.exe</GODOT_BIN>
+            <GODOT_BIN>C:\Path\To\Godot_v4.6-stable_mono_win64.exe</GODOT_BIN>
         </EnvironmentVariables>
     </RunConfiguration>
 

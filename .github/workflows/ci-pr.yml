@@ -203,14 +203,14 @@ jobs:
       fail-fast: false
       max-parallel: 10
       matrix:
-        gdunit-version: ['v5.1.1']
-        godot-version: ['4.3', '4.4', '4.4.1']
+        gdunit-version: ['v6.2.2']
+        godot-version: ['4.6', '4.6.3', '4.7.1']
         godot-status: ['stable']
         dotnet-version: ['net9.0']
         include:
           # Latest
           - gdunit-version: 'latest'
-            godot-version: '4.5'
+            godot-version: '4.7.2'
             godot-status: 'stable'
             dotnet-version: 'net9.0'
 

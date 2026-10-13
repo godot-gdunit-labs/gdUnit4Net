@@ -5,13 +5,14 @@
   </a>
 </p>
 
-<p align="center">This version of GdUnit4.api is based on Godot <strong>v4.4.stable.mono.official [4c311cbee]</strong> (master branch)</p>
+<p align="center">This version of GdUnit4.api is based on Godot <strong>v4.6.stable.mono.official [89cea1439]</strong> (master branch)</p>
 
 <h1 align="center">Supported Godot Versions</h1>
 <p align="center">
-  <img src="https://img.shields.io/badge/Godot-v4.3.0-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
-  <img src="https://img.shields.io/badge/Godot-v4.4.0-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
-  <img src="https://img.shields.io/badge/Godot-v4.4.1-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
+  <img src="https://img.shields.io/badge/Godot-v4.6.0-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
+  <img src="https://img.shields.io/badge/Godot-v4.6.3-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
+  <img src="https://img.shields.io/badge/Godot-v4.7.1-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
+  <img src="https://img.shields.io/badge/Godot-v4.7.2-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
 </p>
 
 <h1 align="center">Supported .NET Versions</h1>

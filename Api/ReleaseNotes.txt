@@ -1,5 +1,9 @@
 v5.1.0
 
+**BREAKING CHANGES:**
+* GD-477: The minimum supported Godot version is now 4.6, older Godot versions are no longer supported.
+          Projects using Godot 4.5 or older must upgrade to Godot 4.6 or newer.
+
 🪲 Bug Fixes
 * GD-305: Added missing AppendFailureMessage on assertions
 * GD-311: Catch possible exceptions on command execution and report them as InternalServerError.
@@ -44,6 +48,7 @@ v5.1.0
             <GodotConnectTimeout>10000</GodotConnectTimeout>
        </GdUnit4>
    ```
+* GD-477: Add support of `PackedVector4Array` on Variant assertions, which failed before with a `NotImplementedException`
 
 v5.0.0
 

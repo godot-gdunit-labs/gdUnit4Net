@@ -7,13 +7,11 @@ using Godot;
 
 internal sealed class ErrorLogEntry
 {
-    private static readonly string GodotErrorPattern = IsGodot4X4 ? "ERROR:" : "USER ERROR:";
-
-    private static readonly Dictionary<ErrorType, Tuple<string, string>> LoggerPatterns = new()
+    private static readonly Dictionary<ErrorType, string> LoggerPatterns = new()
     {
-        { ErrorType.Exception, new Tuple<string, string>("ERROR:", IsGodot4X4 ? "ERROR:" : "USER ERROR:") },
-        { ErrorType.PushError, new Tuple<string, string>(GodotErrorPattern, GodotErrorPattern) },
-        { ErrorType.PushWarning, new Tuple<string, string>("USER WARNING:", "USER WARNING:") }
+        { ErrorType.Exception, "ERROR:" },
+        { ErrorType.PushError, "ERROR:" },
+        { ErrorType.PushWarning, "USER WARNING:" }
     };
 
     private ErrorLogEntry(ErrorType entryType, string message, string details, Type? exceptionType = null)
@@ -40,12 +38,6 @@ internal sealed class ErrorLogEntry
     internal Type? ExceptionType { get; }
 
     private static bool IsDebuggerActive { get; } = DebuggerUtils.IsDebuggerActive();
-
-#pragma warning disable IDE0060
-
-    private static bool IsGodot4X4 => (int)Engine.GetVersionInfo()["hex"] >= 0x40400;
-
-#pragma warning restore IDE0060
 
     public static ErrorLogEntry? ExtractPushWarning(string[] records, int index) =>
         Extract(records, index, ErrorType.PushWarning);
@@ -85,18 +77,14 @@ internal sealed class ErrorLogEntry
         if (index >= records.Length)
             return null;
 
-        var pattern = IsDebuggerActive ? LoggerPatterns[type].Item1 : LoggerPatterns[type].Item2;
+        var pattern = LoggerPatterns[type];
         var record = records[index];
         if (!record.StartsWith(pattern))
             return null;
 
         // Remove the pattern and trim whitespace
         var content = record.Replace(pattern, string.Empty, StringComparison.Ordinal)
-            .Trim()
-
-            // On Godot version before 4.5 the exception is covered by single quotes, we need to remove it to match!
-            .TrimStart('\'')
-            .TrimEnd('\'');
+            .Trim();
 
         // Get the details from the next line if available
         var details = index + 1 < records.Length ? records[index + 1].Trim() : string.Empty;
