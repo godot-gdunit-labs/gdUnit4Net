@@ -46,7 +46,8 @@ jobs:
       - name: "Build Projects"
         run: |
           dotnet restore
-          dotnet build /p:EnforceCodeStyleInBuild=false /p:TreatWarningsAsErrors=false
+          # Build with the repository settings, so warnings the format check cannot detect fail the build
+          dotnet build
 
       - name: "Cache Build Output"
         uses: actions/cache@v6
