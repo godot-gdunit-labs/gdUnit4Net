@@ -80,4 +80,15 @@ public sealed class TestEngineSettings
     ///     Set to a higher value for environments where the Godot host needs more time to start.
     /// </remarks>
     public int GodotConnectTimeout { get; init; } = 10000;
+
+    /// <summary>
+    ///     Gets a value indicating whether a failing exit of the Godot runtime host is tolerated once all test results are reported.
+    /// </summary>
+    /// <remarks>
+    ///     The Godot runtime host can crash during its shutdown, for example by a signal in the .NET runtime teardown,
+    ///     after every test result was already reported. When enabled, such an exit is logged as a warning and does not
+    ///     fail the test run. A failing exit before all test results are reported is always an error.
+    ///     Default value is false.
+    /// </remarks>
+    public bool TolerateExitCodeAfterCompletion { get; init; }
 }

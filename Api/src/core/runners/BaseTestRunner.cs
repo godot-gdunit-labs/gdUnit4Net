@@ -36,6 +36,11 @@ internal class BaseTestRunner : ITestRunner
         Settings = settings;
     }
 
+    /// <summary>
+    ///     Gets a value indicating whether the last run executed and reported all test suites.
+    /// </summary>
+    protected bool IsRunCompleted { get; private set; }
+
     private object SyncLock { get; } = new();
 
     private ICommandExecutor Executor { get; }
@@ -66,6 +71,7 @@ internal class BaseTestRunner : ITestRunner
             RunnerCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         var token = RunnerCancellationToken.Token;
+        IsRunCompleted = false;
         Task.Run(
                 async () =>
                 {
@@ -83,6 +89,7 @@ internal class BaseTestRunner : ITestRunner
                             ValidateResponse(response);
                         }
 
+                        IsRunCompleted = true;
                         await Executor
                             .StopAsync()
                             .ConfigureAwait(true);

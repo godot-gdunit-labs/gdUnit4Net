@@ -29,11 +29,18 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
     /// </summary>
     internal const string TEMP_TEST_RUNNER_DIR = "gdunit4_testadapter_v5";
 
+    /// <summary>
+    ///     Number of the last error output lines of the Godot runtime host that are reported on a failing exit.
+    /// </summary>
+    internal const int STD_ERR_TAIL_LINES = 30;
+
     private static readonly ITestEngineLogger Logger = LoggerFactory.GetLogger<GodotRuntimeTestRunner>();
     private readonly string pipeName;
 
     private readonly ScopeLogger scope;
     private readonly TestEngineSettings settings;
+    private readonly ProcessOutputTail stdErrTail = new(STD_ERR_TAIL_LINES);
+    private TaskCompletionSource stdErrClosed = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Process? process;
 
     /// <summary>
@@ -121,6 +128,9 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
 
             Logger.LogInfo($"Arguments: {processStartInfo.Arguments}");
 
+            stdErrTail.Clear();
+            stdErrClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
             if (DebuggerFramework.IsDebugProcess)
                 process = DebuggerFramework.LaunchProcessWithDebuggerAttached(processStartInfo);
             else
@@ -133,7 +143,7 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
                 var godotLogger = scope.WithSource("Godot");
                 process.OutputDataReceived += godotLogger.Output;
                 process.ErrorDataReceived += godotLogger.Error;
-                process.Exited += ExitHandler("GodotRuntimeTestRunner");
+                process.ErrorDataReceived += CollectStdErr;
                 _ = process.Start();
                 process.BeginErrorReadLine();
                 process.BeginOutputReadLine();
@@ -157,8 +167,78 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
                 process.Kill(true);
             }
 
+            if (!DebuggerFramework.IsDebugProcess && process.WaitForExit(2000))
+            {
+                // read the error output to the end, a crash backtrace is written right before the exit
+                _ = stdErrClosed.Task.Wait(2000, CancellationToken.None);
+                ReportProcessExit(process.ExitCode);
+            }
+
             CloseProcess(process);
         }
+    }
+
+    /// <summary>
+    ///     Describes how the exit of the Godot runtime host is reported.
+    /// </summary>
+    /// <param name="exitCode">The exit code of the Godot runtime host.</param>
+    /// <param name="isRunCompleted">Whether all test suites were executed and reported before the exit.</param>
+    /// <param name="tolerateExitCodeAfterCompletion">Whether a failing exit after all test results is reported as a warning.</param>
+    /// <param name="isWindows">Whether the host runs on Windows, where exit codes do not encode signals.</param>
+    /// <param name="errorOutput">The last error output lines of the Godot runtime host.</param>
+    /// <returns>The log level and the message to report.</returns>
+    internal static (LogLevel Level, string Message) DescribeProcessExit(
+        int exitCode,
+        bool isRunCompleted,
+        bool tolerateExitCodeAfterCompletion,
+        bool isWindows,
+        IReadOnlyCollection<string> errorOutput)
+    {
+        var exit = $"GodotRuntimeTestRunner ends with exit code: {exitCode}";
+        if (exitCode == 0)
+            return (LogLevel.Informational, exit);
+
+        exit += DescribeSignal(exitCode, isWindows);
+        var (level, message) = (isRunCompleted, tolerateExitCodeAfterCompletion) switch
+        {
+            (false, _) => (LogLevel.Error, $"{exit}, before all test results were reported."),
+            (true, true) => (LogLevel.Warning,
+                $"{exit}, after all test results were reported. The exit is tolerated because 'TolerateExitCodeAfterCompletion' is enabled."),
+            (true, false) => (LogLevel.Error,
+                $"{exit}, after all test results were reported. To report this exit as a warning, set <TolerateExitCodeAfterCompletion>true</TolerateExitCodeAfterCompletion> in the <GdUnit4> section of your .runsettings.")
+        };
+
+        if (errorOutput.Count > 0)
+            message += $"\nLast error output of the Godot runtime host:\n{string.Join('\n', errorOutput.Select(line => $"  {line}"))}";
+        return (level, message);
+    }
+
+    /// <summary>
+    ///     Names the signal that terminated a process, as encoded by .NET on Unix in the exit code (128 + signal number).
+    /// </summary>
+    /// <param name="exitCode">The exit code of the process.</param>
+    /// <param name="isWindows">Whether the process ran on Windows, where exit codes do not encode signals.</param>
+    /// <returns>The signal in parentheses, or an empty string when the exit code does not encode a signal.</returns>
+    internal static string DescribeSignal(int exitCode, bool isWindows)
+    {
+        var signal = exitCode - 128;
+        if (isWindows || signal is < 1 or > 64)
+            return string.Empty;
+
+        var name = signal switch
+        {
+            2 => "SIGINT",
+            4 => "SIGILL",
+            6 => "SIGABRT",
+            7 => "SIGBUS",
+            8 => "SIGFPE",
+            9 => "SIGKILL",
+            11 => "SIGSEGV",
+            13 => "SIGPIPE",
+            15 => "SIGTERM",
+            _ => $"signal {signal}"
+        };
+        return $" ({name})";
     }
 
     internal bool VerifyGodotCSharpSupport(string godotBinary)
@@ -476,6 +556,39 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
         {
             Logger.LogError($"Error: restore: {ex.Message}");
             return false;
+        }
+    }
+
+    private void CollectStdErr(object sender, DataReceivedEventArgs args)
+    {
+        if (args.Data == null)
+        {
+            _ = stdErrClosed.TrySetResult();
+            return;
+        }
+
+        stdErrTail.Add(args.Data);
+    }
+
+    private void ReportProcessExit(int exitCode)
+    {
+        var (level, message) = DescribeProcessExit(
+            exitCode,
+            IsRunCompleted,
+            settings.TolerateExitCodeAfterCompletion,
+            OperatingSystem.IsWindows(),
+            stdErrTail.ToArray());
+        switch (level)
+        {
+            case LogLevel.Error:
+                Logger.LogError(message);
+                break;
+            case LogLevel.Warning:
+                Logger.LogWarning(message);
+                break;
+            default:
+                Logger.LogInfo(message);
+                break;
         }
     }
 

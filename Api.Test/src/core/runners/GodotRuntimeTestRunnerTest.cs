@@ -276,6 +276,89 @@ public class GodotRuntimeTestRunnerTest
         }
     }
 
+    [TestCase]
+    public void DescribeProcessExitSuccess()
+    {
+        var (level, message) = GodotRuntimeTestRunner.DescribeProcessExit(0, false, false, false, ["some error output"]);
+
+        AssertThat(level).IsEqual(LogLevel.Informational);
+        AssertThat(message).IsEqual("GodotRuntimeTestRunner ends with exit code: 0");
+    }
+
+    [TestCase]
+    public void DescribeProcessExitBeforeCompletion()
+    {
+        var (level, message) = GodotRuntimeTestRunner.DescribeProcessExit(139, false, true, false, []);
+
+        // a failing exit before all results are reported is an error, even when tolerated after completion
+        AssertThat(level).IsEqual(LogLevel.Error);
+        AssertThat(message).IsEqual("GodotRuntimeTestRunner ends with exit code: 139 (SIGSEGV), before all test results were reported.");
+    }
+
+    [TestCase]
+    public void DescribeProcessExitAfterCompletion()
+    {
+        var (level, message) = GodotRuntimeTestRunner.DescribeProcessExit(134, true, false, false, []);
+
+        AssertThat(level).IsEqual(LogLevel.Error);
+        AssertThat(message).IsEqual(
+            "GodotRuntimeTestRunner ends with exit code: 134 (SIGABRT), after all test results were reported. "
+            + "To report this exit as a warning, set <TolerateExitCodeAfterCompletion>true</TolerateExitCodeAfterCompletion> "
+            + "in the <GdUnit4> section of your .runsettings.");
+    }
+
+    [TestCase]
+    public void DescribeProcessExitAfterCompletionTolerated()
+    {
+        var (level, message) = GodotRuntimeTestRunner.DescribeProcessExit(134, true, true, false, []);
+
+        AssertThat(level).IsEqual(LogLevel.Warning);
+        AssertThat(message).IsEqual(
+            "GodotRuntimeTestRunner ends with exit code: 134 (SIGABRT), after all test results were reported. "
+            + "The exit is tolerated because 'TolerateExitCodeAfterCompletion' is enabled.");
+    }
+
+    [TestCase]
+    public void DescribeProcessExitOnWindows()
+    {
+        var (level, message) = GodotRuntimeTestRunner.DescribeProcessExit(139, false, false, true, []);
+
+        // Windows exit codes do not encode a signal
+        AssertThat(level).IsEqual(LogLevel.Error);
+        AssertThat(message).IsEqual("GodotRuntimeTestRunner ends with exit code: 139, before all test results were reported.");
+    }
+
+    [TestCase]
+    public void DescribeProcessExitWithErrorOutput()
+    {
+        var (_, message) = GodotRuntimeTestRunner.DescribeProcessExit(
+            139,
+            true,
+            true,
+            false,
+            ["handle_crash: Program crashed with signal 11", "[1] /lib/x86_64-linux-gnu/libc.so.6(+0x42520)"]);
+
+        AssertThat(message).IsEqual(
+            """
+            GodotRuntimeTestRunner ends with exit code: 139 (SIGSEGV), after all test results were reported. The exit is tolerated because 'TolerateExitCodeAfterCompletion' is enabled.
+            Last error output of the Godot runtime host:
+              handle_crash: Program crashed with signal 11
+              [1] /lib/x86_64-linux-gnu/libc.so.6(+0x42520)
+            """.Replace("\r\n", "\n", StringComparison.Ordinal));
+    }
+
+    [TestCase(134, false, " (SIGABRT)")]
+    [TestCase(137, false, " (SIGKILL)")]
+    [TestCase(139, false, " (SIGSEGV)")]
+    [TestCase(143, false, " (SIGTERM)")]
+    [TestCase(150, false, " (signal 22)")]
+    [TestCase(139, true, "")]
+    [TestCase(1, false, "")]
+    [TestCase(128, false, "")]
+    [TestCase(255, false, "")]
+    public void DescribeSignal(int exitCode, bool isWindows, string expected)
+        => AssertThat(GodotRuntimeTestRunner.DescribeSignal(exitCode, isWindows)).IsEqual(expected);
+
     #region Helper Methods
 
     private static void CopyExampleProject(string destDir)

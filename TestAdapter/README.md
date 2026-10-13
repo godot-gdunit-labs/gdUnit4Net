@@ -125,19 +125,23 @@ Create a `.runsettings` file in your solution root:
         
         <!-- Connect timeout to the Godot runtime host for slow or variable environments (milliseconds) -->
         <GodotConnectTimeout>10000</GodotConnectTimeout>
+        
+        <!-- Report a failing Godot exit after all test results as a warning instead of failing the run -->
+        <TolerateExitCodeAfterCompletion>false</TolerateExitCodeAfterCompletion>
     </GdUnit4>
 </RunSettings>
 ```
 
 ### GdUnit4 Configuration Options
 
-| Setting                 | Description                                       | Default      | Example                  |
-|-------------------------|---------------------------------------------------|--------------|--------------------------|
-| `Parameters`            | Additional command-line arguments passed to Godot | `""`         | `"--verbose --headless"` |
-| `DisplayName`           | Test name format in results                       | `SimpleName` | `FullyQualifiedName`     |
-| `CaptureStdOut`         | Capture test output in results                    | `false`      | `true`                   |
-| `CompileProcessTimeout` | Godot compilation timeout (ms)                    | `20000`      | `30000`                  |
-| `GodotConnectTimeout`   | Godot runtime host connect timeout (ms)           | `10000`      | `60000`                  |
+| Setting                           | Description                                                     | Default      | Example                  |
+|-----------------------------------|-----------------------------------------------------------------|--------------|--------------------------|
+| `Parameters`                      | Additional command-line arguments passed to Godot               | `""`         | `"--verbose --headless"` |
+| `DisplayName`                     | Test name format in results                                     | `SimpleName` | `FullyQualifiedName`     |
+| `CaptureStdOut`                   | Capture test output in results                                  | `false`      | `true`                   |
+| `CompileProcessTimeout`           | Godot compilation timeout (ms)                                  | `20000`      | `30000`                  |
+| `GodotConnectTimeout`             | Godot runtime host connect timeout (ms)                         | `10000`      | `60000`                  |
+| `TolerateExitCodeAfterCompletion` | Report a failing Godot exit after all test results as a warning | `false`      | `true`                   |
 
 ### Using .runsettings
 

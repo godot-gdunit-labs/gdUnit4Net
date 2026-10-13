@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 using Api;
 
-using Godot;
-
 using Newtonsoft.Json;
 
 /// <summary>
@@ -24,10 +22,11 @@ internal class TerminateGodotInstanceCommand : BaseCommand
     }
 
     /// <summary>
-    ///     Executes the termination command, shutting down the Godot instance.
+    ///     Executes the termination command, acknowledging the termination of the Godot instance.
     /// </summary>
     /// <remarks>
-    ///     This command gracefully closes the Godot scene tree and engine.
+    ///     The server quits the Godot scene tree and engine after it has sent the response,
+    ///     so the engine shutdown does not cut off the response.
     /// </remarks>
     /// <returns>
     ///     A <see cref="Task" /> representing the asynchronous operation.
@@ -35,7 +34,6 @@ internal class TerminateGodotInstanceCommand : BaseCommand
     public override Task<Response> Execute(ITestEventListener testEventListener)
     {
         Console.WriteLine("Terminating Godot instance.");
-        (Engine.GetMainLoop() as SceneTree)?.Quit();
         return Task.FromResult(
             new Response
             {

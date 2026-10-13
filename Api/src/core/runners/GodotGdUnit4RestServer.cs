@@ -12,11 +12,19 @@ using Commands;
 
 using Extensions;
 
+using Godot;
+
 using Newtonsoft.Json;
 
 internal sealed class GodotGdUnit4RestServer : InOutPipeProxy<NamedPipeServerStream>, ITestEventListener
 {
     private readonly SemaphoreSlim processLock = new(1, 1);
+
+    // set once the client requested the termination, so no further command is read while the engine shuts down
+    private volatile bool isTerminating;
+
+    // set once the termination response is sent, no pipe operation is pending from then on
+    private volatile bool isTerminated;
 
     public GodotGdUnit4RestServer(ITestEngineLogger logger, string pipeName)
         : base(new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous), logger)
@@ -43,7 +51,7 @@ internal sealed class GodotGdUnit4RestServer : InOutPipeProxy<NamedPipeServerStr
 
     public async Task Process()
     {
-        if (!IsConnected)
+        if (isTerminating || !IsConnected)
             return;
 
         _ = await GodotObjectExtensions.SyncProcessFrame;
@@ -54,6 +62,9 @@ internal sealed class GodotGdUnit4RestServer : InOutPipeProxy<NamedPipeServerStr
 
         try
         {
+            if (isTerminating)
+                return;
+
             using CancellationTokenSource tokenSource = new(TimeSpan.FromMinutes(10));
             if (tokenSource.Token.IsCancellationRequested)
             {
@@ -63,10 +74,20 @@ internal sealed class GodotGdUnit4RestServer : InOutPipeProxy<NamedPipeServerStr
 
             var command = await ReadCommand<BaseCommand>(tokenSource.Token)
                 .ConfigureAwait(true);
+
+            // stop reading before the response is sent, the client disconnects as soon as it is received
+            isTerminating = command is TerminateGodotInstanceCommand;
             var response = await ProcessCommand(command, this)
                 .ConfigureAwait(true);
             await WriteResponse(response)
                 .ConfigureAwait(true);
+
+            // quit only after the response is sent, the runner node then closes the pipe while it is deleted
+            if (isTerminating)
+            {
+                isTerminated = true;
+                (Engine.GetMainLoop() as SceneTree)?.Quit();
+            }
         }
         catch (IOException e)
         {
@@ -93,16 +114,25 @@ internal sealed class GodotGdUnit4RestServer : InOutPipeProxy<NamedPipeServerStr
         Logger.LogInfo($"GodotGdUnit4RestApi:: Client connected. User:{Proxy.GetImpersonationUserName()}");
     }
 
-    internal void Stop() => Task.Run(async () =>
+    /// <summary>
+    ///     Closes the pipe on the calling thread. It is called while the engine deletes the runner node,
+    ///     so the pipe is closed before the engine and the .NET runtime shut down, not by a background task during the shutdown.
+    /// </summary>
+    internal void Stop()
     {
-        if (await processLock.WaitAsync(TimeSpan.FromMilliseconds(1000)).ConfigureAwait(false))
+        isTerminating = true;
+
+        // after the termination the lock can still be granted to a queued call that only returns on its next frame,
+        // otherwise do not wait, a pending command continues on this thread and would never complete
+        if (!isTerminated && !processLock.Wait(0))
         {
-            await DisposeAsync()
-                .ConfigureAwait(false);
-        }
-        else
             Logger.LogWarning("GodotGdUnit4RestApi:: Stop requested but processing is in progress.");
-    });
+            return;
+        }
+
+        Logger.LogInfo("Closing GdUnit4 RestApi.");
+        Proxy.Dispose();
+    }
 
     private async Task<Response> ProcessCommand(BaseCommand command, ITestEventListener testEventListener)
     {

@@ -39,6 +39,7 @@ public enum DisplayNameOptions
 ///     &lt;Parameters&gt;--verbose --headless&lt;/Parameters&gt;
 ///     &lt;CompileProcessTimeout&gt;30000&lt;/CompileProcessTimeout&gt;
 ///     &lt;GodotConnectTimeout&gt;10000&lt;/GodotConnectTimeout&gt;
+///     &lt;TolerateExitCodeAfterCompletion&gt;false&lt;/TolerateExitCodeAfterCompletion&gt;
 ///   &lt;/GdUnit4&gt;
 /// &lt;/RunSettings&gt;
 /// </code>
@@ -48,6 +49,7 @@ public enum DisplayNameOptions
 ///     - Additional parameters passed to the Godot engine during test execution
 ///     - Compilation timeout for projects that require extended build times
 ///     - Connect timeout for the Godot runtime host on slow or variable environments
+///     - Tolerating a failing exit of the Godot runtime host after all test results are reported
 ///     These settings are loaded by <see cref="GdUnit4SettingsProvider" /> during test discovery and execution.
 /// </remarks>
 [XmlRoot(RUN_SETTINGS_XML_NODE)]
@@ -145,6 +147,20 @@ public class GdUnit4Settings : TestRunSettings
     ///     Godot host needs more time to start.
     /// </remarks>
     public int GodotConnectTimeout { get; init; } = 10000;
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether a failing exit of the Godot runtime host is tolerated once all test results are reported.
+    /// </summary>
+    /// <value>
+    ///     <c>true</c> to log such an exit as a warning; <c>false</c> to fail the test run.
+    ///     Default is <c>false</c>.
+    /// </value>
+    /// <remarks>
+    ///     The Godot runtime host can crash during its shutdown, for example with <c>SIGSEGV</c> or <c>SIGABRT</c>
+    ///     in the .NET runtime teardown, after every test result was already reported. A failing exit before all
+    ///     test results are reported always fails the test run.
+    /// </remarks>
+    public bool TolerateExitCodeAfterCompletion { get; set; }
 
     /// <summary>
     ///     Converts the current settings instance to an XML element for inclusion in .runsettings files.
