@@ -1,3 +1,17 @@
+v3.2.0
+
+✨ Improvements
+* GD-466: Add the option `TolerateExitCodeAfterCompletion` to not fail the test run when the Godot runtime
+          exits with a failure code after all test results are reported, e.g. a crash with `SIGSEGV` or `SIGABRT`
+          during the engine shutdown. The failing exit is then reported as a warning.
+          A failing exit before all test results are reported always fails the test run. Default: false
+   ```
+       <GdUnit4>
+            <TolerateExitCodeAfterCompletion>true</TolerateExitCodeAfterCompletion>
+       </GdUnit4>
+   ```
+          Requires `gdUnit4.api` v5.1.0.
+
 v3.1.1
 * GD-448: Fix non-16KB-aligned native libs being included in Android export publish output.
           A bundled `.targets` file now suppresses Microsoft.CodeCoverage's `CopyTraceDataCollectorArtifacts`
@@ -10,7 +24,13 @@ v3.1.0
 * GD-446: Fixing nuget packaging by exclude `Microsoft.NET.Test.Sdk`, `coverlet.collector` and `Godot.SourceGenerators`
           Microsoft.NET.Test.Sdk, coverlet.collector and Godot.SourceGenerators are no longer transitively exported by gdUnit4.test.adapter.
           If your project relies on either, add them explicitly to your .csproj.
-
+* GD-443: Make Godot runtime connect timeout configurable in `.runsettings`, for environments where the
+          Godot runtime host needs more time to start. Default: 10000 (10 seconds)
+   ```
+       <GdUnit4>
+            <GodotConnectTimeout>10000</GodotConnectTimeout>
+       </GdUnit4>
+   ```
 
 v3.0.1
 

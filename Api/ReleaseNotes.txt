@@ -18,6 +18,10 @@ v5.1.0
 * GD-437: Fixing respect CompileProcessTimeout in dotnet build step
 * GD-446: Removed unused dependencies `Moq` and `CommandLineParser` from gdUnit4.api.
           If your project relies on either, add them explicitly to your .csproj.
+* GD-466: Fixing a failing Godot runtime exit is reported without a cause.
+          The runner now reports the exit code, the signal name of a crash (e.g. `SIGSEGV`, `SIGABRT`)
+          and the last 30 lines of the Godot error output, and states whether all test results were reported before.
+          The connection to Godot is now closed before the engine shuts down.
 
 ✨ Improvements
 * GD-311: Verify the Godot binary has C# support before running godot runtime tests to avoid invalid test execution.
