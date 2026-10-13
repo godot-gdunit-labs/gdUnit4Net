@@ -73,7 +73,7 @@ public partial class TestSceneWithButton : Control
         }
     }
 
-    public override async void _Process(double delta)
+    public override void _Process(double delta)
     {
         var deltaMs = delta * 1000.0;
         GD.Print($" Delta time: {deltaMs:F2} ms");
@@ -82,19 +82,6 @@ public partial class TestSceneWithButton : Control
         {
             ThrowTestException();
             LetsThrowAnException = false;
-        }
-
-        if (GameState == GState.Started)
-        {
-            GameState = GState.Running;
-            GD.PrintS("Try Game stopping");
-
-            // We wait 100ms before we emit game stopped signal
-            var timer = GetTree().CreateTimer(.2);
-            await ToSignal(timer, Timer.SignalName.Timeout);
-            GD.PrintS("Game stopped");
-            GameState = GState.Stopped;
-            EmitSignal(SignalName.GameStopped);
         }
     }
 
@@ -107,9 +94,17 @@ public partial class TestSceneWithButton : Control
     public void ThrowTestException()
         => throw new InvalidOperationException("Method execution failed");
 
-    private void StartGame()
+    // sets the state when the signal is emitted, so it is final when a test awaits the signal
+    private async void StartGame()
     {
-        GameState = GState.Started;
+        GameState = GState.Running;
         GD.PrintS("Game started");
+
+        // We wait 200ms before we emit game stopped signal
+        var timer = GetTree().CreateTimer(.2);
+        await ToSignal(timer, Timer.SignalName.Timeout);
+        GD.PrintS("Game stopped");
+        GameState = GState.Stopped;
+        EmitSignal(SignalName.GameStopped);
     }
 }

@@ -152,16 +152,35 @@ public sealed class SceneRunnerCSharpSceneTest
     [TestCase(Timeout = 2000)]
     public async Task SimulateFrames()
     {
-        // count the processed frames, the scene timers depend on elapsed time and the frame rate of the runner varies
-        var startFrame = Engine.GetProcessFrames();
+        // cap the frame rate, the color cycle runs on timers, so the frames must take a known minimum time
+        var maxFps = Engine.MaxFps;
+        Engine.MaxFps = 100;
+        try
+        {
+            var box1 = sceneRunner.GetProperty<ColorRect>("Box1")!;
 
-        // we wait for 10 frames
-        await sceneRunner.SimulateFrames(10);
-        AssertThat(Engine.GetProcessFrames() - startFrame).IsGreaterEqual(10);
+            // initial is white
+            AssertObject(box1.Color).IsEqual(Colors.White);
 
-        // we wait 90 more frames
-        await sceneRunner.SimulateFrames(90);
-        AssertThat(Engine.GetProcessFrames() - startFrame).IsGreaterEqual(100);
+            // start color cycle by invoke the function 'StartColorCycle'
+            sceneRunner.Invoke("StartColorCycle");
+
+            // we wait for 10 frames
+            await sceneRunner.SimulateFrames(10);
+
+            // after 10 frame is still white
+            AssertObject(box1.Color).IsEqual(Colors.White);
+
+            // we wait 90 more frames
+            await sceneRunner.SimulateFrames(90);
+
+            // after 100 frames the box one should be changed the color
+            AssertObject(box1.Color).IsNotEqual(Colors.White);
+        }
+        finally
+        {
+            Engine.MaxFps = maxFps;
+        }
     }
 
     [TestCase(Timeout = 1000)]
@@ -325,7 +344,7 @@ public sealed class SceneRunnerCSharpSceneTest
             .ContinueWith(result
                 => result.Result?
                     .HasMessage("Assertion: Timed out after 150ms.")
-                    .HasFileLineNumber(324));
+                    .HasFileLineNumber(343));
     }
 
     [TestCase]
@@ -371,9 +390,8 @@ public sealed class SceneRunnerCSharpSceneTest
         // Trigger game start
         scene.OnButtonPressed();
 
-        // game start signal should be emitted, the state switches to running on the next processed frame
+        // game start signal should be emitted and the state is running
         await monitor.IsEmitted(TestSceneWithButton.SignalName.GameStarted).WithTimeout(1);
-        await runner.SimulateFrames(1);
         AssertThat(scene.GameState).IsEqual(TestSceneWithButton.GState.Running);
 
         // the game will run about 500ms, so no stop signal is emitted yet
