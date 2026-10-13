@@ -15,6 +15,37 @@
   <img src="https://img.shields.io/badge/Godot-v4.7.2-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
 </p>
 
+<h1 align="center">Compatibility Overview</h1>
+<table align="center">
+  <thead>
+    <tr>
+      <th>gdUnit4.api Version</th>
+      <th>gdUnit4.test.adapter Version</th>
+      <th>Godot minimal required/compatible Version</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>master (v5.1.0-rc6)</td><td>master (v3.2.0)</td><td>v4.6, v4.6.3, v4.7.1, v4.7.2</td>
+    </tr>
+    <tr>
+      <td>v5.1.0-rc1 - v5.1.0-rc5</td><td>v3.0.0 - v3.1.1</td><td>v4.3, v4.4, v4.4.1, v4.5</td>
+    </tr>
+    <tr>
+      <td>v5.0.0</td><td>v3.0.0</td><td>v4.2, v4.2.1, v4.2.2, v4.3, v4.4</td>
+    </tr>
+    <tr>
+      <td>v4.3.0, v4.3.1</td><td>v2.0.0</td><td>v4.2, v4.2.1, v4.2.2</td>
+    </tr>
+    <tr>
+      <td>v4.2.4, v4.2.5</td><td>v1.1.2</td><td>v4.2, v4.2.1, v4.2.2</td>
+    </tr>
+    <tr>
+      <td>v4.2.1 - v4.2.3</td><td>v1.0.0 - v1.1.1</td><td>v4.2, v4.2.1</td>
+    </tr>
+  </tbody>
+</table>
+
 <h1 align="center">Supported .NET Versions</h1>
 <p align="center">
   <img src="https://img.shields.io/badge/.NET-8.0-blue?logo=dotnet&logoColor=white">
