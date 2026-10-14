@@ -263,6 +263,7 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
     internal bool VerifyGodotCSharpSupport(string godotBinary)
     {
         using var godotProcess = new Process();
+        var started = false;
         try
         {
             godotProcess.StartInfo = new ProcessStartInfo(godotBinary, "--version")
@@ -276,7 +277,8 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
                 WorkingDirectory = Environment.CurrentDirectory
             };
 
-            if (!godotProcess.Start())
+            started = godotProcess.Start();
+            if (!started)
             {
                 Logger.LogError("Checking Godot C# supports fails on process start, exit ..");
                 return false;
@@ -288,8 +290,6 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             if (!godotProcess.WaitForExit(VERIFY_GODOT_TIMEOUT))
             {
                 Logger.LogError($"Checking Godot C# support fails, '{godotBinary} --version' did not exit within {VERIFY_GODOT_TIMEOUT}ms.");
-                godotProcess.Kill(true);
-                _ = godotProcess.WaitForExit(1000);
                 return false;
             }
 
@@ -346,6 +346,15 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
         {
             Logger.LogError($"Verifying the Godot binary fails with: {e.Message}\n {e.StackTrace}");
             return false;
+        }
+        finally
+        {
+            // disposing does not end the process, stop it when it is still running, e.g. after a timeout
+            if (started && !godotProcess.HasExited)
+            {
+                godotProcess.Kill(true);
+                _ = godotProcess.WaitForExit(1000);
+            }
         }
     }
 
