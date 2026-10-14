@@ -38,7 +38,7 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
     ///     Maximum time in milliseconds to wait for `godot --version` to exit when checking the C# support of the Godot binary.
     ///     It covers a slow first start of Godot, for example on a fresh CI runner.
     /// </summary>
-    internal const int VERIFY_GODOT_TIMEOUT = 30000;
+    internal const int VERIFY_GODOT_TIMEOUT = 5000;
 
     private static readonly ITestEngineLogger Logger = LoggerFactory.GetLogger<GodotRuntimeTestRunner>();
     private readonly string pipeName;
@@ -260,7 +260,7 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             .Split(['.', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Contains("mono", StringComparer.OrdinalIgnoreCase);
 
-    internal bool VerifyGodotCSharpSupport(string godotBinary, int timeout = VERIFY_GODOT_TIMEOUT)
+    internal bool VerifyGodotCSharpSupport(string godotBinary)
     {
         using var godotProcess = new Process();
         try
@@ -285,9 +285,9 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             var output = godotProcess.StandardOutput.ReadToEndAsync();
 
             // the exit code is only available after the process has exited, a slow first Godot start needs more time
-            if (!godotProcess.WaitForExit(timeout))
+            if (!godotProcess.WaitForExit(VERIFY_GODOT_TIMEOUT))
             {
-                Logger.LogError($"Checking Godot C# support fails, '{godotBinary} --version' did not exit within {timeout}ms.");
+                Logger.LogError($"Checking Godot C# support fails, '{godotBinary} --version' did not exit within {VERIFY_GODOT_TIMEOUT}ms.");
                 godotProcess.Kill(true);
                 _ = godotProcess.WaitForExit(1000);
                 return false;
