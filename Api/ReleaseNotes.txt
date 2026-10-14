@@ -26,6 +26,8 @@ v5.1.0
           The runner now reports the exit code, the signal name of a crash (e.g. `SIGSEGV`, `SIGABRT`)
           and the last 30 lines of the Godot error output, and states whether all test results were reported before.
           The connection to Godot is now closed before the engine shuts down.
+* GD-493: Fixing the Godot C# support check, which failed randomly on a slow Godot start
+          and skipped all tests that require the Godot runtime.
 
 ✨ Improvements
 * GD-311: Verify the Godot binary has C# support before running godot runtime tests to avoid invalid test execution.

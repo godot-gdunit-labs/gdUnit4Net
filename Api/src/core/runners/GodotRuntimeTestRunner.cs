@@ -34,6 +34,12 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
     /// </summary>
     internal const int STD_ERR_TAIL_LINES = 30;
 
+    /// <summary>
+    ///     Maximum time in milliseconds to wait for `godot --help` to exit when checking the C# support of the Godot binary.
+    ///     It covers a slow first start of Godot, for example on a fresh CI runner.
+    /// </summary>
+    internal const int VERIFY_GODOT_TIMEOUT = 30000;
+
     private static readonly ITestEngineLogger Logger = LoggerFactory.GetLogger<GodotRuntimeTestRunner>();
     private readonly string pipeName;
 
@@ -241,9 +247,10 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
         return $" ({name})";
     }
 
-    internal bool VerifyGodotCSharpSupport(string godotBinary)
+    internal bool VerifyGodotCSharpSupport(string godotBinary, int timeout = VERIFY_GODOT_TIMEOUT)
     {
         using var godotProcess = new Process();
+        using var outputComplete = new ManualResetEventSlim(false);
         try
         {
             // recompile the project
@@ -258,7 +265,6 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
                 WorkingDirectory = Environment.CurrentDirectory
             };
 
-            var outputComplete = new ManualResetEventSlim(false);
             var hasCSharpOptions = false;
             godotProcess.StartInfo = processStartInfo;
             godotProcess.EnableRaisingEvents = true;
@@ -278,7 +284,17 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             }
 
             godotProcess.BeginOutputReadLine();
-            _ = godotProcess.WaitForExit(500);
+
+            // the exit code is only available after the process has exited, a slow first Godot start needs more time
+            if (!godotProcess.WaitForExit(timeout))
+            {
+                Logger.LogError($"Checking Godot C# support fails, '{godotBinary} --help' did not exit within {timeout}ms.");
+                godotProcess.Kill(true);
+                _ = godotProcess.WaitForExit(1000);
+                return false;
+            }
+
+            // the output can still be processed after the exit, wait for its end before evaluating it
             _ = outputComplete.Wait(2000);
 
             if (!hasCSharpOptions)

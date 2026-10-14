@@ -181,6 +181,36 @@ public class GodotRuntimeTestRunnerTest
     }
 
     /// <summary>
+    ///     A Godot binary that needs a few seconds to exit after printing its help must still pass the C# support check.
+    /// </summary>
+    [TestCase]
+    public void VerifyGodotCSharpSupportSlowExit()
+    {
+        CreateSlowExitHelpScript();
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        var result = CreateTestRunner(1000).VerifyGodotCSharpSupport(MockGodotBinPath, 10000);
+
+        AssertThat(capture.EntriesOf(LogLevel.Error).Select(e => e.Message)).IsEmpty();
+        AssertThat(result).OverrideFailureMessage("VerifyGodotCSharpSupport should succeed").IsTrue();
+    }
+
+    /// <summary>
+    ///     A Godot binary that does not exit within the timeout fails the C# support check and is stopped.
+    /// </summary>
+    [TestCase]
+    public void VerifyGodotCSharpSupportTimeout()
+    {
+        CreateTimeoutScript();
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        var result = CreateTestRunner(1000).VerifyGodotCSharpSupport(MockGodotBinPath, 1000);
+
+        AssertThat(result).OverrideFailureMessage("VerifyGodotCSharpSupport should fail on timeout").IsFalse();
+        VerifyLoggerError(capture, $"Checking Godot C# support fails, '{MockGodotBinPath} --help' did not exit within 1000ms.");
+    }
+
+    /// <summary>
     ///     Test compilation failure scenario.
     /// </summary>
     [TestCase]
@@ -446,6 +476,39 @@ public class GodotRuntimeTestRunnerTest
             echo 'Starting compilation (will take 4 seconds)...'
             sleep 5
             echo 'Compilation complete!'
+            exit 0
+            """;
+
+        File.WriteAllText(MockGodotBinPath, content);
+        SetAsExecutable(MockGodotBinPath);
+    }
+
+    /// <summary>
+    ///     Create a script that prints the C# options of `godot --help` and exits about 3 seconds later.
+    /// </summary>
+    private void CreateSlowExitHelpScript()
+    {
+        var content = Environment.OSVersion.Platform == PlatformID.Win32NT
+            ?
+
+            // Windows batch file that exits about 3 seconds after printing the help
+            """
+            @echo off
+
+            echo Godot Engine v4.6.stable.mono - https://godotengine.org
+            echo   --build-solutions   Build the scripting solutions (e.g. for C# projects).
+            ping 127.0.0.1 -n 4 > nul
+            exit 0
+            """
+            :
+
+            // Unix shell script that exits about 3 seconds after printing the help
+            """
+            #!/bin/bash
+
+            echo 'Godot Engine v4.6.stable.mono - https://godotengine.org'
+            echo '  --build-solutions   Build the scripting solutions (e.g. for C# projects).'
+            sleep 3
             exit 0
             """;
 
