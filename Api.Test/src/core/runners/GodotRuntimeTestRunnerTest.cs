@@ -180,6 +180,16 @@ public class GodotRuntimeTestRunnerTest
         AssertThat(result).OverrideFailureMessage("VerifyGodotCSharpSupport should succeed").IsTrue();
     }
 
+    [TestCase("4.6.stable.mono.official.89cea1439", true)]
+    [TestCase("4.7.stable.mono.official.5b4e0cb0f\n", true)]
+    [TestCase("4.8.dev7.mono.custom_build.c971f93e7", true)]
+    [TestCase("4.6.2.stable.official.71f334935", false)]
+    [TestCase("4.8.dev7.official.c971f93e7", false)]
+    [TestCase("4.6.stable.official.monotonic", false)]
+    [TestCase("", false)]
+    public void IsGodotCSharpBuild(string version, bool expected)
+        => AssertThat(GodotRuntimeTestRunner.IsGodotCSharpBuild(version)).IsEqual(expected);
+
     /// <summary>
     ///     Test compilation failure scenario.
     /// </summary>
