@@ -25,6 +25,9 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      actions: write   # delete workflow runs
+      contents: read   # checkout
 
     steps:
       - name: Checkout Repository

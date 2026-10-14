@@ -81,7 +81,6 @@ module.exports = async ({github, context, core, exec, env}) => {
             });
             return {status: response.status, run_id};
         } catch (error) {
-            core.warning(`Failed to delete run ${run_id}: ${error.message}`);
             return {status: error.status || 500, run_id, error: error.message};
         }
     };
@@ -115,14 +114,15 @@ module.exports = async ({github, context, core, exec, env}) => {
         core.notice(`Successfully deleted ${succeeded.length} obsolete workflow runs`);
 
         if (failed.length > 0) {
-            core.warning(`${failed.length} deletion(s) failed`);
+            // log each failed deletion once, the run fails with a single error
             failed.forEach(f => {
                 if (f.reason) {
-                    core.error(`Failed with error: ${f.reason}`);
+                    core.info(`Failed with error: ${f.reason}`);
                 } else if (f.value && f.value.error) {
-                    core.error(`Failed to delete run ${f.value.run_id}: ${f.value.error}`);
+                    core.info(`Failed to delete run ${f.value.run_id}: ${f.value.error}`);
                 }
             });
+            core.setFailed(`${failed.length} of ${responses.length} deletion(s) failed`);
         }
     } catch (e) {
         core.setFailed(`Action failed with error ${e}`);
