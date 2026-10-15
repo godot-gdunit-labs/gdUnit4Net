@@ -54,7 +54,7 @@ Annotate tests that touch Godot features (nodes, scenes, resources) with `[Requi
 
 ```bash
 # Build
-dotnet build --debug
+dotnet build
 
 # Verify formatting (CI-style check, no changes applied), per project as in .github/workflows/ci-pr.yml
 dotnet format Api/GdUnit4Api.csproj --verify-no-changes --verbosity diagnostic
@@ -75,7 +75,7 @@ formatting changes.
 
 ### C# Linting
 
-No standalone linter. StyleCop.Analyzers and the IDE code-style rules run during `dotnet build --debug`
+No standalone linter. StyleCop.Analyzers and the IDE code-style rules run during `dotnet build`
 (`EnforceCodeStyleInBuild = true`, `TreatWarningsAsErrors = true`, see `Directory.Build.props`);
 the build must finish without errors.
 
@@ -162,7 +162,7 @@ Run all linting locally before pushing to avoid CI failures:
 
 ```bash
 # C# build (code style enforced)
-dotnet build --debug
+dotnet build
 
 # C# format check of the changed projects
 dotnet format <project>.csproj --verify-no-changes --verbosity diagnostic

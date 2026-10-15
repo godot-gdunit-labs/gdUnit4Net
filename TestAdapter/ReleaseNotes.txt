@@ -15,6 +15,13 @@ v3.2.0
        </GdUnit4>
    ```
           Requires `gdUnit4.api` v5.1.0-rc6 or newer.
+* GD-484: The package now targets `net8.0` and `net10.0` (C# 14) instead of `net8.0` and `net9.0`.
+          The supported .NET versions are .NET 8 and .NET 10, projects targeting `net9.0` use the `net8.0` build.
+
+🪲 Bug Fixes
+* GD-465: Fixing that only the first test suite is executed when the test assembly is built with full PDBs.
+          Test cases are now grouped into test suites by their class, and a test case the test engine reports
+          no result for is reported as failed instead of being dropped silently.
 
 v3.1.1
 * GD-448: Fix non-16KB-aligned native libs being included in Android export publish output.

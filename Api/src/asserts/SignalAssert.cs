@@ -4,6 +4,7 @@
 namespace GdUnit4.Asserts;
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using Constraints;
 
@@ -77,6 +78,7 @@ public sealed class SignalAssert : AssertBase<GodotObject, ISignalConstraint>, I
         return this;
     }
 
+    [SuppressMessage("Reliability", "CA2025", Justification = "The token source is disposed by a continuation that runs after the signal task has completed")]
     private Task<ISignalConstraint> BuildSignalTask(string signal, Variant[] args, Action<bool> validate)
     {
         var signalCancellationToken = new CancellationTokenSource();

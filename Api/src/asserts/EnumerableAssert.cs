@@ -229,7 +229,7 @@ public sealed class EnumerableAssert<TValue> : AssertBase<IEnumerable<TValue?>, 
 
         // we test for contains nothing
         if (expectedList.Count == 0)
-            return this!;
+            return this;
 
         // Create list once to avoid multiple enumerations
         var notFound = expectedList.Where(expectedItem =>
@@ -241,7 +241,7 @@ public sealed class EnumerableAssert<TValue> : AssertBase<IEnumerable<TValue?>, 
 
         if (notFound.Count > 0)
             ThrowTestFailureReport(AssertFailures.Contains(Current, expectedList, notFound), Current, expected);
-        return this!;
+        return this;
     }
 
     private EnumerableAssert<TValue?> CheckContainsExactly(IEnumerable<TValue?> expected, bool referenceEquals)
@@ -250,14 +250,14 @@ public sealed class EnumerableAssert<TValue> : AssertBase<IEnumerable<TValue?>, 
 
         // we test for contains nothing
         if (expectedList.Count == 0)
-            return this!;
+            return this;
 
         var diff = DiffArrayExactly(Current, expectedList, referenceEquals);
         var notExpected = diff.NotExpected;
         var notFound = diff.NotFound;
         if (notExpected.Count != 0 || notFound.Count != 0)
             ThrowTestFailureReport(AssertFailures.ContainsExactly(Current, expectedList, notFound, notExpected), Current, expected);
-        return this!;
+        return this;
     }
 
     private EnumerableAssert<TValue?> CheckContainsExactlyInAnyOrder(IEnumerable<TValue?> expected, bool referenceEquals)
@@ -266,7 +266,7 @@ public sealed class EnumerableAssert<TValue> : AssertBase<IEnumerable<TValue?>, 
 
         // we test for contains nothing
         if (expectedList.Count == 0)
-            return this!;
+            return this;
 
         var diff = DiffArrayAnyOrder(Current, expectedList, referenceEquals);
         var notExpected = diff.NotExpected;
@@ -275,7 +275,7 @@ public sealed class EnumerableAssert<TValue> : AssertBase<IEnumerable<TValue?>, 
         // no difference and additions found
         if (notExpected.Count != 0 || notFound.Count != 0)
             ThrowTestFailureReport(AssertFailures.ContainsExactlyInAnyOrder(Current, expectedList, notFound, notExpected), Current, expected);
-        return this!;
+        return this;
     }
 
     private EnumerableAssert<TValue?> CheckNotContains(IEnumerable<TValue?> expected, bool referenceEquals)
@@ -284,7 +284,7 @@ public sealed class EnumerableAssert<TValue> : AssertBase<IEnumerable<TValue?>, 
 
         // we test for contains nothing
         if (expectedList.Count == 0)
-            return this!;
+            return this;
 
         var found = Current?
             .Where(currentItem =>
@@ -294,7 +294,7 @@ public sealed class EnumerableAssert<TValue> : AssertBase<IEnumerable<TValue?>, 
 
         if (found.Count != 0)
             ThrowTestFailureReport(AssertFailures.NotContains(Current, expectedList, found), Current, expected);
-        return this!;
+        return this;
     }
 
     private ArrayDiff DiffArrayAnyOrder(

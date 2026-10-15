@@ -6,7 +6,7 @@ gdUnit4.api is the C# package to enable GdUnit4 to run/write unit tests in C#.
 
 ## Features
 
-* **Writing And Executing Tests** in C# for Net8.0 and Net9.0 C#12
+* **Writing And Executing Tests** in C# for Net8.0 and Net10.0 C#14
 * **Convenient interface** for running test-suites directly from Godot<br>
   One of the main features of GdUnit4 is the ability to run test-suites directly from the Godot editor using the context menu. You can run test-suites from the FileSystem panel,
   the ScriptEditor, or the GdUnit Inspector. To do this, simply right-click on the desired test-suite or test-case and select "Run Test(s)" from the context menu. This will run the

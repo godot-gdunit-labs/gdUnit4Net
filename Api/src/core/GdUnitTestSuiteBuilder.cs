@@ -151,7 +151,7 @@ internal static class GdUnitTestSuiteBuilder
             return method.Body.GetLocation().GetLineSpan().StartLinePosition.Line;
 
         // If the method has not a body, return the line of the method declaration
-        return method?.Identifier.GetLocation().GetLineSpan().StartLinePosition.Line + 1 ?? -1;
+        return (method?.Identifier.GetLocation().GetLineSpan().StartLinePosition.Line + 1) ?? -1;
     }
 
     internal static string? FindMethod(string sourcePath, int lineNumber)

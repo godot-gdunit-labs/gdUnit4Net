@@ -2,7 +2,7 @@
     <PropertyGroup>
         <!-- Disable Central Package Management for Godot projects -->
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <NullableReferenceTypes>true</NullableReferenceTypes>

@@ -322,8 +322,7 @@ public class ObjectAssertTest
     public void InterruptIsFailure()
     {
         // we disable failure reporting until we simulate an failure
-        if (ExecutionContext.Current != null)
-            ExecutionContext.Current.FailureReporting = false;
+        ExecutionContext.Current?.FailureReporting = false;
 
         // try to fail
         AssertObject(null).IsNotNull();

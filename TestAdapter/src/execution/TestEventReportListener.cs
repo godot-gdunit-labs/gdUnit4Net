@@ -3,6 +3,7 @@
 
 namespace GdUnit4.TestAdapter.Execution;
 
+using System.Collections.Concurrent;
 using System.Text.Encodings.Web;
 
 using Api;
@@ -24,6 +25,8 @@ using TestCase = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase;
 
 internal sealed class TestEventReportListener : ITestEventListener
 {
+    private readonly ConcurrentDictionary<Guid, bool> reportedTests = new();
+
     public TestEventReportListener(IFrameworkHandle framework, IReadOnlyList<TestCase> testCases)
     {
         Framework = framework;
@@ -104,6 +107,7 @@ internal sealed class TestEventReportListener : ITestEventListener
                     Framework.SendMessage(TestMessageLevel.Informational, $"TestCase: {testEvent.FullyQualifiedName} {testResult.Outcome}");
                 Framework.RecordResult(testResult);
                 Framework.RecordEnd(testCase, testResult.Outcome);
+                reportedTests[testCase.Id] = true;
                 CompletedTests += 1;
                 break;
             }
@@ -125,6 +129,36 @@ internal sealed class TestEventReportListener : ITestEventListener
 
     public void Dispose()
     {
+    }
+
+    /// <summary>
+    ///     Reports every test case the test engine has not reported a result for as failed.
+    ///     A test case without a result was dropped during execution, e.g. because it could not be mapped to its test method,
+    ///     and must not be lost silently from the test run.
+    /// </summary>
+    public void ReportNotExecutedTests()
+    {
+        var notExecutedTests = TestCases
+            .Where(testCase => !reportedTests.ContainsKey(testCase.Id))
+            .ToList();
+        if (notExecutedTests.Count == 0)
+            return;
+
+        Framework.SendMessage(TestMessageLevel.Error, $"[GdUnit4] {notExecutedTests.Count} test(s) not executed, the test engine reported no result for them.");
+        foreach (var testCase in notExecutedTests)
+        {
+            var testResult = new TestResult(testCase)
+            {
+                DisplayName = IdeType is Ide.DotNet or Ide.Unknown ? testCase.FullyQualifiedName : testCase.DisplayName,
+                Outcome = TestOutcome.Failed,
+                ErrorMessage = $"The test '{testCase.FullyQualifiedName}' was not executed, the test engine reported no result for it.",
+                EndTime = DateTimeOffset.Now
+            };
+
+            Framework.RecordResult(testResult);
+            Framework.RecordEnd(testCase, testResult.Outcome);
+            reportedTests[testCase.Id] = true;
+        }
     }
 
     private static bool IsEventFailed(ITestEvent e)
@@ -153,6 +187,7 @@ internal sealed class TestEventReportListener : ITestEventListener
                     Framework.RecordStart(testCase);
                     Framework.RecordResult(testResult);
                     Framework.RecordEnd(testCase, testResult.Outcome);
+                    reportedTests[testCase.Id] = true;
                 });
         }
 #pragma warning disable CA1031

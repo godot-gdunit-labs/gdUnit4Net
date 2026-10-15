@@ -1,9 +1,16 @@
 namespace GdUnit4.TestAdapter.Test.Execution;
 
+using Core.Discovery;
+
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
+
+using TestAdapter.Settings;
+
+using static Assertions;
 
 [TestClass]
 public class GdUnit4TestExecutorTest
@@ -56,4 +63,78 @@ public class GdUnit4TestExecutorTest
         Assert.AreEqual(Environment.GetEnvironmentVariable("TestEnvironmentA"), "23");
         Assert.AreEqual(Environment.GetEnvironmentVariable("TestEnvironmentB"), "42");
     }
+
+    [TestMethod]
+    public void ToGdUnitTestNodesGroupsSuitesByManagedTypeOnUnknownSourceFile()
+    {
+        // test cases of an assembly built with full PDBs have no source file and line number
+        List<TestCase> testCases =
+        [
+            BuildTestCase("Examples.ASuiteTest", "First", "unknown", -1),
+            BuildTestCase("Examples.BSuiteTest", "Second", "unknown", -1),
+            BuildTestCase("Examples.ASuiteTest", "Third", "unknown", -1)
+        ];
+
+        var suites = GdUnit4TestExecutor.ToGdUnitTestNodes(testCases)
+            .SelectMany(assembly => assembly.Suites)
+            .ToList();
+
+        _ = AssertThat(suites)
+            .Extract("ManagedType")
+            .ContainsExactly("Examples.ASuiteTest", "Examples.BSuiteTest");
+        _ = AssertThat(suites)
+            .Extract("SourceFile")
+            .ContainsExactly("unknown", "unknown");
+        _ = AssertThat(suites.Single(suite => suite.ManagedType == "Examples.ASuiteTest").Tests)
+            .Extract("ManagedMethod")
+            .ContainsExactly("First", "Third");
+        _ = AssertThat(suites.Single(suite => suite.ManagedType == "Examples.BSuiteTest").Tests)
+            .Extract("ManagedMethod")
+            .ContainsExactly("Second");
+    }
+
+    [TestMethod]
+    public void ToGdUnitTestNodesGroupsSuitesByManagedTypeAndSourceFile()
+    {
+        List<TestCase> testCases =
+        [
+            BuildTestCase("Examples.ASuiteTest", "First", "ASuiteTest.cs", 10),
+            BuildTestCase("Examples.BSuiteTest", "Second", "BSuiteTest.cs", 10),
+            BuildTestCase("Examples.ASuiteTest", "Third", "ASuiteTest.cs", 20)
+        ];
+
+        var suites = GdUnit4TestExecutor.ToGdUnitTestNodes(testCases)
+            .SelectMany(assembly => assembly.Suites)
+            .ToList();
+
+        _ = AssertThat(suites)
+            .Extract("ManagedType")
+            .ContainsExactly("Examples.ASuiteTest", "Examples.BSuiteTest");
+        _ = AssertThat(suites)
+            .Extract("SourceFile")
+            .ContainsExactly("ASuiteTest.cs", "BSuiteTest.cs");
+        _ = AssertThat(suites.Single(suite => suite.ManagedType == "Examples.ASuiteTest").Tests)
+            .Extract("ManagedMethod")
+            .ContainsExactly("First", "Third");
+        _ = AssertThat(suites.Single(suite => suite.ManagedType == "Examples.ASuiteTest").Tests)
+            .Extract("LineNumber")
+            .ContainsExactly(10, 20);
+    }
+
+    private static TestCase BuildTestCase(string managedType, string managedMethod, string codeFilePath, int lineNumber)
+        => GdUnit4TestDiscoverer.BuildTestCase(
+            new TestCaseDescriptor
+            {
+                FullyQualifiedName = $"{managedType}.{managedMethod}",
+                SimpleName = managedMethod,
+                AssemblyPath = "Examples.dll",
+                ManagedType = managedType,
+                ManagedMethod = managedMethod,
+                Id = Guid.NewGuid(),
+                LineNumber = lineNumber,
+                CodeFilePath = codeFilePath,
+                AttributeIndex = 0,
+                RequireRunningGodotEngine = false
+            },
+            new GdUnit4Settings());
 }

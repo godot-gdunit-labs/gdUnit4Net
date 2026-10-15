@@ -17,9 +17,9 @@ public class TestSuiteAllTestsFailWithExceptions
     }
 
     [TestCase]
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CS1998, IDE0390 // Async method lacks 'await' operators and will run synchronously
     public async Task ExceptionAtAsyncMethod()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning restore CS1998, IDE0390 // Async method lacks 'await' operators and will run synchronously
         => throw new ArgumentException("outer exception", new ArgumentNullException("inner exception"));
 
     [TestCase]

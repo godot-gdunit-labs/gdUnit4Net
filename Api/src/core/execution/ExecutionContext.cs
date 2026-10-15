@@ -18,8 +18,6 @@ using Reporting;
 
 internal sealed class ExecutionContext : IDisposable
 {
-    private int iteration;
-
     public ExecutionContext(TestSuite testInstance, IEnumerable<ITestEventListener> eventListeners, bool reportOrphanNodesEnabled, bool isEngineMode)
     {
         Thread.SetData(Thread.GetNamedDataSlot("ExecutionContext"), this);
@@ -111,8 +109,8 @@ internal sealed class ExecutionContext : IDisposable
 
     public int CurrentIteration
     {
-        get => iteration--;
-        set => iteration = value;
+        get => field--;
+        set;
     }
 
     public bool IsFailed => ReportCollector.Failures.Any() || SubExecutionContexts.Any(context => context.IsFailed);
