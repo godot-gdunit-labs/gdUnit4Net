@@ -75,25 +75,22 @@ jobs:
             **/nupkg
           key: ${{ runner.os }}-build-${{ github.sha }}-${{ github.run_id }}
 
-      # the vstest filter is actual not implemented and the argument 'paths' on gdUnit4-action@v1.0.8 will have no affect
-      - name: 'Temp solution, we delete the failing test for now.'
-        shell: bash
-        run: |
-          rm -rf ./Example/test/ExampleTest.cs
-
       - name: 'Test Example via gdunit-action - Godot_${{ inputs.godot-version }}-${{ inputs.godot-status }}-net'
         uses: MikeSchulze/gdUnit4-action@v1
+        env:
+          # The action runs `dotnet test` without a filter argument, MSBuild takes the test filter from this variable.
+          # `ExampleTest.Failed` fails by design, the job `unit-test-example` verifies that failure.
+          VSTestTestCaseFilter: 'FullyQualifiedName!=Examples.Test.ExampleTest.Failed'
         with:
           version: ${{ inputs.gdunit-version }}
           godot-version: ${{ inputs.godot-version }}
           godot-status: ${{ inputs.godot-status }}
           godot-net: true
           project_dir: './Example/'
-          # the filter actual not works see https://github.com/MikeSchulze/gdUnit4Net/issues/27
+          # The action ignores the paths for C# tests and runs all tests of the project
           paths: |
-            res://Example/test/Api
+            res://test
           timeout: 2
-          retries: 3 # We have set the number of repetitions to 3 because Godot mono randomly crashes during C# tests
           publish-report: false
           report-name: 'action_example_Godot${{ inputs.godot-version }}-${{ inputs.godot-status }}'
 
