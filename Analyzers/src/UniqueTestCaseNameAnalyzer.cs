@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using static DiagnosticRules;
 
 /// <summary>
-///
+///     Analyzer that checks that TestCase attributes on a test method have unique TestNames.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class UniqueTestCaseNameAnalyzer : DiagnosticAnalyzer
@@ -39,7 +39,11 @@ public sealed class UniqueTestCaseNameAnalyzer : DiagnosticAnalyzer
         });
     }
 
-
+    /// <summary>
+    ///     Analyzes a method declaration syntax node to verify there are no duplicate TestNames among TestCase attributes.
+    /// </summary>
+    /// <param name="context">The syntax node analysis context containing the method declaration to analyze.</param>
+    /// <param name="testCaseAttr">The type symbol representing the TestCase attribute.</param>
     private void AnalyzeMethod(SyntaxNodeAnalysisContext context, INamedTypeSymbol testCaseAttr)
     {
         var methodSyntax = (MethodDeclarationSyntax)context.Node;
@@ -52,6 +56,7 @@ public sealed class UniqueTestCaseNameAnalyzer : DiagnosticAnalyzer
         var testCaseAttributes = containingSymbol.GetAttributes()
             .Where(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, testCaseAttr));
 
+        // Keep track of the names we encounter.
         HashSet<string> usedNames = [];
         foreach (var attr in testCaseAttributes)
         {
@@ -62,6 +67,7 @@ public sealed class UniqueTestCaseNameAnalyzer : DiagnosticAnalyzer
             // Check if we've already encountered this name.
             if (!usedNames.Add(name))
             {
+                // Get the syntax node for the attribute.
                 if (attr.ApplicationSyntaxReference?.GetSyntax() is { } syntaxNode)
                 {
                     // Report diagnostic

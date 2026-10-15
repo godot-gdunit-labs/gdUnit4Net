@@ -22,6 +22,9 @@ internal static class DiagnosticRules
         // Rule IDs (GdUnit01xx)
         // public const string TestCaseName = "GdUnit0101";
 
+        /// <summary>
+        ///     Rule ID for detecting multiple TestCase attributes with the same TestName on the same method.
+        /// </summary>
         public const string TESTCASE_NAMES_MUST_BE_UNIQUE_ID = "GdUnit0102";
 
         /// <summary>
