@@ -110,7 +110,7 @@ internal class TestEvent : ITestEvent, IEquatable<TestEvent>
 
     public TimeSpan ElapsedInMs => TimeSpan.FromMilliseconds(GetByKeyOrDefault(StatisticKey.ElapsedTime, 0L));
 
-    public static bool operator ==(TestEvent? lhs, TestEvent? rhs) => lhs?.Equals(rhs) ?? rhs is null;
+    public static bool operator ==(TestEvent? lhs, TestEvent? rhs) => lhs?.Equals(rhs) ?? (rhs is null);
 
     public static bool operator !=(TestEvent? lhs, TestEvent? rhs) => !(lhs == rhs);
 

@@ -127,7 +127,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
             if (!HasTestCaseAttribute(methodSymbol))
                 return;
 
-            if (!ContainsGodotTypes(methodSymbol, context.Compilation, methodBody.SemanticModel!))
+            if (!ContainsGodotTypes(methodSymbol, context.Compilation, methodBody.SemanticModel))
                 return;
 
             ReportMethodDiagnostic(context, methodSymbol);
@@ -160,7 +160,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
             if (!IsTestHook(methodSymbol))
                 return;
 
-            if (!ContainsGodotTypes(methodSymbol, context.Compilation, methodBody.SemanticModel!))
+            if (!ContainsGodotTypes(methodSymbol, context.Compilation, methodBody.SemanticModel))
                 return;
 
             ReportClassDiagnostic(context, methodSymbol.ContainingType);

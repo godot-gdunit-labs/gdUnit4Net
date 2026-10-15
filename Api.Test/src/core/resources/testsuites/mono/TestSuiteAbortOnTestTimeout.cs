@@ -54,10 +54,10 @@ public class TestSuiteAbortOnTestTimeout
     }
 
     [TestCase(Timeout = 1000, Description = "This test has a invalid signature and should be end with a failure.")]
-#pragma warning disable CS1998
+#pragma warning disable CS1998, IDE0390
     public async void TestCase4()
         => AssertBool(true).IsEqual(true);
-#pragma warning restore CS1998
+#pragma warning restore CS1998, IDE0390
 
     [TestCase(Description = "This test has no timeout definition and expect to end with success.")]
     public void TestCase5()

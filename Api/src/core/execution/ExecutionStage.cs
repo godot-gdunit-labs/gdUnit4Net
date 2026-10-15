@@ -133,7 +133,7 @@ internal abstract class ExecutionStage<T> : IExecutionStage
 
     private static int ScanFailureLineNumber(StackTrace stack)
     {
-        foreach (var frame in stack.GetFrames().Reverse())
+        foreach (var frame in Enumerable.Reverse(stack.GetFrames()))
         {
             if (frame.GetFileName() == null)
                 continue;

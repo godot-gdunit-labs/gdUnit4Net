@@ -49,8 +49,8 @@
 <h1 align="center">Supported .NET Versions</h1>
 <p align="center">
   <img src="https://img.shields.io/badge/.NET-8.0-blue?logo=dotnet&logoColor=white">
-  <img src="https://img.shields.io/badge/.NET-9.0-blue?logo=dotnet&logoColor=white">
-  <img src="https://img.shields.io/badge/C%23-12.0-239120?logo=csharp&logoColor=white">
+  <img src="https://img.shields.io/badge/.NET-10.0-blue?logo=dotnet&logoColor=white">
+  <img src="https://img.shields.io/badge/C%23-14.0-239120?logo=csharp&logoColor=white">
   <img src="https://img.shields.io/badge/VSTest-Compatible-green?logo=visualstudio&logoColor=white">
 </p>
 

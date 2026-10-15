@@ -404,6 +404,7 @@ dotnet_diagnostic.SA1634.severity = none # File header must show copyright
 dotnet_diagnostic.IDE0010.severity = none # Populate switch: its code fix floods enum switches and bypasses default
 dotnet_diagnostic.IDE0072.severity = none # Populate switch expression
 dotnet_diagnostic.IDE0130.severity = none # Namespace does not match folder structure
+dotnet_diagnostic.IDE0330.severity = none # Use System.Threading.Lock: not available in net8.0, which the packages still target
 
 # Allow underscore in constant names (for SCREAMING_SNAKE_CASE)
 dotnet_diagnostic.SA1310.severity = none
