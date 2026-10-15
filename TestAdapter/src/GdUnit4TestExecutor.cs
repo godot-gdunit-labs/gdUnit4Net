@@ -55,6 +55,7 @@ public class GdUnit4TestExecutor : ITestExecutor2, IDisposable
 
     private IFrameworkHandle? fh;
     private ITestEngine? testEngine;
+    private volatile bool isCanceled;
 
 #pragma warning disable CA1859
     private ITestEngineLogger? Log { get; set; }
@@ -90,6 +91,7 @@ public class GdUnit4TestExecutor : ITestExecutor2, IDisposable
             return;
 
         Log = new Logger(frameworkHandle);
+        isCanceled = false;
         if (ITestEngine.EngineVersion() < GdUnit4TestDiscoverer.MinRequiredGdUnit4ApiVersion)
         {
             Log.LogError(
@@ -128,6 +130,10 @@ public class GdUnit4TestExecutor : ITestExecutor2, IDisposable
             var testEventListener = new TestEventReportListener(frameworkHandle, testCases);
             var debuggerFramework = GetDebuggerFramework(frameworkHandle);
             testEngine.Execute(testsByAssembly, testEventListener, debuggerFramework);
+
+            // a test without a result was dropped by the test engine, report it instead of letting the test run pass silently
+            if (!isCanceled)
+                testEventListener.ReportNotExecutedTests();
             Log.LogInfo("Test execution stopped.");
 
             // enable just to verify all allocated objects are freed
@@ -182,6 +188,7 @@ public class GdUnit4TestExecutor : ITestExecutor2, IDisposable
     public void Cancel()
     {
         Log?.LogInfo("User has canceled the test execution.");
+        isCanceled = true;
         testEngine?.Cancel();
     }
 
@@ -227,6 +234,66 @@ public class GdUnit4TestExecutor : ITestExecutor2, IDisposable
     }
 
     /// <summary>
+    ///     Converts VSTest TestCase objects to GdUnit4 test node hierarchy for execution.
+    /// </summary>
+    /// <param name="testCases">Collection of VSTest TestCase objects to convert.</param>
+    /// <returns>List of test assembly nodes organized in GdUnit4's hierarchical test structure.</returns>
+    internal static List<TestAssemblyNode> ToGdUnitTestNodes(IEnumerable<TestCase> testCases) =>
+
+        // Group test cases by assembly path
+        [
+            .. testCases
+                .GroupBy(tc => tc.Source)
+                .Select(assemblyGroup =>
+                {
+                    // Create the assembly node
+                    var assembly = new TestAssemblyNode
+                    {
+                        Id = Guid.NewGuid(),
+                        ParentId = Guid.Empty,
+                        AssemblyPath = assemblyGroup.Key,
+                        Suites = []
+                    };
+
+                    // Group test cases by managed type (suites), the source file alone is not unique
+                    // because it is 'unknown' for all test cases when the assembly is built with full PDBs
+                    var suites = assemblyGroup
+                        .GroupBy(t => (ManagedType: t.GetPropertyValue(TestCaseExtensions.ManagedTypeProperty, string.Empty), t.CodeFilePath))
+                        .Select(tests =>
+                        {
+                            var suite = new TestSuiteNode
+                            {
+                                Id = Guid.NewGuid(),
+                                ParentId = assembly.Id,
+                                ManagedType = tests.Key.ManagedType,
+                                AssemblyPath = assembly.AssemblyPath,
+                                SourceFile = tests.Key.CodeFilePath ?? "Unknown",
+                                Tests = []
+                            };
+
+                            suite.Tests.AddRange(
+                            [
+                                .. tests
+                                    .Select(test => new TestCaseNode
+                                    {
+                                        Id = test.Id,
+                                        ParentId = suite.Id,
+                                        ManagedMethod = test.GetPropertyValue(TestCaseExtensions.ManagedMethodProperty, string.Empty),
+                                        AttributeIndex = test.GetPropertyValue(TestCaseExtensions.ManagedMethodAttributeIndexProperty, 0),
+                                        LineNumber = test.LineNumber,
+                                        RequireRunningGodotEngine = test.GetPropertyValue(TestCaseExtensions.RequireRunningGodotEngineProperty, false)
+                                    })
+                            ]);
+
+                            return suite;
+                        });
+
+                    assembly.Suites.AddRange(suites);
+                    return assembly;
+                })
+        ];
+
+    /// <summary>
     ///     Releases resources used by the test executor, including the GdUnit4 test engine.
     /// </summary>
     /// <param name="disposing">.</param>
@@ -252,68 +319,6 @@ public class GdUnit4TestExecutor : ITestExecutor2, IDisposable
         => IsJetBrainsRider(frameworkHandle)
             ? new RiderDebuggerFramework(frameworkHandle)
             : new DefaultDebuggerFramework(frameworkHandle);
-
-    /// <summary>
-    ///     Converts VSTest TestCase objects to GdUnit4 test node hierarchy for execution.
-    /// </summary>
-    /// <param name="testCases">Collection of VSTest TestCase objects to convert.</param>
-    /// <returns>List of test assembly nodes organized in GdUnit4's hierarchical test structure.</returns>
-    private static List<TestAssemblyNode> ToGdUnitTestNodes(IEnumerable<TestCase> testCases) =>
-
-        // Group test cases by assembly path
-        [
-            .. testCases
-                .GroupBy(tc => tc.Source)
-                .Select(assemblyGroup =>
-                {
-                    // Create the assembly node
-                    var assembly = new TestAssemblyNode
-                    {
-                        Id = Guid.NewGuid(),
-                        ParentId = Guid.Empty,
-                        AssemblyPath = assemblyGroup.Key,
-                        Suites = []
-                    };
-
-                    // Group test cases by managed type (suites)
-                    var suites = assemblyGroup
-                        .GroupBy(t => t.CodeFilePath)
-                        .Select(tests =>
-                        {
-                            var t = tests.First();
-
-                            var managedType = t.GetPropertyValue(TestCaseExtensions.ManagedTypeProperty, string.Empty);
-                            var suite = new TestSuiteNode
-                            {
-                                Id = Guid.NewGuid(),
-                                ParentId = assembly.Id,
-                                ManagedType = managedType,
-                                AssemblyPath = assembly.AssemblyPath,
-                                SourceFile = t.CodeFilePath ?? "Unknown",
-                                Tests = []
-                            };
-
-                            suite.Tests.AddRange(
-                            [
-                                .. tests
-                                    .Select(test => new TestCaseNode
-                                    {
-                                        Id = test.Id,
-                                        ParentId = suite.Id,
-                                        ManagedMethod = test.GetPropertyValue(TestCaseExtensions.ManagedMethodProperty, string.Empty),
-                                        AttributeIndex = test.GetPropertyValue(TestCaseExtensions.ManagedMethodAttributeIndexProperty, 0),
-                                        LineNumber = test.LineNumber,
-                                        RequireRunningGodotEngine = test.GetPropertyValue(TestCaseExtensions.RequireRunningGodotEngineProperty, false)
-                                    })
-                            ]);
-
-                            return suite;
-                        });
-
-                    assembly.Suites.AddRange(suites);
-                    return assembly;
-                })
-        ];
 
     /// <summary>
     ///     Detects if the test execution is running within JetBrains Rider IDE.
