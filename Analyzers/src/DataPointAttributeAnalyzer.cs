@@ -25,21 +25,6 @@ public class DataPointAttributeAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [DataPoint.MultipleTestCaseAttributes];
 
     /// <summary>
-    ///     Contains TypeSymbols needed for the analyzer.
-    /// </summary>
-    /// <remarks>
-    ///     These symbols will be consistent throughout the compilation.
-    ///     Looking them up once at compilation start avoids doing the lookup repeatedly for each method symbol.
-    /// </remarks>
-    /// <param name="dataPointAttribute">The INamedTypeSymbol representing DataPointAttribute.</param>
-    /// <param name="testCaseAttribute">The INamedTypeSymbol representing TestCaseAttribute.</param>
-    private class KnownTypeSymbols(INamedTypeSymbol dataPointAttribute, INamedTypeSymbol testCaseAttribute)
-    {
-        public readonly INamedTypeSymbol DataPointAttribute = dataPointAttribute;
-        public readonly INamedTypeSymbol TestCaseAttribute = testCaseAttribute;
-    }
-
-    /// <summary>
     ///     Initializes the analyzer with the analysis context.
     /// </summary>
     /// <param name="context">The analysis context to initialize.</param>
@@ -59,8 +44,7 @@ public class DataPointAttributeAnalyzer : DiagnosticAnalyzer
             if (dataPointAttr is null || testCaseAttr is null)
                 return;
 
-            var knownTypeSymbols = new KnownTypeSymbols(dataPointAttr, testCaseAttr);
-            ctx.RegisterSymbolAction(symbolContext => AnalyzeMethodSymbol(symbolContext, knownTypeSymbols), SymbolKind.Method);
+            ctx.RegisterSymbolAction(symbolContext => AnalyzeMethodSymbol(symbolContext, dataPointAttr, testCaseAttr), SymbolKind.Method);
         });
 
     }
@@ -69,21 +53,22 @@ public class DataPointAttributeAnalyzer : DiagnosticAnalyzer
     ///     Analyzes a method symbol to verify proper usage of DataPoint and TestCase attributes.
     /// </summary>
     /// <param name="context">The symbol analysis context containing the method to analyze.</param>
-    /// <param name="knownTypes">An object containing TypeSymbols needed for the analysis.</param>
-    private static void AnalyzeMethodSymbol(SymbolAnalysisContext context, KnownTypeSymbols knownTypes)
+    /// <param name="dataPointAttr">The INamedTypeSymbol representing DataPointAttribute.</param>
+    /// <param name="testCaseAttr">The INamedTypeSymbol representing TestCaseAttribute.</param>
+    private static void AnalyzeMethodSymbol(SymbolAnalysisContext context, INamedTypeSymbol dataPointAttr, INamedTypeSymbol testCaseAttr)
     {
         var methodSymbol = (IMethodSymbol)context.Symbol;
 
         // Check for DataPoint attribute
         var hasDataPoint = methodSymbol.GetAttributes()
-            .Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, knownTypes.DataPointAttribute));
+            .Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, dataPointAttr));
 
         if (!hasDataPoint)
             return;
 
         // Get all TestCase attributes with their ApplicationSyntaxReference
         var testCaseAttributes = methodSymbol.GetAttributes()
-            .Where(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, knownTypes.TestCaseAttribute))
+            .Where(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, testCaseAttr))
             .Skip(1); // Skip the first TestCase attribute, one test case attribute is required
 
         // Report on all TestCase attributes after the first one
