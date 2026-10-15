@@ -83,6 +83,14 @@ public partial class VerifyDocumentationTest
 
     private static IEnumerable<(DiagnosticDescriptor Descriptor, string Name)> GetAllDiagnosticDescriptors()
     {
+        // Get TestCase diagnostics
+        var testCaseType = typeof(DiagnosticRules.TestCase);
+        foreach (var field in testCaseType.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
+        {
+            if (field.FieldType == typeof(DiagnosticDescriptor) && field.IsInitOnly)
+                yield return ((DiagnosticDescriptor)field.GetValue(null)!, field.Name.Replace("Attribute", string.Empty, StringComparison.Ordinal));
+        }
+
         // Get DataPoint diagnostics
         var dataPointType = typeof(DiagnosticRules.DataPoint);
         foreach (var field in dataPointType.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
