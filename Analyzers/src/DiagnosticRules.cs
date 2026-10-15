@@ -126,7 +126,7 @@ internal static class DiagnosticRules
             DiagnosticSeverity.Error,
             true,
             """
-
+            Multiple TestCase attributes on a test method cannot specify the same TestName. Duplicate test names will skip the tests and cause inconclusive results.
             """,
             $"{HELP_LINK}/{RuleIds.TESTCASE_NAMES_MUST_BE_UNIQUE_ID}.md",
             WellKnownDiagnosticTags.Compiler);
