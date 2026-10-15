@@ -259,6 +259,9 @@ public class GodotRuntimeTestRunnerTest
         // Create a separate temp working directory
         var workingDirectory = Path.Combine(Environment.CurrentDirectory, "../TestExample");
 
+        // the build is killed while it runs, so it must not hand work to build servers outside its process tree
+        using var buildServers = DisableBuildServers();
+
         try
         {
             // Copy Example Project into working directory
@@ -370,6 +373,15 @@ public class GodotRuntimeTestRunnerTest
         => AssertThat(GodotRuntimeTestRunner.DescribeSignal(exitCode, isWindows)).IsEqual(expected);
 
     #region Helper Methods
+
+    /// <summary>
+    ///     Runs the `dotnet build` started by the runner without the persistent build servers until the returned scope is disposed.
+    ///     The shared compiler server and reused MSBuild nodes are no child processes of the build, so the timeout kill does not stop them,
+    ///     and they keep build output files like `ExampleProject.sourcelink.json` open while the test deletes the working directory.
+    ///     The build inherits the environment of the test process, and MSBuild reads environment variables as properties.
+    /// </summary>
+    private static EnvironmentScope DisableBuildServers()
+        => new(("MSBUILDDISABLENODEREUSE", "1"), ("UseSharedCompilation", "false"));
 
     private static void CopyExampleProject(string destDir)
     {
@@ -527,6 +539,27 @@ public class GodotRuntimeTestRunnerTest
         return $"Expected {level} message equal to '{expectedText}' was not found.\n" +
                $"Actual {level} messages ({entries.Count}):\n" +
                string.Join("\n", entries.Select((e, i) => $"  {i + 1}. {e.Message}"));
+    }
+
+    /// <summary>
+    ///     Sets environment variables of the test process and restores their previous values on dispose.
+    /// </summary>
+    private sealed class EnvironmentScope : IDisposable
+    {
+        private readonly (string Name, string? Value)[] previous;
+
+        public EnvironmentScope(params (string Name, string Value)[] variables)
+        {
+            previous = variables.Select(variable => (variable.Name, Environment.GetEnvironmentVariable(variable.Name))).ToArray();
+            foreach (var (name, value) in variables)
+                Environment.SetEnvironmentVariable(name, value);
+        }
+
+        public void Dispose()
+        {
+            foreach (var (name, value) in previous)
+                Environment.SetEnvironmentVariable(name, value);
+        }
     }
 
     #endregion

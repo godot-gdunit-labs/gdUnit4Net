@@ -152,9 +152,12 @@ public sealed class SceneRunnerCSharpSceneTest
     [TestCase(Timeout = 2000)]
     public async Task SimulateFrames()
     {
-        // cap the frame rate, the color cycle runs on timers, so the frames must take a known minimum time
+        // cap the frame rate, the color cycle runs on timers, so the frames must take a known minimum time,
+        // and disable vsync, otherwise the monitor refresh rate holds the frames below the cap and the test runs close to its timeout
         var maxFps = Engine.MaxFps;
+        var vsyncMode = DisplayServer.WindowGetVsyncMode();
         Engine.MaxFps = 100;
+        DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Disabled);
         try
         {
             var box1 = sceneRunner.GetProperty<ColorRect>("Box1")!;
@@ -180,6 +183,7 @@ public sealed class SceneRunnerCSharpSceneTest
         finally
         {
             Engine.MaxFps = maxFps;
+            DisplayServer.WindowSetVsyncMode(vsyncMode);
         }
     }
 
@@ -344,7 +348,7 @@ public sealed class SceneRunnerCSharpSceneTest
             .ContinueWith(result
                 => result.Result?
                     .HasMessage("Assertion: Timed out after 150ms.")
-                    .HasFileLineNumber(343));
+                    .HasFileLineNumber(347));
     }
 
     [TestCase]
