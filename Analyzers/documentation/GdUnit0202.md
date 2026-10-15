@@ -1,10 +1,10 @@
-﻿# GdUnit0102
+﻿# GdUnit0202
 
 ## Test case names must be unique
 
 | Id         | Category        | Severity | Enabled |
 |------------|-----------------|----------|---------|
-| GdUnit0102 | Attribute Usage | Error    | True    |
+| GdUnit0202 | Attribute Usage | Error    | True    |
 
 # Problem Description
 
@@ -14,7 +14,7 @@ Multiple TestCase attributes on a test method cannot specify the same TestName. 
 
 ```csharp
     [TestCase(TestName = "A")]
-    [TestCase(TestName = "A")] // ❌ GdUnit0102: Test method 'Example' has multiple TestCase attributes with the same TestName
+    [TestCase(TestName = "A")] // ❌ GdUnit0202: Test method 'Example' has multiple TestCase attributes with the same TestName
     public void Example()
     {
     }

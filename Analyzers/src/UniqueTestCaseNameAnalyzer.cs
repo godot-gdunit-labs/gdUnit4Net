@@ -81,5 +81,4 @@ public sealed class UniqueTestCaseNameAnalyzer : DiagnosticAnalyzer
             }
         }
     }
-
 }

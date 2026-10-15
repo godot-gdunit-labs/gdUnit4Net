@@ -23,14 +23,14 @@ internal static class DiagnosticRules
         // public const string TestCaseName = "GdUnit0101";
 
         /// <summary>
-        ///     Rule ID for detecting multiple TestCase attributes with the same TestName on the same method.
-        /// </summary>
-        public const string TESTCASE_NAMES_MUST_BE_UNIQUE_ID = "GdUnit0102";
-
-        /// <summary>
         ///     Rule ID for detecting when a method with a DataPoint attribute has multiple TestCase attributes.
         /// </summary>
         public const string DATA_POINT_WITH_MULTIPLE_TEST_CASE = "GdUnit0201";
+
+        /// <summary>
+        ///     Rule ID for detecting multiple TestCase attributes with the same TestName on the same method.
+        /// </summary>
+        public const string TESTCASE_NAMES_MUST_BE_UNIQUE_ID = "GdUnit0202";
 
         /// <summary>
         ///     Rule ID for detecting when a test class using Godot functionality needs the RequireGodotRuntime attribute.
