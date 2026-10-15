@@ -56,7 +56,8 @@ runs:
         fi
 
         GODOT_PACKAGE=$GODOT_BIN.zip
-        wget $DOWNLOAD_URL/$GODOT_PACKAGE -P ${{ inputs.godot-cache-path }}
+        # curl instead of wget, because the Git Bash of the Windows runners has no wget
+        curl --fail --silent --show-error --location --output ${{ inputs.godot-cache-path }}/$GODOT_PACKAGE $DOWNLOAD_URL/$GODOT_PACKAGE
         unzip ${{ inputs.godot-cache-path }}/$GODOT_PACKAGE -d ${{ inputs.godot-cache-path }}
         rm -rf ${{ inputs.godot-cache-path }}/$GODOT_PACKAGE
 
@@ -73,9 +74,15 @@ runs:
           echo "${{ inputs.godot-cache-path }}/godot"
         else
           echo "Run windows part"
-          pwd
-          mv ${{ inputs.godot-cache-path }}/$GODOT_BIN ${{ inputs.godot-cache-path }}/godot.exe
-          chmod u+x ${{ inputs.godot-cache-path }}/godot.exe
-          ${{ inputs.godot-cache-path }}/godot.exe --version
+
+          # The mono package holds the executables and the GodotSharp directory in a subdirectory
+          if ${{inputs.godot-mono == 'true'}}; then
+            mv ${{ inputs.godot-cache-path }}/$GODOT_BIN/* ${{ inputs.godot-cache-path }}
+            rmdir ${{ inputs.godot-cache-path }}/$GODOT_BIN/
+          fi
+
+          mv ${{ inputs.godot-cache-path }}/${GODOT_BIN}_console.exe ${{ inputs.godot-cache-path }}/godot_console.exe
+          mv ${{ inputs.godot-cache-path }}/$GODOT_BIN.exe ${{ inputs.godot-cache-path }}/godot.exe
+          ${{ inputs.godot-cache-path }}/godot_console.exe --version
           echo "${{ inputs.godot-cache-path }}/godot.exe"
         fi

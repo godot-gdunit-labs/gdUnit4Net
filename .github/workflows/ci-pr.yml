@@ -209,8 +209,9 @@ jobs:
         godot-status: ['stable']
         dotnet-version: ['net10.0']
         include:
-          # Latest
+          # Latest, also tested on Windows
           - gdunit-version: 'latest'
+            windows: true
             godot-version: '4.7.2'
             godot-status: 'stable'
             dotnet-version: 'net10.0'
@@ -223,6 +224,7 @@ jobs:
       gdunit-version: ${{ matrix.gdunit-version }}
       godot-version: ${{ matrix.godot-version }}
       godot-status: ${{ matrix.godot-status }}
+      windows: ${{ matrix.windows == true }}
 
 
   finalize:

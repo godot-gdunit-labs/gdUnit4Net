@@ -17,6 +17,11 @@ on:
       godot-status:
         required: true
         type: string
+      windows:
+        description: 'Also runs the API and the test adapter tests on Windows'
+        required: false
+        type: boolean
+        default: false
 
   workflow_dispatch:
     inputs:
@@ -30,6 +35,11 @@ on:
       godot-status:
         required: true
         type: string
+      windows:
+        description: 'Also runs the API and the test adapter tests on Windows'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: unit-tests-${{ github.head_ref || github.ref_name }}-${{ inputs.godot-version }}
@@ -237,3 +247,66 @@ jobs:
         uses: ./.github/actions/upload-test-report
         with:
           report-name: example_tests_Godot${{ inputs.godot-version }}-${{ inputs.godot-status }}
+
+  unit-test-windows:
+    name: "Run API and TestAdapter Tests on Windows"
+    if: ${{ inputs.windows }}
+    runs-on: windows-2025
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: "Install Godot Net ${{ inputs.godot-version }}"
+        uses: ./.github/actions/godot-install
+        with:
+          godot-version: ${{ inputs.godot-version }}
+          godot-mono: true
+          godot-status-version: ${{ inputs.godot-status }}
+          godot-bin-name: 'win64'
+          godot-cache-path: '~/godot-windows'
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: 'global.json'
+
+      - name: "Run TestAdapter Tests"
+        timeout-minutes: 5
+        run: |
+          cd ./TestAdapter.Test
+          dotnet test --settings .runsettings --verbosity normal
+
+      - name: "Run API Tests"
+        if: ${{ !cancelled() }}
+        timeout-minutes: 10
+        run: |
+          # The tests start Godot as a Windows process, which needs a Windows path
+          GODOT_BIN=$(cygpath --windows "$HOME/godot-windows/godot.exe")
+          export GODOT_BIN
+          cd ./Api.Test
+          # Style checks are disabled to prevent formatting errors from blocking tests
+          dotnet build -p:EnforceCodeStyleInBuild=false -p:TreatWarningsAsErrors=false
+
+          # The console executable prints the Godot output to the log
+          "$HOME/godot-windows/godot_console.exe" --path . --headless --build-solutions --quit-after 200 --verbosity normal
+
+          # The CI settings use the X11 display driver of the Linux runners, Windows uses its own display driver
+          # and renders through ANGLE, because the runners have no OpenGL driver
+          dotnet test GdUnit4ApiTest.csproj --no-build --settings .runsettings-ci --verbosity normal \
+            -- "GdUnit4.Parameters=--audio-driver Dummy --display-driver windows --rendering-driver opengl3_angle --verbose"
+
+      - name: "Upload Unit Test Reports"
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          retention-days: 10
+          name: artifact_windows_tests_Godot${{ inputs.godot-version }}-${{ inputs.godot-status }}
+          path: |
+            ./Api.Test/TestResults/**
+            ./Api.Test/reports/**
+            ./TestAdapter.Test/TestResults/**
