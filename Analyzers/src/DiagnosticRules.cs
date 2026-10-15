@@ -121,7 +121,7 @@ internal static class DiagnosticRules
         public static readonly DiagnosticDescriptor TestCaseNamesMustBeUnique = new(
             RuleIds.TESTCASE_NAMES_MUST_BE_UNIQUE_ID,
             "Test case names must be unique",
-            "Test method {0} has multiple TestCase attributes with the same TestName",
+            "Test method '{0}' has multiple TestCase attributes with the same TestName",
             Categories.ATTRIBUTE_USAGE,
             DiagnosticSeverity.Error,
             true,
