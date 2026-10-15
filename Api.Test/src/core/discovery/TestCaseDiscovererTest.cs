@@ -293,7 +293,7 @@ public class TestCaseDiscovererTest
                     ManagedType = "GdUnit4.Tests.Core.ExampleTestSuite",
                     ManagedMethod = "TestFoo",
                     Id = tests[11].Id,
-                    LineNumber = 41,
+                    LineNumber = 37,
                     CodeFilePath = codeFilePath,
                     AttributeIndex = 0,
                     RequireRunningGodotEngine = false,
@@ -307,7 +307,7 @@ public class TestCaseDiscovererTest
                     ManagedType = "GdUnit4.Tests.Core.ExampleTestSuite",
                     ManagedMethod = "TestCaseArguments",
                     Id = tests[5].Id,
-                    LineNumber = 63,
+                    LineNumber = 59,
                     CodeFilePath = codeFilePath,
                     AttributeIndex = 0,
                     RequireRunningGodotEngine = false
@@ -319,7 +319,7 @@ public class TestCaseDiscovererTest
                     ManagedType = "GdUnit4.Tests.Core.ExampleTestSuite",
                     ManagedMethod = "TestCaseArguments",
                     Id = tests[6].Id,
-                    LineNumber = 63,
+                    LineNumber = 59,
                     CodeFilePath = codeFilePath,
                     AttributeIndex = 1,
                     RequireRunningGodotEngine = false

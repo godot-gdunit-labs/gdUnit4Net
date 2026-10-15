@@ -72,9 +72,6 @@ public class AssertThatCoverageTest
     [TestCase]
     public void Arrays()
     {
-        // AssertObject(AssertThat([byte.MaxValue])).IsInstanceOf<IEnumerableAssert<byte>>();
-        // AssertObject(AssertThat([1, 2])).IsInstanceOf<IEnumerableAssert<int>>();
-        // AssertObject(AssertThat(["a", "b"])).IsInstanceOf<IEnumerableAssert<string>>();
         AssertObject(AssertThat(Array.Empty<object>())).IsInstanceOf<IEnumerableAssert<object>>();
         AssertObject(AssertThat(Array.Empty<byte>())).IsInstanceOf<IEnumerableAssert<byte>>();
         AssertObject(AssertThat(Array.Empty<string>())).IsInstanceOf<IEnumerableAssert<string>>();

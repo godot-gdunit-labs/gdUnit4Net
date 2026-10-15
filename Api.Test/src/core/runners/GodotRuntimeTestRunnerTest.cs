@@ -20,7 +20,6 @@ using static Assertions;
 public class GodotRuntimeTestRunnerTest
 {
     // TODO implement the TempDirectory annotation
-    // [TempDirectory]
     private string? TestTempDirectory { get; set; }
 
     public required string MockGodotBinPath { get; set; }
@@ -162,6 +161,25 @@ public class GodotRuntimeTestRunnerTest
         // Verify the runner file was cleaned up after timeout
         var runnerPath = Path.Combine(workingDirectory, GodotRuntimeTestRunner.TEMP_TEST_RUNNER_DIR, "GdUnit4TestRunnerScene.cs");
         AssertThat(File.Exists(runnerPath)).OverrideFailureMessage("Runner file should be cleaned up after timeout").IsFalse();
+    }
+
+    /// <summary>
+    ///     Test a Godot binary that cannot be started, the process is closed without an asynchronous output read to cancel.
+    /// </summary>
+    [TestCase]
+    public void ReCompileGodotProjectWithMissingBinary()
+    {
+        var workingDirectory = Path.Combine(TestTempDirectory!, "working_dir_missing_binary");
+        Directory.CreateDirectory(workingDirectory);
+
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        var result = CreateTestRunner(1000).ReCompileGodotProject(workingDirectory, Path.Combine(TestTempDirectory!, "missing_godot_binary"));
+
+        AssertThat(result).OverrideFailureMessage("ReCompileGodotProject should return false when the binary cannot be started").IsFalse();
+        AssertThat(capture.EntriesOf(LogLevel.Error).Any(e => e.Message.StartsWith("Rebuilding Godot Project fails with:", StringComparison.Ordinal)))
+            .OverrideFailureMessage(FormatFailure(capture, LogLevel.Error, "Rebuilding Godot Project fails with:"))
+            .IsTrue();
     }
 
     [TestCase]

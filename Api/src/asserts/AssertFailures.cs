@@ -440,10 +440,6 @@ internal static class AssertFailures
         }
 
         return $"{name} ({instanceId})";
-
-        // if (!type.IsGenericType)
-        // var genericArguments = string.Join(", ", type.GetGenericArguments().Select(a => SimpleClassName(a, null)));
-        // return $"{name[..name.IndexOf('`')]}<{genericArguments}>";
     }
 
     internal static string FormatValue(object? value, string color, bool quoted)

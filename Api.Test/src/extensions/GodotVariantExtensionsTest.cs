@@ -23,8 +23,6 @@ public class GodotVariantExtensionsTest
     [TestCase(double.MaxValue, Variant.Type.Float)]
     [TestCase("HalloWorld", Variant.Type.String)]
     [TestCase(true, Variant.Type.Bool)]
-
-    // [TestCase(Decimal.MaxValue, Variant.Type.Float)]
     [RequireGodotRuntime]
     public void ToVariant(dynamic? value, Variant.Type type)
     {

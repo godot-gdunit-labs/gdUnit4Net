@@ -197,6 +197,32 @@ public class GodotRuntimeRequireOnTestCaseAttributeTest
     }
 
     [TestMethod]
+    public void TestCaseCallingMethodDeclaredInAnotherFile()
+    {
+        var source = Instrument(
+            """
+
+            [TestCase]
+            public void TestMethod()
+            {
+                var value = Helper.Value();
+            }
+            """);
+        const string helperSource = """
+                                    namespace GdUnit4.Analyzers.Test.Example
+                                    {
+                                        public static class Helper
+                                        {
+                                            public static int Value() => 42;
+                                        }
+                                    }
+                                    """;
+
+        // the analysis of the called method from another syntax tree must not break the analyzer
+        RoslynAssert.Valid(analyzer, source, helperSource);
+    }
+
+    [TestMethod]
     public void TestCaseExpressionBodyWithRequireGodotRuntimeAttributeOnMethodLevel()
     {
         var source = Instrument(

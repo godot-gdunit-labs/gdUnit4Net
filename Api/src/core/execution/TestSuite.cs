@@ -67,8 +67,6 @@ internal sealed class TestSuite : IDisposable
     {
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
-            // if (assembly.Location != assemblyName)
-            //    continue;
             var type = assembly.GetType(clazz);
             if (type != null)
                 return type;

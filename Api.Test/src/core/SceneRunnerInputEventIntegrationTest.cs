@@ -10,8 +10,6 @@ using GdUnit4.Core;
 
 using Godot;
 
-using Moq;
-
 using static Assertions;
 
 [RequireGodotRuntime]
@@ -70,22 +68,6 @@ public sealed class SceneRunnerInputEventIntegrationTest
     }
 
     private Vector2 ActualMousePos() => sceneRunner.Scene()?.GetViewport().GetMousePosition() ?? Vector2.Inf;
-
-    // [TestCase]
-    public void TestSpy()
-    {
-        var scene = ResourceLoader.Load<PackedScene>("res://src/core/resources/scenes/TestSceneCSharp.tscn").Instantiate();
-        var sceneMock = new Mock<TestScene> { CallBase = true };
-
-        // var sceneSpy = sceneMock.Object;
-        var sceneTree = (SceneTree)Engine.GetMainLoop();
-
-        // sceneTree.Root.AddChild(sceneSpy);
-
-        // sceneSpy.StartColorCycle();
-        sceneMock.Verify(m => m.ColorCycle(), Times.Once);
-        scene.Free();
-    }
 
     [TestCase]
     public void ToMouseButtonMask()
@@ -222,7 +204,6 @@ public sealed class SceneRunnerInputEventIntegrationTest
                 Pressed = true
             };
 
-            // Verify(_scene_spy, 1)._input(eventKey);
             AssertThat(Input.IsKeyPressed(key)).IsTrue();
         }
 
@@ -818,9 +799,6 @@ public sealed class SceneRunnerInputEventIntegrationTest
     public async Task MouseDragAndDrop()
     {
         var dragAndDropSceneRunner = ISceneRunner.Load("res://src/core/resources/scenes/DragAndDrop/DragAndDropTestScene.tscn", true);
-
-        // var spy_scene = spy("res://addons/gdUnit4/test/core/resources/scenes/drag_and_drop/DragAndDropTestScene.tscn")
-        // var runner := scene_runner(spy_scene)
 
         // ReSharper disable once NullableWarningSuppressionIsUsed
         var scene = dragAndDropSceneRunner.Scene()!;

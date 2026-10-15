@@ -27,6 +27,8 @@ public partial class GdUnit4TestRunnerSceneCore : SceneTree
         {
             Root.AddChild(new TestRunner());
         }
+
+        // Godot callback boundary: an exception escaping the scene tree initialization does not end the Godot process, so it exits with an error code instead
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031

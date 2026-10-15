@@ -116,11 +116,9 @@ internal class GodotProjectSettings
                     finalProperty.SetValue(currentObj, convertedValue);
                 }
             }
-#pragma warning disable CA1031
-            catch (Exception)
-#pragma warning restore CA1031
+            catch (Exception e) when (e is InvalidCastException or FormatException or OverflowException)
             {
-                // Log or handle conversion errors
+                // the value does not convert to the property type, keep the default of the setting
             }
         }
     }

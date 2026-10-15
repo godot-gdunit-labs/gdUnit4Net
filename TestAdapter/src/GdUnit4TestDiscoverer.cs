@@ -121,6 +121,8 @@ public sealed class GdUnit4TestDiscoverer : ITestDiscoverer
                         .ToList()
                         .ForEach(discoverySink.SendTestCase);
                 }
+
+                // User test code boundary: discovering a test assembly of the user fails in many ways, the other assemblies are still discovered
 #pragma warning disable CA1031
                 catch (Exception e)
 #pragma warning restore CA1031
@@ -129,6 +131,8 @@ public sealed class GdUnit4TestDiscoverer : ITestDiscoverer
                 }
             }
         }
+
+        // VSTest boundary: the test platform calls the discovery, an exception escaping it aborts the discovery without a message to the user
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031

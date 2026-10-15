@@ -4,7 +4,6 @@
 namespace GdUnit4.Core.Signals;
 
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 
 using Extensions;
 
@@ -89,6 +88,8 @@ internal sealed partial class GodotSignalCollector : RefCounted
 
                     return true;
                 }
+
+                // User test code boundary: the loop calls `_Process` and `_PhysicsProcess` of the user's emitter node, its exception ends the wait as not emitted
 #pragma warning disable CA1031
                 catch (Exception e)
 #pragma warning restore CA1031
@@ -148,7 +149,6 @@ internal sealed partial class GodotSignalCollector : RefCounted
 
     private void CollectSignal(GodotObject emitter, string signalName, params Variant[] signalArgs)
     {
-        // WriteLine($"CollectSignal: {emitter}:{signalName} {signalArgs.Formatted()}");
         if (IsSignalCollecting(emitter, signalName))
             CollectedSignals[emitter][signalName].Add(signalArgs);
     }
@@ -159,33 +159,25 @@ internal sealed partial class GodotSignalCollector : RefCounted
     {
         if (IsInstanceValid(collector))
         {
-            // WriteLine($"disconnect_signals: {emitter}");
             foreach (var connection in collector.GetIncomingConnections())
             {
                 var source = (GodotObject)connection["source"];
                 var signalName = (string)connection["signal_name"];
                 var methodName = (string)connection["method_name"];
-
-                // WriteLine($"disconnect: {signalName} from {source} target {collector} -> {methodName}");
                 source.Disconnect(signalName, new Callable(collector, methodName));
             }
         }
 
         if (IsInstanceValid(emitter))
             _ = CollectedSignals.TryRemove(emitter, out _);
-
-        // DebugSignalList("UnregisterEmitter");
     }
 
     private void ResetCollectedSignals(GodotObject emitter)
     {
-        // DebugSignalList("before clear");
         if (!CollectedSignals.TryGetValue(emitter, out var value))
             return;
         foreach (var signalName in value.Keys)
             value[signalName].Clear();
-
-        // DebugSignalList("after clear");
     }
 
     private bool Match(GodotObject emitter, string signalName, params Variant[] args)
@@ -196,31 +188,10 @@ internal sealed partial class GodotSignalCollector : RefCounted
             return false;
         }
 
-        // WriteLine($"Test match signal: {emitter}:{signalName} {args.Formatted()}");
         if (!CollectedSignals.TryGetValue(emitter, out var emitterSignals))
             return false;
 
         return emitterSignals.TryGetValue(signalName, out var signalBag)
                && signalBag.Any(receivedArgs => receivedArgs.VariantEquals(args));
-
-        // DebugSignalList("--match--");
-    }
-
-    [SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "Debug output not requiring localization")]
-    private void DebugSignalList(string message)
-    {
-        WriteLine($"-----{message}-------");
-        WriteLine("senders {");
-        foreach (var emitter in CollectedSignals.Keys.Where(IsInstanceValid))
-        {
-            WriteLine($"\t{emitter}");
-            foreach (var signalName in CollectedSignals[emitter].Keys)
-            {
-                var args = CollectedSignals[emitter][signalName];
-                WriteLine($"\t\t{signalName} {args.Formatted()}");
-            }
-        }
-
-        WriteLine("}");
     }
 }

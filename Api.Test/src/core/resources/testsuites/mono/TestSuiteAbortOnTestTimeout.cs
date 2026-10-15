@@ -7,7 +7,6 @@ using static Utils;
 
 // will be ignored because of missing `[TestSuite]` annotation
 // used by executor integration test
-// [TestSuite]
 public class TestSuiteAbortOnTestTimeout
 {
     [Before]

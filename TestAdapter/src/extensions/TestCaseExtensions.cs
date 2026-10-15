@@ -121,8 +121,6 @@ internal static class TestCaseExtensions
         testCase.SetPropertyValue(ClassProperty, descriptor.ManagedType);
         testCase.SetPropertyValue(ManagedTypeProperty, descriptor.ManagedType);
         testCase.SetPropertyValue(ManagedMethodProperty, descriptor.ManagedMethod);
-
-        // testCase.SetPropertyValue(TestCaseProperties.DisplayName, descriptor.ManagedMethod);
         testCase.SetPropertyValue(TestCaseProperties.FullyQualifiedName, descriptor.FullyQualifiedName);
         testCase.SetPropertyValue(ManagedMethodAttributeIndexProperty, descriptor.AttributeIndex);
         testCase.SetPropertyValue(RequireRunningGodotEngineProperty, descriptor.RequireRunningGodotEngine);

@@ -78,7 +78,6 @@ public partial class SignalAssertTest
         await AssertSignal(node).IsEmitted("visibility_changed").WithTimeout(200);
 
         // expecting to fail, we have not changed the visibility
-        // node.Visible = false;
         await AssertThrown(AssertSignal(node).IsEmitted("visibility_changed").WithTimeout(200))
             .ContinueWith(result => result.Result?
                 .IsInstanceOf<TestFailedException>()
@@ -208,7 +207,7 @@ public partial class SignalAssertTest
                 .OverrideFailureMessage("custom error")
                 .IsSignalExists("foo"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(207)
+            .HasFileLineNumber(206)
             .HasMessage("custom error");
     }
 
@@ -220,7 +219,7 @@ public partial class SignalAssertTest
                 .AppendFailureMessage("custom data")
                 .IsSignalExists("foo"))
             .IsInstanceOf<TestFailedException>()
-            .HasFileLineNumber(219)
+            .HasFileLineNumber(218)
             .HasMessage($"""
                          Expecting signal exists:
                              "foo()"

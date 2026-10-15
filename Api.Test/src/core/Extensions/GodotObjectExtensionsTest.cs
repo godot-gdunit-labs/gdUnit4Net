@@ -1,5 +1,9 @@
 namespace GdUnit4.Tests.Core.Extensions;
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+
 using GdUnit4.Core.Extensions;
 
 using Godot;
@@ -113,6 +117,66 @@ public class GodotObjectExtensionsTest
 
         // difference on itemC
         AssertThat(GodotObjectExtensions.DeepEquals(items1, items4)).IsFalse();
+    }
+
+    #region DeepEquals on properties that cannot be read
+
+    [TestCase]
+    public static void DeepEqualsSkipsUnreadableProperties()
+    {
+        AssertThat(GodotObjectExtensions.DeepEquals(new UnreadableProperties(1), new UnreadableProperties(1))).IsTrue();
+        AssertThat(GodotObjectExtensions.DeepEquals(new UnreadableProperties(1), new UnreadableProperties(2))).IsFalse();
+    }
+
+    [TestCase]
+    public static void DeepEqualsPropagatesExceptionOfComparedValue()
+        => AssertThrown(() => GodotObjectExtensions.DeepEquals(new WithFailingEquatable(), new WithFailingEquatable()))
+            .IsInstanceOf<InvalidOperationException>()
+            .HasMessage("Equals failed");
+
+    #endregion
+
+    #region ToGodotArray on values without a Variant representation
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public static void ToGodotArrayConvertsUnsupportedValuesToNotAvailable()
+    {
+        using var converted = new object[] { 1, new(), 2.5m, "text" }.ToGodotArray();
+
+        // a type without a Variant conversion and a decimal, which the conversion unboxes as ulong, both end up as 'n.a'
+        AssertThat(converted.Select(value => value.ToString())).ContainsExactly("1", "n.a", "n.a", "text");
+    }
+
+    #endregion
+
+    private sealed class UnreadableProperties
+    {
+        public UnreadableProperties(int value)
+            => Value = value;
+
+        public int Value { get; }
+
+        public int Failing => throw new InvalidOperationException("getter failed");
+
+        public Span<int> NotBoxable => [];
+
+        public int this[int index] => index;
+    }
+
+    [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "The test verifies that an exception of the compared value propagates")]
+    private sealed class FailingEquatable : IEquatable<FailingEquatable>
+    {
+        public bool Equals(FailingEquatable? other) => throw new InvalidOperationException("Equals failed");
+
+        public override bool Equals(object? obj) => throw new InvalidOperationException("Equals failed");
+
+        public override int GetHashCode() => 0;
+    }
+
+    private sealed class WithFailingEquatable
+    {
+        public FailingEquatable Value { get; } = new();
     }
 }
 

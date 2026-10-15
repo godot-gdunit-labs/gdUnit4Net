@@ -10,7 +10,6 @@ public partial class TestScene : Control
     [Signal]
     public delegate void PanelColorChangeEventHandler(ColorRect box, Color color);
 
-    // private static readonly Color[] ColorCycle = { Colors.RoyalBlue, Colors.Chartreuse, Colors.YellowGreen };
     private Color initial_color = Colors.Red;
 
     private RefCounted? nullable;
@@ -31,7 +30,6 @@ public partial class TestScene : Control
 
     public async void OnTestPressed(long buttonId)
     {
-        // Console.WriteLine($"pressed {buttonId}");
         ColorRect box;
         switch (buttonId)
         {
@@ -106,7 +104,6 @@ public partial class TestScene : Control
     private void DestroySpell(ulong spellId)
         => Console.WriteLine($"Spell destroyed: {spellId}");
 
-    // spell.QueueFree();
     public override void _Input(InputEvent @event)
     {
         if (InputMap.HasAction("player_jump"))

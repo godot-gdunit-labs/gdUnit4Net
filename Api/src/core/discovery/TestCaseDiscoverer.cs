@@ -61,9 +61,7 @@ internal static class TestCaseDiscoverer
                 var fallbackParameters = new ReaderParameters { ReadSymbols = false };
                 assemblyDefinition = AssemblyDefinition.ReadAssembly(testAssembly, fallbackParameters);
             }
-#pragma warning disable CA1031
-            catch (Exception fallbackEx)
-#pragma warning restore CA1031
+            catch (Exception fallbackEx) when (fallbackEx is BadImageFormatException or IOException or UnauthorizedAccessException)
             {
                 logger.LogError($"Failed to read assembly {testAssembly}: {fallbackEx.Message}");
                 return [];
@@ -129,6 +127,8 @@ internal static class TestCaseDiscoverer
             Logger.LogWarning($"Could not find assembly or test suite for {className} at {fullScriptPath}");
             return [];
         }
+
+        // Godot callback boundary: the GDScript editor plugin calls this discovery through the Godot bridge, an exception must not escape into the editor
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031
@@ -225,6 +225,9 @@ internal static class TestCaseDiscoverer
                 MethodName = definition.Name
             };
         }
+
+        // Debug symbol file boundary: Mono.Cecil reads the symbols of the user's test assembly on demand, a stale or corrupt symbol file
+        // makes it throw arbitrary exception types, and the source location is optional for the discovered test
 #pragma warning disable CA1031
         catch (Exception)
 #pragma warning restore CA1031
@@ -426,16 +429,6 @@ internal static class TestCaseDiscoverer
                 continue;
             _ = assemblyLocations.Add(specificAssembly);
             logger.LogInfo($"Found named assembly: {specificAssembly}");
-
-            // Check for other assemblies in the directory
-            /*
-            foreach (var file in Directory.GetFiles(dir, "*.dll"))
-                if (!assemblyLocations.Contains(file))
-                {
-                    assemblyLocations.Add(file);
-                    logger.LogInfo($"Found additional assembly: {file}");
-                }
-                */
         }
 
         return assemblyLocations;

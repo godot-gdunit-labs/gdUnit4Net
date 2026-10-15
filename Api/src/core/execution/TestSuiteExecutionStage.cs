@@ -55,11 +55,6 @@ internal sealed class TestSuiteExecutionStage : IExecutionStage
                     await RunTestCase(stdoutHook, testCaseContext, testCase, testCase.TestCaseAttribute, testCase.Arguments)
                         .ConfigureAwait(true);
                 }
-
-                if (testCaseContext.IsFailed || testCaseContext.IsError)
-                {
-                    // break;
-                }
             }
         }
 
@@ -116,6 +111,8 @@ internal sealed class TestSuiteExecutionStage : IExecutionStage
                 }
             }
         }
+
+        // User test code boundary: the data point source of the user provides the values, any exception it throws is reported as a test failure
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031

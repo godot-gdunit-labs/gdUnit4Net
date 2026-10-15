@@ -121,7 +121,6 @@ public class GdUnit4TestExecutor : ITestExecutor2, IDisposable
                 ? $"No 'TestSessionTimeout' is specified. Set default test session timeout to: {TimeSpan.FromMilliseconds(DEFAULT_SESSION_TIMEOUT)}"
                 : $"Set test session timeout to: {TimeSpan.FromMilliseconds(engineSettings.SessionTimeout)}");
 
-        // var runSettings = XmlRunSettingsUtilities.GetTestRunParameters(runContext.RunSettings?.SettingsXml);
         try
         {
             SetupRunnerEnvironment(runContext, frameworkHandle);
@@ -135,13 +134,6 @@ public class GdUnit4TestExecutor : ITestExecutor2, IDisposable
             if (!isCanceled)
                 testEventListener.ReportNotExecutedTests();
             Log.LogInfo("Test execution stopped.");
-
-            // enable just to verify all allocated objects are freed
-            /*
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-            */
         }
         catch (Exception ex)
         {

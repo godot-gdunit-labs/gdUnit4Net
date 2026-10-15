@@ -19,9 +19,6 @@ internal static class DiagnosticRules
     /// </summary>
     internal static class RuleIds
     {
-        // Rule IDs (GdUnit01xx)
-        // public const string TestCaseName = "GdUnit0101";
-
         /// <summary>
         ///     Rule ID for detecting when a method with a DataPoint attribute has multiple TestCase attributes.
         /// </summary>

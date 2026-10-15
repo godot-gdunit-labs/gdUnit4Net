@@ -190,6 +190,9 @@ internal sealed class TestEventReportListener : ITestEventListener
                     reportedTests[testCase.Id] = true;
                 });
         }
+
+        // VSTest boundary: the listener handles the test events received over the pipe and reports them to the VSTest framework handle,
+        // an exception must not end the event processing of the test run
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031

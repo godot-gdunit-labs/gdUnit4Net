@@ -182,7 +182,7 @@ public abstract partial class Assertions
     ///        .ContinueWith(result => result.Result.HasMessage("timed out after 500ms."));
     ///     </code>
     /// </example>
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Method purpose is to capture and assert on any exception")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "User test code boundary: the assertion captures any exception the task under test throws")]
     public static async Task<IExceptionAssert?> AssertThrown<TAction>(Task<TAction> task)
     {
         ArgumentNullException.ThrowIfNull(task);
@@ -215,7 +215,7 @@ public abstract partial class Assertions
     ///         .ContinueWith(result => result.Result.HasMessage("Operation timed out"));
     ///     </code>
     /// </example>
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Method purpose is to capture and assert on any exception")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "User test code boundary: the assertion captures any exception the task under test throws")]
     public static async Task<IExceptionAssert?> AssertThrown(Task task)
     {
         ArgumentNullException.ThrowIfNull(task);

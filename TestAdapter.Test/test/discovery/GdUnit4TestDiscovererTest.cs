@@ -136,7 +136,6 @@ public class GdUnit4TestDiscovererTest
         _ = mockRunContext.SetupGet(rc => rc.RunSettings)
             .Returns(Mock.Of<IRunSettings>(rs => rs.SettingsXml == XML_SETTINGS));
 
-        // var assemblyPath = "D:\\development\\workspace\\gdUnit4Net\\test\\.godot\\mono\\temp\\bin\\Debug\\gdUnit4Test.dll"; //AssemblyPaths.LibraryPath;
         var assemblyPath = GetExampleAssemblyPath();
 
         Assert.IsTrue(File.Exists(assemblyPath), $"Can find the test assembly: '{assemblyPath}'");

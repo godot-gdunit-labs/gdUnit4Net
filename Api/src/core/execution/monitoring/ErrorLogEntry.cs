@@ -3,8 +3,6 @@
 
 namespace GdUnit4.Core.Execution.Monitoring;
 
-using Godot;
-
 internal sealed class ErrorLogEntry
 {
     private static readonly Dictionary<ErrorType, string> LoggerPatterns = new()
@@ -53,23 +51,11 @@ internal sealed class ErrorLogEntry
             ? $"{EntryType}: [{ExceptionType?.Name ?? "Unknown Exception"}] {Message}\nDetails: {Details}"
             : $"{EntryType}: {Message}\nDetails: {Details}";
 
+    // the type name is a plain dotted name matched by the exception pattern, so resolving it returns null on failure instead of throwing
     private static Type? TryGetExceptionType(string typeName)
     {
-        try
-        {
-            var type = Type.GetType(typeName, false, true);
-            if (type != null && typeof(Exception).IsAssignableFrom(type))
-                return type;
-
-            return null;
-        }
-#pragma warning disable CA1031
-        catch (Exception ex)
-#pragma warning restore CA1031
-        {
-            GD.PrintErr($"Failed to resolve exception type '{typeName}': {ex.Message}");
-            return null;
-        }
+        var type = Type.GetType(typeName, false, true);
+        return type != null && typeof(Exception).IsAssignableFrom(type) ? type : null;
     }
 
     private static ErrorLogEntry? Extract(string[] records, int index, ErrorType type)

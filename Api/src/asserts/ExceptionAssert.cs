@@ -20,6 +20,8 @@ public sealed class ExceptionAssert<TException> : IExceptionAssert
         {
             action.Invoke();
         }
+
+        // User test code boundary: the assertion captures any exception the action under test throws
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031

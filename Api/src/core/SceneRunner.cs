@@ -306,8 +306,6 @@ internal sealed class SceneRunner : ISceneRunner
             return;
         DeactivateTimeFactor();
         ResetInputToDefault();
-
-        // DisplayServer.WindowSetMode(DisplayServer.WindowMode.Minimized);
         SceneTree.Root.RemoveChild(currentScene);
         if (SceneAutoFree && GodotObject.IsInstanceValid(currentScene))
             currentScene.Free();

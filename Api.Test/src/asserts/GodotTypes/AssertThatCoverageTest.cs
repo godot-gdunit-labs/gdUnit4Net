@@ -26,8 +26,7 @@ public class AssertThatCoverageTest
         AssertObject(AssertThat(Variant.From(float.MaxValue))).IsInstanceOf<INumberAssert<float>>();
         AssertObject(AssertThat(Variant.From(double.MaxValue))).IsInstanceOf<INumberAssert<float>>();
 
-        // not supported
-        // AssertObject(AssertThat(Variant.From(decimal.MaxValue))).IsInstanceOf<INumberAssert<float>>();
+        // decimal is not supported, it has no Variant type
         AssertObject(AssertThat(Variant.From("foo"))).IsInstanceOf<IStringAssert>();
         AssertObject(AssertThat(Variant.From(new StringName("foo")))).IsInstanceOf<IStringAssert>();
 

@@ -340,6 +340,8 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
 
             return true;
         }
+
+        // Process boundary: starting the external Godot binary fails with process exceptions, e.g. for a missing or not executable binary
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031
@@ -469,6 +471,8 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             compileProcess.WaitForExit();
             return compileProcess.ExitCode == 0;
         }
+
+        // Process boundary: starting and watching the external Godot process fails with process exceptions, the rebuild then counts as failed
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031
@@ -575,6 +579,8 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             Logger.LogError($"dotnet build failed with exit code: {restoreProcess.ExitCode}");
             return false;
         }
+
+        // Process boundary: starting and watching the external `dotnet build` process fails with process exceptions, the build then counts as failed
 #pragma warning disable CA1031
         catch (Exception ex)
 #pragma warning restore CA1031
@@ -639,11 +645,9 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             processToClose.CancelOutputRead();
             processToClose.Dispose();
         }
-#pragma warning disable CA1031
-        catch (Exception)
-#pragma warning restore CA1031
+        catch (InvalidOperationException)
         {
-            // ignore
+            // the output was not read asynchronously, e.g. when the process failed to start, there is nothing to cancel
         }
         finally
         {
@@ -667,13 +671,10 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
                 File.Delete(runnerFilePath);
             }
         }
-#pragma warning disable CA1031
-        catch (Exception ex)
-#pragma warning restore CA1031
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            // the file is in use or not writable, the cleanup is best effort and must not hide the compilation failure
             Logger.LogError($"Failed to clean up runner file: {ex.Message}");
-
-            // We don't want to throw here as this is just cleanup
         }
     }
 }

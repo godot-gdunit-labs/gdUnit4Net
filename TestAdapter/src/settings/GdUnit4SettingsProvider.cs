@@ -28,10 +28,9 @@ internal sealed class GdUnit4SettingsProvider : ISettingsProvider
                 Settings = settings ?? new GdUnit4Settings();
             }
         }
-#pragma warning disable CA1031
-        catch (Exception e)
-#pragma warning restore CA1031
+        catch (Exception e) when (e is InvalidOperationException or XmlException)
         {
+            // the run settings section is malformed (XmlException) or does not match the settings type (InvalidOperationException), use the defaults
             Console.WriteLine($"Loading GdUnit4 Adapter settings failed! {e}");
         }
     }

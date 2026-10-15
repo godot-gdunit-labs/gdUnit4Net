@@ -67,11 +67,13 @@ internal static class DebugSymbolLocator
                 .FirstOrDefault(point => !point.IsHidden);
             return sequencePoint == null ? null : new SourceLocation(sequencePoint.Document.Url, sequencePoint.StartLine);
         }
+
+        // Debug symbol file boundary: Mono.Cecil throws arbitrary exception types for a corrupt symbol file,
+        // the debug symbols are optional, a missing, mismatching, or corrupt symbol file only means no location is available
 #pragma warning disable CA1031
         catch (Exception)
 #pragma warning restore CA1031
         {
-            // the debug symbols are optional, a missing, mismatching, or corrupt symbol file only means no location is available
             return null;
         }
     }

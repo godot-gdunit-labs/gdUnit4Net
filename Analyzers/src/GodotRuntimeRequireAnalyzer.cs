@@ -132,6 +132,9 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
 
             ReportMethodDiagnostic(context, methodSymbol);
         }
+
+        // Compiler callback boundary: an exception escaping the analyzer callback makes the compiler report AD0001,
+        // which fails the build of the user's test project when warnings are treated as errors.
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031
@@ -165,6 +168,9 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
 
             ReportClassDiagnostic(context, methodSymbol.ContainingType);
         }
+
+        // Compiler callback boundary: an exception escaping the analyzer callback makes the compiler report AD0001,
+        // which fails the build of the user's test project when warnings are treated as errors.
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031
@@ -302,16 +308,6 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
             return null;
 
         return semanticModel.GetOperation(methodSyntax);
-        /*
-        try
-        {
-            return semanticModel.GetOperation(methodSyntax);
-        }
-        catch (Exception)
-        {
-            var tree = syntaxRef.SyntaxTree;
-            return compilation.GetSemanticModel(tree).GetOperation(methodSyntax) ?? null;
-        }*/
     }
 
     private static bool ContainsGodotTypesInOperationTree(IOperation operation, Compilation compilation, HashSet<IMethodSymbol> visitedMethods)
@@ -372,10 +368,9 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
             // analysis of internal methods, forwards the visited methods to stop on recursive calls
             return ContainsGodotTypes(invocation.TargetMethod, compilation, invocation.SemanticModel!, visitedMethods);
         }
-#pragma warning disable CA1031
-        catch (Exception e)
-#pragma warning restore CA1031
+        catch (ArgumentException e)
         {
+            // the semantic model of the analyzed method rejects the syntax of a called method declared in another syntax tree
             Debug.WriteLine(e);
         }
 

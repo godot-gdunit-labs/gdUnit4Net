@@ -148,30 +148,19 @@ internal static class DataPointValueProvider
     /// <returns>The stack trace line.</returns>
     internal static string BuildStackTrace(object asyncSource)
     {
-        try
-        {
-            var sourceType = asyncSource.GetType();
-            if (!sourceType.Name.Contains("d__", StringComparison.Ordinal))
-                return "at unknown location";
+        var sourceType = asyncSource.GetType();
+        var originalType = sourceType.DeclaringType;
 
-            var originalType = sourceType.DeclaringType;
-
-            if (originalType == null)
-                return "at unknown location";
-
-            var methodName = sourceType.Name.Split('<', '>')[1];
-            var location = DebugSymbolLocator.FindStateMachineLocation(sourceType);
-            return location == null
-                ? $"at {originalType.FullName}.{methodName}()"
-                : $"at {originalType.FullName}.{methodName}() in {location.FilePath}:line {location.Line}";
-        }
-#pragma warning disable CA1031
-        catch (Exception e)
-#pragma warning restore CA1031
-        {
-            Console.Error.WriteLine($"Error getting source location: {e}");
+        // the compiler names the state machine of an async iterator '<MethodName>d__N' and nests it in the type declaring the method
+        var methodNameEnd = sourceType.Name.IndexOf(">d__", StringComparison.Ordinal);
+        if (originalType == null || !sourceType.Name.StartsWith('<') || methodNameEnd < 0)
             return "at unknown location";
-        }
+
+        var methodName = sourceType.Name[1..methodNameEnd];
+        var location = DebugSymbolLocator.FindStateMachineLocation(sourceType);
+        return location == null
+            ? $"at {originalType.FullName}.{methodName}()"
+            : $"at {originalType.FullName}.{methodName}() in {location.FilePath}:line {location.Line}";
     }
 
     private static async IAsyncEnumerable<object?[]> StreamAsyncData(object asyncSource, Type returnType, TimeSpan timeout)

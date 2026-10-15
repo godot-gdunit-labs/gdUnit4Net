@@ -23,7 +23,7 @@ internal sealed class ValueExtractor : IValueExtractor
         this.args = [.. args];
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Method purpose is to capture and handle value as 'n.a.' if it fails.")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "User test code boundary: the extractor calls the named methods of the user's object and reports 'n.a.' when one throws")]
     public object? ExtractValue(object? value)
     {
         if (value == null)

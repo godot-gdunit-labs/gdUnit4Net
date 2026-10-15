@@ -108,7 +108,6 @@ internal static class GodotObjectExtensions
     internal static Array ToGodotArray(this object[] args)
         => ToGodotArray((IEnumerable)args);
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Method purpose is to capture and handle value as 'n.a.' if it fails.")]
     internal static Array ToGodotArray(this IEnumerable elements)
     {
         ArgumentNullException.ThrowIfNull(elements);
@@ -119,7 +118,10 @@ internal static class GodotObjectExtensions
             {
                 converted.Add(item.ToVariant());
             }
-            catch (Exception e)
+
+            // the conversion throws InvalidOperationException for a type without a Variant representation,
+            // and InvalidCastException for a decimal, which it unboxes as ulong
+            catch (Exception e) when (e is InvalidOperationException or InvalidCastException)
             {
                 Console.WriteLine($"Can't convert {item} to Variant\n {e.StackTrace}");
                 converted.Add(Variant.CreateFrom("n.a"));
@@ -284,23 +286,25 @@ internal static class GodotObjectExtensions
             .Where(p => p.Name != "NativeInstance");
         foreach (var property in properties)
         {
-            if (!property.CanRead)
+            // an indexer needs arguments to be read, it is no state of the compared object
+            if (!property.CanRead || property.GetIndexParameters().Length > 0)
                 continue;
 
+            object? value1;
+            object? value2;
             try
             {
-                var value1 = property.GetValue(obj1);
-                var value2 = property.GetValue(obj2);
-
-                if (!CompareByReflectionInternal(value1, value2, compareMode, visited))
-                    return false;
+                value1 = property.GetValue(obj1);
+                value2 = property.GetValue(obj2);
             }
-#pragma warning disable CA1031
-            catch
-#pragma warning restore CA1031
+            catch (Exception e) when (e is TargetInvocationException or NotSupportedException)
             {
-                // Skip properties that can't be read (e.g., indexers)
+                // skip a property whose getter throws, or whose value cannot be boxed (a ref struct type or a ref return)
+                continue;
             }
+
+            if (!CompareByReflectionInternal(value1, value2, compareMode, visited))
+                return false;
         }
 
         return true;

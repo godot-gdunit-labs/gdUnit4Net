@@ -97,6 +97,8 @@ internal abstract class ExecutionStage<T> : IExecutionStage
         {
             ReportAsFailure(context, e);
         }
+
+        // User test code boundary: the stage runs the test method or hook of the user, any exception it throws is reported as a test failure
 #pragma warning disable CA1031
         catch (Exception e)
 #pragma warning restore CA1031
