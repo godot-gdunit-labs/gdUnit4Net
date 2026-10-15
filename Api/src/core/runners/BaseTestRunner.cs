@@ -15,8 +15,6 @@ using Commands;
 
 using Logging;
 
-using Newtonsoft.Json;
-
 /// <summary>
 ///     Base implementation of a test runner that manages test execution lifecycle and command processing.
 /// </summary>
@@ -127,7 +125,7 @@ internal class BaseTestRunner : ITestRunner
     {
         if (response.StatusCode != HttpStatusCode.InternalServerError)
             return;
-        var exception = JsonConvert.DeserializeObject<Exception>(response.Payload);
+        var exception = ExceptionPayload.Deserialize(response.Payload);
         throw new InvalidOperationException("The server returned an unexpected status code.", exception);
     }
 }

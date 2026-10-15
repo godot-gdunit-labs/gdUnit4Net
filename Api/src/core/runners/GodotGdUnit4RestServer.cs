@@ -14,8 +14,6 @@ using Extensions;
 
 using Godot;
 
-using Newtonsoft.Json;
-
 internal sealed class GodotGdUnit4RestServer : InOutPipeProxy<NamedPipeServerStream>, ITestEventListener
 {
     private readonly SemaphoreSlim processLock = new(1, 1);
@@ -151,7 +149,7 @@ internal sealed class GodotGdUnit4RestServer : InOutPipeProxy<NamedPipeServerStr
             return new Response
             {
                 StatusCode = HttpStatusCode.InternalServerError,
-                Payload = JsonConvert.SerializeObject(ex)
+                Payload = ExceptionPayload.Serialize(ex)
             };
         }
     }

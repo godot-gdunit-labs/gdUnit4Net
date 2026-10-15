@@ -5,11 +5,10 @@ namespace GdUnit4.Core.Commands;
 
 using System;
 using System.Net;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using Api;
-
-using Newtonsoft.Json;
 
 /// <summary>
 ///     Command to safely terminate a running Godot instance.

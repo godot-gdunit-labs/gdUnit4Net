@@ -4,16 +4,16 @@
 namespace GdUnit4.Core.Execution;
 
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using Api;
-
-using Newtonsoft.Json;
 
 using Reporting;
 
 internal class TestEvent : ITestEvent, IEquatable<TestEvent>
 {
-    // constructor needs to serialize/deserialize by JsonConvert
+    // constructor needs to deserialize the event from the pipe
     [JsonConstructor]
     private TestEvent()
     {
@@ -82,9 +82,11 @@ internal class TestEvent : ITestEvent, IEquatable<TestEvent>
 
     public string FullyQualifiedName { get; set; }
 
+    [JsonInclude]
+    [JsonConverter(typeof(TestEventStatisticsConverter))]
     public IDictionary<StatisticKey, object> Statistics { get; private init; } = new Dictionary<StatisticKey, object>();
 
-    [JsonProperty]
+    [JsonInclude]
     [JsonConverter(typeof(TestReportListConverter))]
     public ICollection<ITestReport> Reports { get; private init; } = [];
 
@@ -232,15 +234,15 @@ internal class TestEvent : ITestEvent, IEquatable<TestEvent>
 }
 
 #pragma warning disable SA1402
-internal class TestReportListConverter : JsonConverter<List<ITestReport>>
+internal class TestReportListConverter : JsonConverter<ICollection<ITestReport>>
 #pragma warning restore SA1402
 {
-    public override List<ITestReport> ReadJson(JsonReader reader, Type objectType, List<ITestReport>? existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override ICollection<ITestReport> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var reports = serializer.Deserialize<List<TestReport>>(reader);
+        var reports = JsonSerializer.Deserialize<List<TestReport>>(ref reader, options);
         return reports?.Cast<ITestReport>().ToList() ?? [];
     }
 
-    public override void WriteJson(JsonWriter writer, List<ITestReport>? value, JsonSerializer serializer)
-        => serializer.Serialize(writer, value?.Cast<TestReport>().ToList());
+    public override void Write(Utf8JsonWriter writer, ICollection<ITestReport> value, JsonSerializerOptions options)
+        => JsonSerializer.Serialize(writer, value.Cast<TestReport>().ToList(), options);
 }

@@ -8,8 +8,7 @@ using Api;
 
 using GdUnit4.Core.Execution;
 using GdUnit4.Core.Reporting;
-
-using Newtonsoft.Json;
+using GdUnit4.Core.Runners;
 
 using static Assertions;
 
@@ -34,9 +33,9 @@ public class TestEventTest
 
         List<ITestReport> reports = [new TestReport(ReportType.Failure, 42, "test failed")];
         var testEvent = TestEvent.Before("foo/bar/TestSuiteXXX.cs", "TestSuiteXXX", 100, statistics, reports);
-        var json = JsonConvert.SerializeObject(testEvent);
+        var json = PipeMessageSerializer.Serialize(testEvent);
 
-        var current = JsonConvert.DeserializeObject<TestEvent>(json);
+        var current = PipeMessageSerializer.Deserialize<TestEvent>(json);
         AssertThat(current).IsNotNull().IsEqual(testEvent);
         AssertThat(current!.SuiteName).IsEqual("TestSuiteXXX");
         AssertThat(current.TestName).IsEqual("Before");
@@ -47,9 +46,9 @@ public class TestEventTest
     {
         var guid = Guid.NewGuid();
         var testEvent = TestEvent.BeforeTest(guid, "foo/bar/TestSuiteXXX.cs", "TestSuiteXXX", "TestCaseA");
-        var json = JsonConvert.SerializeObject(testEvent);
+        var json = PipeMessageSerializer.Serialize(testEvent);
 
-        var current = JsonConvert.DeserializeObject<TestEvent>(json);
+        var current = PipeMessageSerializer.Deserialize<TestEvent>(json);
         AssertThat(current).IsNotNull().IsEqual(testEvent);
         AssertThat(current!.Id).IsEqual(guid);
         AssertThat(current.SuiteName).IsEqual("TestSuiteXXX");
@@ -75,9 +74,9 @@ public class TestEventTest
         List<ITestReport> reports = [new TestReport(ReportType.Failure, 42, "test failed")];
 
         var testEvent = TestEvent.After("foo/bar/TestSuiteXXX.cs", "TestSuiteXXX", statistics, reports);
-        var json = JsonConvert.SerializeObject(testEvent);
+        var json = PipeMessageSerializer.Serialize(testEvent);
 
-        var current = JsonConvert.DeserializeObject<TestEvent>(json);
+        var current = PipeMessageSerializer.Deserialize<TestEvent>(json);
         AssertThat(current).IsNotNull().IsEqual(testEvent);
         AssertThat(current!.Reports).Contains(new TestReport(ReportType.Failure, 42, "test failed"));
         AssertThat(current.SuiteName).IsEqual("TestSuiteXXX");
@@ -112,9 +111,9 @@ public class TestEventTest
         List<ITestReport> reports = [new TestReport(ReportType.Failure, 42, "test failed")];
 
         var testEvent = TestEvent.AfterTest(Guid.Empty, "foo/bar/TestSuiteXXX.cs", "TestSuiteXXX", "TestCaseA", statistics, reports);
-        var json = JsonConvert.SerializeObject(testEvent);
+        var json = PipeMessageSerializer.Serialize(testEvent);
 
-        var current = JsonConvert.DeserializeObject<TestEvent>(json);
+        var current = PipeMessageSerializer.Deserialize<TestEvent>(json);
         AssertThat(current).IsNotNull().IsEqual(testEvent);
         AssertThat(current!.Reports).Contains(new TestReport(ReportType.Failure, 42, "test failed"));
         AssertThat(current.Id).IsEqual(testEvent.Id);

@@ -52,7 +52,6 @@
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json"/>
     <ProjectReference Include="..\Api\GdUnit4Api.csproj"/>
 
     <None Include="README.md" Pack="true" PackagePath="/"/>

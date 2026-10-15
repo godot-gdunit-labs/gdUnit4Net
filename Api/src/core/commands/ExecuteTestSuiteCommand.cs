@@ -4,14 +4,13 @@
 namespace GdUnit4.Core.Commands;
 
 using System.Net;
+using System.Text.Json.Serialization;
 
 using Api;
 
 using Execution;
 
 using Extensions;
-
-using Newtonsoft.Json;
 
 /// <summary>
 ///     Command to execute a test suite with configurable execution options.
@@ -38,16 +37,16 @@ internal class ExecuteTestSuiteCommand : BaseCommand
     {
     }
 
-    [JsonProperty]
+    [JsonInclude]
     private TestSuiteNode Suite { get; set; } = null!;
 
-    [JsonProperty]
+    [JsonInclude]
     private bool IsCaptureStdOut { get; set; }
 
-    [JsonProperty]
+    [JsonInclude]
     private bool IsEngineMode { get; set; }
 
-    [JsonProperty]
+    [JsonInclude]
     private bool IsReportOrphanNodesEnabled { get; set; }
 
     public override async Task<Response> Execute(ITestEventListener testEventListener)
@@ -101,7 +100,7 @@ internal class ExecuteTestSuiteCommand : BaseCommand
             return new Response
             {
                 StatusCode = HttpStatusCode.InternalServerError,
-                Payload = JsonConvert.SerializeObject(ex)
+                Payload = ExceptionPayload.Serialize(ex)
             };
         }
     }

@@ -14,9 +14,10 @@ using Api;
 ///     All command implementations must be serializable to support interprocess communication.
 ///     Key requirements for derived commands:
 ///     <list type="bullet">
-///         <item>Must provide a parameterless constructor for JSON deserialization</item>
-///         <item>All properties must be marked with [JsonProperty] attribute</item>
+///         <item>Must provide a parameterless constructor for JSON deserialization, a non-public one marked with [JsonConstructor]</item>
+///         <item>Non-public properties must be marked with the [JsonInclude] attribute</item>
 ///         <item>Properties containing complex types must also be serializable</item>
+///         <item>Must be registered as a known message type of the pipe message serializer</item>
 ///     </list>
 ///     Commands are serialized when passing between test runner and Godot engine processes.
 /// </remarks>

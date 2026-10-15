@@ -7,12 +7,11 @@ using System.Buffers.Binary;
 using System.IO.Pipes;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 
 using Api;
 
 using Commands;
-
-using Newtonsoft.Json;
 
 internal class InOutPipeProxy<TPipe> : IAsyncDisposable
     where TPipe : PipeStream
@@ -28,15 +27,6 @@ internal class InOutPipeProxy<TPipe> : IAsyncDisposable
     protected bool IsConnected => Pipe.IsConnected;
 
     protected TPipe Proxy => Pipe;
-
-    // ReSharper disable once StaticMemberInGenericType
-#pragma warning disable CA2326, CA2327
-    private static JsonSerializerSettings JsonSettings { get; } = new()
-    {
-        TypeNameHandling = TypeNameHandling.All,
-        Formatting = Formatting.Indented
-    };
-#pragma warning restore CA2326, CA2327
 
     private TPipe Pipe { get; }
 
@@ -80,8 +70,7 @@ internal class InOutPipeProxy<TPipe> : IAsyncDisposable
         if (json.Length == 0)
             return null;
 
-        return JsonConvert.DeserializeObject(json, JsonSettings)
-               ?? throw new JsonSerializationException($"Failed to deserialize response:\n{json}");
+        return PipeMessageSerializer.Deserialize(json);
     }
 
     protected async Task WriteResponse(Response response) => await WriteAsync(response)
@@ -105,7 +94,7 @@ internal class InOutPipeProxy<TPipe> : IAsyncDisposable
             throw new IOException("Client not connected");
 
         var json = Encoding.UTF8.GetString(responseBytes);
-        return DeserializeObject<TCommand>(json);
+        return PipeMessageSerializer.Deserialize<TCommand>(json);
     }
 
     protected async Task WriteCommand<TCommand>(TCommand command)
@@ -114,6 +103,7 @@ internal class InOutPipeProxy<TPipe> : IAsyncDisposable
             .ConfigureAwait(false);
 
     protected async Task WriteAsync<TData>(TData data)
+        where TData : notnull
     {
         var json = SerializeObject(data);
         var messageBytes = Encoding.UTF8.GetBytes(json);
@@ -134,25 +124,22 @@ internal class InOutPipeProxy<TPipe> : IAsyncDisposable
     }
 
     private static string SerializeObject<TObject>(TObject data)
+        where TObject : notnull
     {
         try
         {
-            return JsonConvert.SerializeObject(data, JsonSettings);
+            return PipeMessageSerializer.Serialize(data);
         }
-        catch (JsonSerializationException ex)
+        catch (Exception ex) when (ex is JsonException or NotSupportedException)
         {
             var response = new Response
             {
                 StatusCode = HttpStatusCode.BadRequest,
                 Payload = $"Invalid command format: {ex.Message}"
             };
-            return JsonConvert.SerializeObject(response, JsonSettings);
+            return PipeMessageSerializer.Serialize(response);
         }
     }
-
-    private static TObject DeserializeObject<TObject>(string json)
-        => JsonConvert.DeserializeObject<TObject>(json, JsonSettings) ??
-           throw new JsonSerializationException($"Failed to deserialize command payload:'{json}'");
 
     private async Task ReadExactBytesAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {

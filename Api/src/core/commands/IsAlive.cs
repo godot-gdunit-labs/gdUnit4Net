@@ -4,11 +4,10 @@
 namespace GdUnit4.Core.Commands;
 
 using System.Net;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using Api;
-
-using Newtonsoft.Json;
 
 /// <summary>
 ///     Command to check if the test engine is alive and responding.

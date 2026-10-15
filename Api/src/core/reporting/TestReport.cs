@@ -6,14 +6,13 @@ namespace GdUnit4.Core.Reporting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 using Api;
 
 using Execution.Exceptions;
 
 using Extensions;
-
-using Newtonsoft.Json;
 
 internal sealed class TestReport : ITestReport, IEquatable<TestReport>
 {

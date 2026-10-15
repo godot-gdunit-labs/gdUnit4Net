@@ -3,15 +3,17 @@
 
 namespace GdUnit4.Core.Discovery;
 
-using Execution;
+using System.Text.Json;
 
-using Newtonsoft.Json;
+using Execution;
 
 /// <summary>
 ///     Describes a discovered test case with its location and execution requirements.
 /// </summary>
 public sealed class TestCaseDescriptor : IEquatable<TestCaseDescriptor>
 {
+    private static readonly JsonSerializerOptions ToStringOptions = new() { WriteIndented = true };
+
     /// <summary>
     ///     Gets or sets a simple display name of the test case.
     /// </summary>
@@ -176,7 +178,7 @@ public sealed class TestCaseDescriptor : IEquatable<TestCaseDescriptor>
     ///     This method is primarily used for debugging and logging purposes.
     ///     The JSON output includes all properties with indented formatting for readability.
     /// </remarks>
-    public override string ToString() => JsonConvert.SerializeObject(this, Formatting.Indented);
+    public override string ToString() => JsonSerializer.Serialize(this, ToStringOptions);
 
     internal TestCaseDescriptor Build(TestCaseAttribute testCaseAttribute, bool hasMultipleAttributes)
     {

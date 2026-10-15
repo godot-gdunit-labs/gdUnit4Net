@@ -16,8 +16,6 @@ using Godot.Collections;
 
 using Logging;
 
-using Newtonsoft.Json;
-
 internal class GdUnit4RuntimeExecutorGodotBridge
 {
     private TestEngineSettings Settings { get; } = new();
@@ -67,7 +65,7 @@ internal class GdUnit4RuntimeExecutorGodotBridge
     {
         if (response.StatusCode != HttpStatusCode.InternalServerError)
             return;
-        var exception = JsonConvert.DeserializeObject<Exception>(response.Payload);
+        var exception = ExceptionPayload.Deserialize(response.Payload);
         throw new InvalidOperationException("The GdUnit test server returned an unexpected status code.", exception);
     }
 }

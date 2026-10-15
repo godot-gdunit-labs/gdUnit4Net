@@ -3,7 +3,7 @@
 
 namespace GdUnit4.Api;
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 /// <summary>
 ///     Represents a test assembly in the GdUnit4 testing framework.
