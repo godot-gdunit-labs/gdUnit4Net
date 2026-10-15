@@ -22,6 +22,8 @@ internal static class DiagnosticRules
         // Rule IDs (GdUnit01xx)
         // public const string TestCaseName = "GdUnit0101";
 
+        public const string TESTCASE_NAMES_MUST_BE_UNIQUE_ID = "GdUnit0102";
+
         /// <summary>
         ///     Rule ID for detecting when a method with a DataPoint attribute has multiple TestCase attributes.
         /// </summary>
@@ -108,6 +110,22 @@ internal static class DiagnosticRules
             Add `[RequireGodotRuntime]` to the test class level.
             """,
             $"{HELP_LINK}/{RuleIds.REQUIRES_GODOT_RUNTIME_ON_CLASS_ID}.md",
+            WellKnownDiagnosticTags.Compiler);
+    }
+
+    internal static class TestCase
+    {
+        public static readonly DiagnosticDescriptor TestCaseNamesMustBeUnique = new(
+            RuleIds.TESTCASE_NAMES_MUST_BE_UNIQUE_ID,
+            "Test case names must be unique",
+            "Test method {0} has multiple TestCase attributes with the same TestName",
+            Categories.ATTRIBUTE_USAGE,
+            DiagnosticSeverity.Error,
+            true,
+            """
+
+            """,
+            $"{HELP_LINK}/{RuleIds.TESTCASE_NAMES_MUST_BE_UNIQUE_ID}.md",
             WellKnownDiagnosticTags.Compiler);
     }
 
