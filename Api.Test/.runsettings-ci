@@ -3,7 +3,6 @@
     <RunConfiguration>
         <MaxCpuCount>1</MaxCpuCount>
         <ResultsDirectory>./TestResults</ResultsDirectory>
-        <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
         <!-- set default session timeout to 10m (600000ms)-->
         <TestSessionTimeout>600000</TestSessionTimeout>
         <TreatNoTestsAsError>true</TreatNoTestsAsError>

@@ -1,13 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Title>gdUnit4 TestAdapter</Title>
     <Version>$(GdUnitTestAdapterVersion)</Version>
     <Description>
       GdUnit4 Test Adapter is the test adapter to run GdUnit4 tests in C#.
     </Description>
-    <Copyright>© 2026 Mike Schulze</Copyright>
-    <Authors>Mike Schulze</Authors>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,27 +12,22 @@
     <AssemblyName>GdUnit4.TestAdapter</AssemblyName>
     <OutputType>Library</OutputType>
     <OutputPath>./nupkg</OutputPath>
-    <Nullable>enable</Nullable>
-    <NullableReferenceTypes>true</NullableReferenceTypes>
     <RootNamespace>GdUnit4.TestAdapter</RootNamespace>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <DebugType>portable</DebugType>
     <!-- warning CS8785, prevent Godot ScriptPathAttributeGenerator errors-->
     <IsGodotToolsProject>true</IsGodotToolsProject>
 
     <!-- Exclude from test discovery -->
     <IsTestProject>false</IsTestProject>
     <VSTestNoBuild>true</VSTestNoBuild>
-    <GenerateTestDiscoveryFile>false</GenerateTestDiscoveryFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageProjectUrl>https://github.com/MikeSchulze/gdUnit4Net</PackageProjectUrl>
     <PackageId>gdUnit4.test.adapter</PackageId>
-    <PackageVersion>$(GdUnitTestAdapterVersion)</PackageVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/ReleaseNotes.txt"))</PackageReleaseNotes>
@@ -44,7 +36,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/MikeSchulze/gdUnit4Net</RepositoryUrl>
     <!-- ingnore dependency warnings to pre release version of gdunit.api -->
-    <NoWarn>NU5104</NoWarn>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

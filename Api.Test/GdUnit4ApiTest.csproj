@@ -1,21 +1,14 @@
 <Project Sdk="Godot.NET.Sdk">
     <PropertyGroup>
-        <Version>5.0.0</Version>
-        <Copyright>© 2025 Mike Schulze</Copyright>
-        <Authors>Mike Schulze</Authors>
         <TargetFramework>net10.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <NullableReferenceTypes>true</NullableReferenceTypes>
         <RootNamespace>GdUnit4.Tests</RootNamespace>
     </PropertyGroup>
     <PropertyGroup>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <AssemblyName>GdUnit4ApiTest</AssemblyName>
-        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <!--Disable warning/error of invalid/incompatible GodotSharp version, the package GdUnit4.API is build by V4.2.0-->
+        <!-- Disable the warning of an incompatible GodotSharp version between the Godot SDK and the gdUnit4 API -->
         <NoWarn>$(NoWarn);NU1605;CS8785</NoWarn>
         <!-- Prevent MSTest adapter from being discovered -->
         <VSTestTestAdapterPath>none</VSTestTestAdapterPath>

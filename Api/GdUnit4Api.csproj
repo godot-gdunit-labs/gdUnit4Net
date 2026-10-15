@@ -5,19 +5,14 @@
     <Description>
       GdUnit4 API is the C# extention to enable GdUnit4 to run/write unit tests in C#.
     </Description>
-    <Copyright>© 2026 Mike Schulze</Copyright>
-    <Authors>Mike Schulze</Authors>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFrameworks>$(CommonTargetFrameworks)</TargetFrameworks>
     <OutputType>Library</OutputType>
     <OutputPath>./nupkg</OutputPath>
-    <Nullable>enable</Nullable>
-    <NullableReferenceTypes>true</NullableReferenceTypes>
     <RootNamespace>GdUnit4</RootNamespace>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <DebugType>portable</DebugType>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- warning CS8785, prevent Godot ScriptPathAttributeGenerator errors-->
@@ -28,7 +23,6 @@
     <IsPackable>true</IsPackable>
     <PackageProjectUrl>https://github.com/MikeSchulze/gdUnit4Net</PackageProjectUrl>
     <PackageId>gdUnit4.api</PackageId>
-    <PackageVersion>$(GdUnitAPIVersion)</PackageVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/ReleaseNotes.txt"))</PackageReleaseNotes>

@@ -2,15 +2,10 @@
   <!--
   This Directory.Build.props file applies settings to all projects in this directory and subdirectories.
   It ensures consistent code quality, style, and build configuration across the entire solution.
-  Updated for C# 12 support and GdUnit4Net project requirements.
+  Versions, target frameworks and the language version are defined in ProjectVersions.props.
   -->
 
   <PropertyGroup>
-    <!--
-    Language and Framework Configuration:
-    Set target framework and language version for modern C# features
-    -->
-    <LangVersion Condition="'$(LangVersion)' == ''">14.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
@@ -18,6 +13,7 @@
     Analyzer Configuration:
     These settings enable code analysis tools that help maintain code quality by
     identifying potential issues, enforcing consistent style, and encouraging best practices.
+    The rule severities are configured in the .editorconfig, the test projects relax them with their test.ruleset.
     -->
 
     <!-- Enable built-in .NET code analyzers with latest rules -->
@@ -30,9 +26,6 @@
     <!-- Enforce code style rules during build, not just in the IDE -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
-    <!-- Use the custom StyleCop ruleset -->
-    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)stylecop.ruleset</CodeAnalysisRuleSet>
-
     <!-- Convert all warnings to errors for stricter enforcement -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
@@ -42,53 +35,19 @@
     -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <!--
-    MSBuild and Build Performance:
-    Enable features that improve build performance and developer experience
-    -->
-    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
-
-    <!--
-    File Header Configuration:
-    Configure copyright header template for automatic insertion
-    -->
-    <FileHeaderTemplate>Copyright (c) $([System.DateTime]::Now.Year) Mike Schulze
-      MIT License - See LICENSE file in the repository root for full license text</FileHeaderTemplate>
-
-    <!-- Additional file header properties for better IDE integration -->
-    <EnableFileHeaderGeneration>true</EnableFileHeaderGeneration>
-    <FileHeaderCompany>Mike Schulze</FileHeaderCompany>
-    <FileHeaderCopyright>Copyright (c) $([System.DateTime]::Now.Year) Mike Schulze</FileHeaderCopyright>
-    <FileHeaderLicense>MIT License - See LICENSE file in the repository root for full license text</FileHeaderLicense>
+    <!-- The test adapter reads the source locations of the tests from portable PDBs, also in Debug builds -->
+    <DebugType>portable</DebugType>
 
     <!--
     Assembly and Package Metadata:
     Default values for all projects in the solution
     -->
+    <Authors>Mike Schulze</Authors>
     <Company>Mike Schulze</Company>
-    <Copyright>Copyright (c) 2025 Mike Schulze</Copyright>
+    <Copyright>© $([System.DateTime]::Now.Year) Mike Schulze</Copyright>
     <Product>GdUnit4Net</Product>
 
   </PropertyGroup>
-
-  <!--
-  Configure source roots for projects with src folders
-  This tells the IDE and tooling that 'src' is the namespace root
-  -->
-  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)/src')">
-    <!-- Mark src folder as source root for namespace calculation -->
-    <SourceRoot Include="$(MSBuildProjectDirectory)/src/"/>
-  </ItemGroup>
-
-  <!--
-  Configure source roots for test projects
-  Test folders are also treated as namespace roots, typically with .Tests suffix
-  -->
-  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)/test') OR Exists('$(MSBuildProjectDirectory)/tests')">
-    <!-- Mark test folder as source root for namespace calculation -->
-    <SourceRoot Include="$(MSBuildProjectDirectory)/test/" Condition="Exists('$(MSBuildProjectDirectory)/test')"/>
-    <SourceRoot Include="$(MSBuildProjectDirectory)/tests/" Condition="Exists('$(MSBuildProjectDirectory)/tests')"/>
-  </ItemGroup>
 
   <!--
   External Code Analyzers:
@@ -118,40 +77,27 @@
 
   </ItemGroup>
 
-  <!--
-  Configuration files for all projects
-  -->
+  <!-- StyleCop settings for all projects -->
   <ItemGroup>
-    <!-- Configuration files for StyleCop -->
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json"/>
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory).editorconfig"/>
   </ItemGroup>
 
   <!--
-  Conditional Configuration:
-  Different settings for different build configurations
+  Package Project Specific Configuration:
+  StyleCop reports single-line statements without braces as SA1501 only when SA1503 is suppressed for the whole compilation,
+  which the .editorconfig severity does not do.
   -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <!-- Enable more detailed debugging information in Debug builds -->
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <!-- Optimize Release builds but keep debugging symbols -->
-    <DebugType>portable</DebugType>
-    <Optimize>true</Optimize>
-    <TrimUnusedDependencies>true</TrimUnusedDependencies>
+  <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('Test')) And !$(MSBuildProjectName.EndsWith('Tests'))">
+    <NoWarn>$(NoWarn);SA1503</NoWarn>
   </PropertyGroup>
 
   <!--
   Test Project Specific Configuration:
   Relaxed rules for test projects to allow more flexible coding patterns
   -->
-  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Test'))">
-    <!-- Test projects can be more lenient with some rules -->
-    <NoWarn>$(NoWarn);CA1515;CA1822</NoWarn>
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Test')) Or $(MSBuildProjectName.EndsWith('Tests'))">
+    <!-- Test projects may keep their types public -->
+    <NoWarn>$(NoWarn);CA1515</NoWarn>
   </PropertyGroup>
 
 </Project>

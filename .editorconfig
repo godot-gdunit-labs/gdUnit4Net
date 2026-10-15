@@ -17,12 +17,6 @@
 #
 ##########################################
 
-
-# Version: 5.0.0 (GdUnit4 Consolidated - C# 12)
-# Updated: 2025-06-15
-# Consolidated configuration with C# 12 features enabled
-# See http://EditorConfig.org for more information about .editorconfig files.
-
 ##########################################
 # Common Settings
 ##########################################
@@ -148,7 +142,7 @@ dotnet_style_namespace_match_folder = true : suggestion
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 
 ##########################################
-# C# 12 Specific Language Rules
+# C# Language Rules
 ##########################################
 
 [*.{cs,csx,cake}]
@@ -436,8 +430,23 @@ dotnet_diagnostic.CA1861.severity = none # Allow constant arrays as arguments
 # Usage category warnings
 dotnet_analyzer_diagnostic.category-Usage.severity = warning
 
-# C# 12 collection expression rules (enable selectively)
+# Primary constructors stay a suggestion
 dotnet_diagnostic.IDE0290.severity = suggestion # Use primary constructor
+
+# Package projects. The test projects relax the rules with their test.ruleset instead.
+[{Api,TestAdapter,Analyzers}/**.cs]
+dotnet_diagnostic.SA1000.severity = none # Keywords should be spaced correctly
+dotnet_diagnostic.SA1009.severity = none # Closing parenthesis should be spaced correctly
+dotnet_diagnostic.SA1520.severity = none # Use braces consistently
+dotnet_diagnostic.SA1201.severity = error # Elements should appear in the correct order
+dotnet_diagnostic.SA1202.severity = error # Elements should be ordered by access
+dotnet_diagnostic.SA1203.severity = error # Constants should appear before fields
+dotnet_diagnostic.SA1204.severity = error # Static elements should appear before instance elements
+dotnet_diagnostic.SA1206.severity = error # Declaration keywords should follow order
+dotnet_diagnostic.IDE0011.severity = none # Add braces
+dotnet_diagnostic.IDE0290.severity = none # Use primary constructor
+dotnet_diagnostic.CA1515.severity = none # Consider making public types internal
+dotnet_diagnostic.CA1707.severity = none # Identifiers should not contain underscores (allow SCREAMING_SNAKE_CASE)
 
 # Test-specific rules
 [**/*Test.cs]

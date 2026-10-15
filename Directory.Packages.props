@@ -17,7 +17,6 @@
     <PackageVersion Include="MSTest.TestFramework" Version="3.10.4"/>
 
     <!-- Roslyn/Code Analysis (compatible with all target frameworks) -->
-    <PackageVersion Include="Microsoft.CodeAnalysis" Version="5.0.0"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0"/>
@@ -29,18 +28,10 @@
     <PackageVersion Include="Gu.Roslyn.Asserts.Analyzers" Version="4.0.0"/>
 
     <!-- Godot -->
-    <PackageVersion Include="Godot.NET.Sdk" Version="$(GodotNetSdkVersion)"/>
     <PackageVersion Include="GodotSharp" Version="$(GodotNetSdkVersion)"/>
     <PackageVersion Include="Godot.SourceGenerators" Version="$(GodotNetSdkVersion)"/>
-    <PackageVersion Include="GodotSharpEditor" Version="$(GodotNetSdkVersion)"/>
-
-    <!-- GdUnit4 -->
-    <PackageVersion Include="gdUnit4.analyzers" Version="$(GdUnitAnalyzersVersion)"/>
-    <PackageVersion Include="gdUnit4.api" Version="$(GdUnitAPIVersion)"/>
-    <PackageVersion Include="gdUnit4.test.adapter" Version="$(GdUnitTestAdapterVersion)"/>
 
     <!-- Utilities -->
-    <PackageVersion Include="CommandLineParser" Version="2.9.1"/>
     <PackageVersion Include="coverlet.collector" Version="6.0.4"/>
     <PackageVersion Include="Mono.Cecil" Version="0.11.6"/>
     <PackageVersion Include="Moq" Version="4.20.72"/>

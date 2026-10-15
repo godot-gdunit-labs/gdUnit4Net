@@ -1,14 +1,11 @@
-﻿<!-- gdUnit4Analyzers.csproj -->
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Title>gdUnit4Analyzers</Title>
-    <Version>$(GdUnit4AnalyzersVersion)</Version>
+    <Version>$(GdUnitAnalyzersVersion)</Version>
     <Description>
       GdUnit4 Analyzers is a collection of Roslyn-based analyzers that provide compile-time validation for GdUnit4 test attributes.
       It helps developers catch configuration errors early by enforcing correct attribute usage and combinations.
     </Description>
-    <Copyright>© 2026 Mike Schulze</Copyright>
-    <Authors>Mike Schulze</Authors>
   </PropertyGroup>
 
   <!-- Build configuration -->
@@ -23,9 +20,6 @@
     <IsRoslynComponent>true</IsRoslynComponent>
     <DevelopmentDependency>true</DevelopmentDependency>
 
-    <!-- Fix for RS2008 warning -->
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalyzerLanguage>cs</AnalyzerLanguage>
     <!-- Fix for RS2007 warning
     https://github.com/dotnet/roslyn-analyzers/issues/7465
     -->
@@ -44,7 +38,6 @@
     <IsPackable>true</IsPackable>
     <PackageProjectUrl>https://github.com/MikeSchulze/gdUnit4Net/Analyzers</PackageProjectUrl>
     <PackageId>gdUnit4.analyzers</PackageId>
-    <PackageVersion>$(GdUnitAnalyzersVersion)</PackageVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/ReleaseNotes.txt"))</PackageReleaseNotes>
@@ -56,12 +49,6 @@
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
-
-  <!-- Add version properties to enable analyzer version tracking -->
-  <ItemGroup>
-    <CompilerVisibleProperty Include="RootNamespace"/>
-    <CompilerVisibleProperty Include="ProjectDir"/>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all"/>
