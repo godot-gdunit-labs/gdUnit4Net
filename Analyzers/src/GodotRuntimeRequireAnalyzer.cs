@@ -216,10 +216,10 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
         return ContainsGodotTypesInMethod(method, compilation, semanticModel, visitedMethods);
     }
 
-    private static bool ContainsGodotTypesInMethod(IMethodSymbol method, Compilation compilation, SemanticModel semanticModel, HashSet<IMethodSymbol>? visitedMethods)
+    private static bool ContainsGodotTypesInMethod(IMethodSymbol method, Compilation compilation, SemanticModel semanticModel, HashSet<IMethodSymbol> visitedMethods)
         => AnalyzeMethodImplementation(method, compilation, semanticModel, visitedMethods);
 
-    private static bool AnalyzeMethodImplementation(IMethodSymbol method, Compilation compilation, SemanticModel semanticModel, HashSet<IMethodSymbol>? visitedMethods)
+    private static bool AnalyzeMethodImplementation(IMethodSymbol method, Compilation compilation, SemanticModel semanticModel, HashSet<IMethodSymbol> visitedMethods)
     {
         var syntaxRef = method.DeclaringSyntaxReferences.FirstOrDefault();
         if (syntaxRef == null)
@@ -228,7 +228,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
         if (ContainsGodotTypesInMethodSignature(method))
             return true;
 
-        if (ContainsGodotTypesInMethodBodyFieldsOrProperties(method, compilation, semanticModel))
+        if (ContainsGodotTypesInMethodBodyFieldsOrProperties(method, compilation, semanticModel, visitedMethods))
             return true;
 
         var methodOperation = GetMethodOperationTree(syntaxRef, compilation, semanticModel);
@@ -241,7 +241,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
     private static bool ContainsGodotTypesInMethodSignature(IMethodSymbol method)
         => InheritsFromGodotType(method.ReturnType) || method.Parameters.Any(param => InheritsFromGodotType(param.Type));
 
-    private static bool ContainsGodotTypesInMethodBodyFieldsOrProperties(IMethodSymbol method, Compilation compilation, SemanticModel semanticModel)
+    private static bool ContainsGodotTypesInMethodBodyFieldsOrProperties(IMethodSymbol method, Compilation compilation, SemanticModel semanticModel, HashSet<IMethodSymbol> visitedMethods)
     {
         if (method.ContainingType == null)
             return false;
@@ -259,7 +259,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
             switch (operation)
             {
                 case IFieldReferenceOperation fieldRef:
-                    if (ContainsGodotTypesInField(fieldRef.Field, semanticModel))
+                    if (ContainsGodotTypesInField(fieldRef.Field, semanticModel, visitedMethods))
                         return true;
                     break;
 
@@ -277,7 +277,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static bool ContainsGodotTypesInField(IFieldSymbol field, SemanticModel semanticModel)
+    private static bool ContainsGodotTypesInField(IFieldSymbol field, SemanticModel semanticModel, HashSet<IMethodSymbol> visitedMethods)
     {
         if (InheritsFromGodotType(field.Type))
             return true;
@@ -290,7 +290,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
             return false;
 
         var fieldOperation = semanticModel.GetOperation(fieldSyntax.Initializer.Value);
-        return fieldOperation != null && ContainsGodotTypesInOperationTree(fieldOperation, semanticModel.Compilation, null);
+        return fieldOperation != null && ContainsGodotTypesInOperationTree(fieldOperation, semanticModel.Compilation, visitedMethods);
     }
 
 #pragma warning disable IDE0060
@@ -314,7 +314,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
         }*/
     }
 
-    private static bool ContainsGodotTypesInOperationTree(IOperation operation, Compilation compilation, HashSet<IMethodSymbol>? visitedMethods)
+    private static bool ContainsGodotTypesInOperationTree(IOperation operation, Compilation compilation, HashSet<IMethodSymbol> visitedMethods)
     {
         // Collect all relevant operations first
         var operations = operation.Descendants()
@@ -330,7 +330,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static bool AnalyzeOperationNode(IOperation operation, Compilation compilation, HashSet<IMethodSymbol>? visitedMethods)
+    private static bool AnalyzeOperationNode(IOperation operation, Compilation compilation, HashSet<IMethodSymbol> visitedMethods)
         => operation switch
         {
             ILocalReferenceOperation local => AnalyzeLocalReference(local),
@@ -350,7 +350,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
     private static bool AnalyzeObjectCreation(IObjectCreationOperation creation) =>
         InheritsFromGodotType(creation.Type);
 
-    private static bool AnalyzeMethodCall(IInvocationOperation invocation, Compilation compilation, HashSet<IMethodSymbol>? visitedMethods)
+    private static bool AnalyzeMethodCall(IInvocationOperation invocation, Compilation compilation, HashSet<IMethodSymbol> visitedMethods)
     {
         // First check the direct Godot usage
         if (InheritsFromGodotType(invocation.Type))
@@ -369,8 +369,8 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
             if (invocation.TargetMethod.Locations.All(loc => loc.IsInMetadata))
                 return AnalyzeExternalMethod(invocation.TargetMethod, visitedMethods);
 
-            // analysis of internal methods
-            return ContainsGodotTypes(invocation.TargetMethod, compilation, invocation.SemanticModel!);
+            // analysis of internal methods, forwards the visited methods to stop on recursive calls
+            return ContainsGodotTypes(invocation.TargetMethod, compilation, invocation.SemanticModel!, visitedMethods);
         }
 #pragma warning disable CA1031
         catch (Exception e)
@@ -383,7 +383,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static bool AnalyzeExternalMethod(IMethodSymbol method, HashSet<IMethodSymbol>? visitedMethods = null)
+    private static bool AnalyzeExternalMethod(IMethodSymbol method, HashSet<IMethodSymbol> visitedMethods)
     {
         // do not analyze standard .net methods
         var ns = method.ToDisplayString();
@@ -393,7 +393,6 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
             || ns == "<global namespace>")
             return false;
 
-        visitedMethods ??= new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
         if (!visitedMethods.Add(method))
             return false;
 

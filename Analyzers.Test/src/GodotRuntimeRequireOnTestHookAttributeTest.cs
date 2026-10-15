@@ -35,6 +35,25 @@ public class GodotRuntimeRequireOnTestHookAttributeTest
     }
 
     [TestMethod]
+    public void HookBeforeCallsSelfRecursiveMethod()
+    {
+        var source = Instrument(
+            """
+
+            [Before]
+            public void Setup() => Count(3);
+
+            private static int Count(int n) => n <= 0 ? 0 : Count(n - 1);
+
+            [TestCase]
+            public void OverrideFailureMessage() =>
+                AssertThat(true).IsTrue();
+            """);
+
+        RoslynAssert.Valid(analyzer, source);
+    }
+
+    [TestMethod]
     public void HookBeforeIsRequireGodotRuntime()
     {
         var source = Instrument(

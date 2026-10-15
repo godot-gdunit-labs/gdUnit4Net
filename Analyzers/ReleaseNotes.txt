@@ -1,4 +1,10 @@
-﻿v1.0.0
+﻿v1.0.1
+
+🪲 Bug Fixes
+* GD-462: Fixing a stack overflow that crashes the compiler when a test or test hook calls a recursive method,
+          the Godot runtime check now stops on methods it is already analyzing.
+
+v1.0.0
 This is the Initial release of the analyzers.
 
 GdUnit0201: Multiple TestCase attributes not allowed with DataPoint

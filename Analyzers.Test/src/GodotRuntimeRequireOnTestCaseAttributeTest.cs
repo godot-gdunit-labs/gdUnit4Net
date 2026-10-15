@@ -387,4 +387,113 @@ public class GodotRuntimeRequireOnTestCaseAttributeTest
 
         RoslynAssert.Valid(analyzer, source);
     }
+
+    [TestMethod]
+    public void TestCaseCallsSelfRecursiveMethod()
+    {
+        var source = Instrument(
+            """
+
+            [TestCase]
+            public static void TestMethod() => Count(3);
+
+            private static int Count(int n) => n <= 0 ? 0 : Count(n - 1);
+            """);
+
+        RoslynAssert.Valid(analyzer, source);
+    }
+
+    [TestMethod]
+    public void TestCaseCallsMutuallyRecursiveMethods()
+    {
+        var source = Instrument(
+            """
+
+            [TestCase]
+            public static void TestMethod() => IsEven(3);
+
+            private static bool IsEven(int n) => n == 0 || IsOdd(n - 1);
+
+            private static bool IsOdd(int n) => n != 0 && IsEven(n - 1);
+            """);
+
+        RoslynAssert.Valid(analyzer, source);
+    }
+
+    [TestMethod]
+    public void TestCaseCallsMethodReferencingFieldInitializedByThatMethod()
+    {
+        var source = Instrument(
+            """
+
+            private static readonly int Seed = NextSeed() * 2;
+
+            [TestCase]
+            public static void TestMethod() => NextSeed();
+
+            private static int NextSeed() => Seed + 1;
+            """);
+
+        RoslynAssert.Valid(analyzer, source);
+    }
+
+    [TestMethod]
+    public void TestCaseCallsSelfRecursiveMethodUsingGodotReference()
+    {
+        var source = Instrument(
+            """
+
+            [TestCase]
+            public static void TestMethod() => CountChildren(3);
+
+            private static int CountChildren(int n) => n <= 0 ? 0 : CountChildren(n - 1) + new Node().GetChildCount();
+            """);
+
+        var errorLine = new LinePosition(19, 19);
+        var expected = ExpectedDiagnostic
+            .Create(
+                DiagnosticRules.RuleIds.REQUIRES_GODOT_RUNTIME_ON_METHOD_ID,
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DiagnosticRules.GodotEngine.RequiresGodotRuntimeOnMethod.MessageFormat.ToString(),
+                    "TestMethod"))
+            .WithPosition(new FileLinePositionSpan("TestClass.cs", errorLine, errorLine));
+
+        RoslynAssert.Diagnostics(analyzer, expected, source);
+    }
+
+    [TestMethod]
+    public void TestCaseCallsMutuallyRecursiveMethodsUsingGodotReference()
+    {
+        var source = Instrument(
+            """
+
+            [TestCase]
+            public static void TestMethod() => Visit(3);
+
+            private static void Visit(int n)
+            {
+                if (n > 0)
+                    VisitChildren(n - 1);
+            }
+
+            private static void VisitChildren(int n)
+            {
+                Visit(n);
+                var node = new Node();
+            }
+            """);
+
+        var errorLine = new LinePosition(19, 19);
+        var expected = ExpectedDiagnostic
+            .Create(
+                DiagnosticRules.RuleIds.REQUIRES_GODOT_RUNTIME_ON_METHOD_ID,
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DiagnosticRules.GodotEngine.RequiresGodotRuntimeOnMethod.MessageFormat.ToString(),
+                    "TestMethod"))
+            .WithPosition(new FileLinePositionSpan("TestClass.cs", errorLine, errorLine));
+
+        RoslynAssert.Diagnostics(analyzer, expected, source);
+    }
 }
