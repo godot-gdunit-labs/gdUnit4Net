@@ -7,18 +7,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Discovery;
+
 using Execution;
 
 using Extensions;
-
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 /// <summary>
 ///     Provides functionality to retrieve and process test data from data point sources for data-driven tests.
@@ -142,6 +140,40 @@ internal static class DataPointValueProvider
         return false;
     }
 
+    /// <summary>
+    ///     Builds the stack trace line naming the data point method of an async data source,
+    ///     with the source location taken from the debug symbols when they are available.
+    /// </summary>
+    /// <param name="asyncSource">The async enumerable returned by the data point method.</param>
+    /// <returns>The stack trace line.</returns>
+    internal static string BuildStackTrace(object asyncSource)
+    {
+        try
+        {
+            var sourceType = asyncSource.GetType();
+            if (!sourceType.Name.Contains("d__", StringComparison.Ordinal))
+                return "at unknown location";
+
+            var originalType = sourceType.DeclaringType;
+
+            if (originalType == null)
+                return "at unknown location";
+
+            var methodName = sourceType.Name.Split('<', '>')[1];
+            var location = DebugSymbolLocator.FindStateMachineLocation(sourceType);
+            return location == null
+                ? $"at {originalType.FullName}.{methodName}()"
+                : $"at {originalType.FullName}.{methodName}() in {location.FilePath}:line {location.Line}";
+        }
+#pragma warning disable CA1031
+        catch (Exception e)
+#pragma warning restore CA1031
+        {
+            Console.Error.WriteLine($"Error getting source location: {e}");
+            return "at unknown location";
+        }
+    }
+
     private static async IAsyncEnumerable<object?[]> StreamAsyncData(object asyncSource, Type returnType, TimeSpan timeout)
     {
         var elementType = returnType.GetGenericArguments()[0];
@@ -205,74 +237,6 @@ internal static class DataPointValueProvider
             {
                 // ignore disposal exceptions
             }
-        }
-    }
-
-    private static string? LookupClassPath(Type classType) => new DirectoryInfo(Directory.GetCurrentDirectory())
-        .EnumerateFiles($"*{classType.Name}.cs", SearchOption.AllDirectories)
-        .Where(file => FileContainsClassName(file.FullName, classType.Name))
-        .Select(file => file.FullName)
-        .FirstOrDefault();
-
-    // Check if the class name exists in the file using a quick text check
-    private static bool FileContainsClassName(string filePath, string className)
-    {
-        // Read file line-by-line instead of loading the whole file into memory
-        using var reader = new StreamReader(filePath);
-        while (reader.ReadLine() is { } line)
-        {
-            // If the line contains the class keyword and the class name, it's a likely candidate
-            if (line.Contains($"class {className}", StringComparison.Ordinal))
-                return true;
-        }
-
-        return false;
-    }
-
-    private static string BuildStackTrace(object asyncSource)
-    {
-        try
-        {
-            var sourceType = asyncSource.GetType();
-            if (!sourceType.Name.Contains("d__", StringComparison.Ordinal))
-                return "at unknown location";
-
-            var originalType = sourceType.DeclaringType;
-
-            if (originalType == null)
-                return "at unknown location";
-
-            var methodName = sourceType.Name.Split('<', '>')[1];
-            var sourceFile = LookupClassPath(originalType);
-            if (sourceFile == null)
-                return $"at {originalType.FullName}.{methodName}()";
-
-            // If we found the source file, parse it to find the method line
-            var sourceText = File.ReadAllText(sourceFile);
-            var tree = CSharpSyntaxTree.ParseText(sourceText);
-            var root = tree.GetRoot();
-
-            var methodDeclaration = root
-                .DescendantNodes()
-                .OfType<MethodDeclarationSyntax>()
-                .FirstOrDefault(m => m.Identifier.ValueText == methodName);
-
-            if (methodDeclaration != null)
-            {
-                var lineSpan = tree.GetLineSpan(methodDeclaration.Span);
-                var lineNumber = lineSpan.StartLinePosition.Line + 1;
-                return $"at {originalType.FullName}.{methodName}() in {sourceFile}:line {lineNumber}";
-            }
-
-            // For now, return basic information while we examine the debug output
-            return $"at {originalType.FullName}.{methodName}()";
-        }
-#pragma warning disable CA1031
-        catch (Exception e)
-#pragma warning restore CA1031
-        {
-            Console.Error.WriteLine($"Error getting source location: {e}");
-            return "at unknown location";
         }
     }
 
