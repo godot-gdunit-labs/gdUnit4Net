@@ -20,9 +20,6 @@ internal class GodotExceptionMonitor
     private static readonly HashSet<Type> IgnoredExceptionTypes =
     [
         typeof(TestFailedException)
-
-        // typeof(AssertFailedException),
-        // typeof(UnitTestAssertException)
     ];
 
     private static readonly List<Exception> CaughtExceptions = [];

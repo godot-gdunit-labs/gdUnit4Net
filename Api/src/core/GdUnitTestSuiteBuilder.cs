@@ -70,8 +70,6 @@ internal static class GdUnitTestSuiteBuilder
             {
                 var template = FillFromTemplate(LoadTestSuiteTemplate(), classDefinition, sourcePath);
                 var syntaxTree = CSharpSyntaxTree.ParseText(template);
-
-                // var toWrite = syntaxTree.WithFilePath(testSuitePath).GetCompilationUnitRoot();
                 var toWrite = AddTestCase(syntaxTree, methodToTest);
 
                 using (var streamWriter = File.CreateText(testSuitePath))
@@ -96,9 +94,9 @@ internal static class GdUnitTestSuiteBuilder
 
             return result;
         }
-#pragma warning disable CA1031
-        catch (Exception e)
-#pragma warning restore CA1031
+
+        // a line number outside the source file, a source or template without a class, and a test suite path that cannot be written are reported to the editor
+        catch (Exception e) when (e is ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException or NotSupportedException)
         {
             Console.Error.WriteLine($"Can't parse method name from {sourcePath}:{lineNumber}. Error: {e.Message}");
             result.Add("error", e.Message);
@@ -120,9 +118,9 @@ internal static class GdUnitTestSuiteBuilder
             var root = CSharpSyntaxTree.ParseText(code).GetCompilationUnitRoot();
             return ParseClassDefinition(root);
         }
-#pragma warning disable CA1031
-        catch (Exception e)
-#pragma warning restore CA1031
+
+        // a source file that cannot be read or contains no class has no class definition
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
             Console.Error.WriteLine($"Can't parse namespace of {classPath}. Error: {e.Message}");
             return null;
@@ -234,7 +232,6 @@ internal static class GdUnitTestSuiteBuilder
             type = assembly.GetType(clazz);
             if (type != null)
             {
-                // Godot.GD.PrintS("found on assemblyName", $"Name={type.Name} Location={assembly.Location}");
                 ClazzCache.Add(clazz, type);
                 return type;
             }

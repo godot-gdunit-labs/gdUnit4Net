@@ -121,6 +121,47 @@ public class GdUnitTestSuiteBuilderTest
 
     [TestCase]
     [RequireGodotRuntime]
+    public void CreateTestSuiteLineOutOfRange()
+    {
+        var tmp = CreateTempDir("build-test-suite-test");
+        var sourceClass = Path.Combine(tmp, "TestPerson.cs");
+        File.Copy(Path.GetFullPath(ProjectSettings.GlobalizePath("res://src/core/resources/sources/TestPerson.cs")), sourceClass);
+
+        var dictionary = GdUnitTestSuiteBuilder.Build(sourceClass, 10000, Path.Combine(tmp, "TestPersonTest.cs"));
+        AssertThat((string)dictionary["error"]).StartsWith("Specified argument was out of the range of valid values.");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void CreateTestSuiteSourceWithoutClass()
+    {
+        var tmp = CreateTempDir("build-test-suite-test");
+        var sourceInterface = Path.Combine(tmp, "IPerson.cs");
+        File.WriteAllText(sourceInterface, "namespace GdUnit4.Example.Test.Resources;\n\npublic interface IPerson\n{\n    string FirstName { get; }\n}\n");
+
+        AssertObject(GdUnitTestSuiteBuilder.ParseFullqualifiedClassName(sourceInterface)).IsNull();
+        var dictionary = GdUnitTestSuiteBuilder.Build(sourceInterface, 5, Path.Combine(tmp, "IPersonTest.cs"));
+        AssertThat((string)dictionary["error"])
+            .StartsWith("Can't parse class type from")
+            .EndsWith("IPerson.cs:5.");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void CreateTestSuiteNotWritable()
+    {
+        var tmp = CreateTempDir("build-test-suite-test");
+        var sourceClass = Path.Combine(tmp, "TestPerson.cs");
+        File.Copy(Path.GetFullPath(ProjectSettings.GlobalizePath("res://src/core/resources/sources/TestPerson.cs")), sourceClass);
+
+        // the directory of the test suite cannot be created, because a file of the same name exists
+        var dictionary = GdUnitTestSuiteBuilder.Build(sourceClass, 24, Path.Combine(sourceClass, "TestPersonTest.cs"));
+        AssertThat(dictionary.ContainsKey("error")).IsTrue();
+        AssertThat(dictionary.ContainsKey("line")).IsFalse();
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
     public void CreateTestSuiteNoNamespace()
     {
         var tmp = CreateTempDir("build-test-suite-test");

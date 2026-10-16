@@ -64,9 +64,6 @@ internal sealed class ValueExtractor : IValueExtractor
 
         var property = type.GetProperty(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         if (property == null)
-
-            // if GdUnitSettings.is_verbose_assert_warnings():
-            //    Godot.GD.PushWarning("Extracting value from element '%s' by func '%s' failed! Converting to \"n.a.\"" % [instance, func_name])
             return "n.a.";
         return property.GetValue(instance);
     }
