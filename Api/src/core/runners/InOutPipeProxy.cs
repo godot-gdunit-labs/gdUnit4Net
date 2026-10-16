@@ -160,7 +160,5 @@ internal class InOutPipeProxy<TPipe> : IAsyncDisposable
                 break;
             }
         }
-
-        // Console.WriteLine($"{typeof(TPipe)} Read {count} bytes from {totalBytesRead} of {count}, {IsConnected}");
     }
 }

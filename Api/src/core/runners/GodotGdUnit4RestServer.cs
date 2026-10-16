@@ -91,6 +91,8 @@ internal sealed class GodotGdUnit4RestServer : InOutPipeProxy<NamedPipeServerStr
         {
             Logger.LogError($"GodotGdUnit4RestApi:: Client has disconnected by '{e.Message}'");
         }
+
+        // Godot callback boundary: the runner node calls this every frame and discards the task, so every failure is logged here
 #pragma warning disable CA1031
         catch (Exception ex)
 #pragma warning restore CA1031
@@ -136,11 +138,12 @@ internal sealed class GodotGdUnit4RestServer : InOutPipeProxy<NamedPipeServerStr
     {
         try
         {
-            // Logger.LogInfo($"GodotGdUnit4RestApi:: Processing command {command}.");
             return await command
                 .Execute(testEventListener)
                 .ConfigureAwait(false);
         }
+
+        // Pipe boundary: the client waits for a response to every command, so any failure of the command is sent back as error response
 #pragma warning disable CA1031
         catch (Exception ex)
 #pragma warning restore CA1031

@@ -80,7 +80,6 @@ internal class BaseTestRunner : ITestRunner
                             .ConfigureAwait(true);
                         foreach (var testSuite in testSuiteNodes)
                         {
-                            // using (var stdoutHook = testSuiteContext.IsCaptureStdOut ? StdOutHookFactory.CreateStdOutHook() : null)
                             var response = await Executor
                                 .ExecuteCommand(new ExecuteTestSuiteCommand(testSuite, Settings.CaptureStdOut, true), eventListener, token)
                                 .ConfigureAwait(true);
@@ -100,6 +99,8 @@ internal class BaseTestRunner : ITestRunner
                     {
                         Logger.LogInfo("Running tests are cancelled.");
                     }
+
+                    // Test run boundary: the run executes on a background task whose failure nobody observes, so every failure is logged here
 #pragma warning disable CA1031
                     catch (Exception ex)
 #pragma warning restore CA1031

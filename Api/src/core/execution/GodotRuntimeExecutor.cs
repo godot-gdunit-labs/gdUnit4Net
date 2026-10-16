@@ -6,6 +6,7 @@ namespace GdUnit4.Core.Execution;
 using System.IO.Pipes;
 using System.Net;
 using System.Security.Principal;
+using System.Text.Json;
 
 using Api;
 
@@ -87,9 +88,7 @@ internal sealed class GodotRuntimeExecutor : InOutPipeProxy<NamedPipeClientStrea
             await WriteCommand(command)
                 .ConfigureAwait(false);
         }
-#pragma warning disable CA1031
-        catch (Exception ex)
-#pragma warning restore CA1031
+        catch (Exception ex) when (ex is InvalidOperationException or OperationCanceledException or IOException)
         {
             return new Response
             {
@@ -128,9 +127,9 @@ internal sealed class GodotRuntimeExecutor : InOutPipeProxy<NamedPipeClientStrea
                         continue;
                 }
             }
-#pragma warning disable CA1031
-            catch (Exception ex)
-#pragma warning restore CA1031
+
+            // a broken connection or an invalid message ends the command, exceptions of the event listener reach the runner
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or OperationCanceledException or JsonException or NotSupportedException)
             {
                 return new Response
                 {

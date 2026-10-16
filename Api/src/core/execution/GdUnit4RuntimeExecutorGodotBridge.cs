@@ -53,6 +53,8 @@ internal class GdUnit4RuntimeExecutorGodotBridge
         {
             Logger.LogInfo("Running tests are cancelled.");
         }
+
+        // Godot callback boundary: the GDScript plugin starts the run and cannot receive .NET exceptions, so every failure is logged to the Godot output
 #pragma warning disable CA1031
         catch (Exception ex)
 #pragma warning restore CA1031
@@ -125,6 +127,9 @@ internal class GdUnit4TestEventListener : ITestEventListener
 
             _ = listener.Call(data);
         }
+
+        // Godot callback boundary: the event is converted to Godot types and passed to the GDScript listener,
+        // a failure to send one event is logged and must not stop the test run
 #pragma warning disable CA1031
         catch (Exception ex)
 #pragma warning restore CA1031
