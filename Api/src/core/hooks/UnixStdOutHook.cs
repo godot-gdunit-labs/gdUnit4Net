@@ -25,6 +25,7 @@ internal sealed class UnixStdOutHook : IStdOutHook
     private const int F_GETFL = 3;
     private const int F_SETFL = 4;
     private const int O_NONBLOCK = 0x0004;
+    private const short POLLIN = 0x0001;
     private readonly int originalFlags;
 
     private readonly IntPtr originalStdOutHandle;
@@ -90,11 +91,16 @@ internal sealed class UnixStdOutHook : IStdOutHook
         readThread?.Join();
         readThread = null;
 
-        // Collect the output still in the pipe before the capture stops, the read end is non-blocking and returns -1 when empty
+        // Collect the output still in the pipe before the capture stops, polled without waiting because the read end can block
         var buffer = new byte[4096];
-        int bytesRead;
-        while ((bytesRead = read(pipeHandles[PIPE_READ], buffer, buffer.Length)) > 0)
+        var pollFd = new PollFd { Fd = pipeHandles[PIPE_READ], Events = POLLIN };
+        while (poll(ref pollFd, 1, 0) > 0)
+        {
+            var bytesRead = read(pipeHandles[PIPE_READ], buffer, buffer.Length);
+            if (bytesRead <= 0)
+                break;
             ProcessReadData(buffer, (uint)bytesRead);
+        }
 
         stdOutHook.StopCapture();
     }
@@ -109,7 +115,7 @@ internal sealed class UnixStdOutHook : IStdOutHook
             var pollFd = new PollFd
             {
                 Fd = pipeHandles[PIPE_READ],
-                Events = 0x0001 // POLLIN
+                Events = POLLIN
             };
 
             while (isCapturing)
