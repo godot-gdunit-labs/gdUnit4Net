@@ -10,6 +10,7 @@ using Godot;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 internal static class GdUnitTestSuiteBuilder
 {
@@ -47,10 +48,10 @@ internal static class GdUnitTestSuiteBuilder
         var result = new Dictionary<string, object> { { "path", testSuitePath } };
         try
         {
-            var classDefinition = ParseFullqualifiedClassName(sourcePath);
+            var classDefinition = ParseFullqualifiedClassName(sourcePath, lineNumber);
             if (classDefinition == null)
             {
-                result.Add("error", $"Can't parse class type from {sourcePath}:{lineNumber}.");
+                result.Add("error", $"Can't find a class, struct, interface or record in {sourcePath}:{lineNumber}.");
                 return result;
             }
 
@@ -95,16 +96,22 @@ internal static class GdUnitTestSuiteBuilder
             return result;
         }
 
-        // a line number outside the source file, a source or template without a class, and a test suite path that cannot be written are reported to the editor
+        // a line number outside the source file, a template without a class, and a test suite path that cannot be written are reported to the editor
         catch (Exception e) when (e is ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException or NotSupportedException)
         {
-            Console.Error.WriteLine($"Can't parse method name from {sourcePath}:{lineNumber}. Error: {e.Message}");
+            Console.Error.WriteLine($"Can't create the test suite for {sourcePath}:{lineNumber}. Error: {e.Message}");
             result.Add("error", e.Message);
             return result;
         }
     }
 
-    internal static ClassDefinition? ParseFullqualifiedClassName(string classPath)
+    /// <summary>
+    ///     Parses the type definition of a source file, the type containing the given line or the first type of the file.
+    /// </summary>
+    /// <param name="classPath">The path of the source file.</param>
+    /// <param name="lineNumber">The line number to find the containing type for, 0 selects the first type.</param>
+    /// <returns>The type definition, or null when the file cannot be read or declares no class, struct, interface or record.</returns>
+    internal static ClassDefinition? ParseFullqualifiedClassName(string classPath, int lineNumber = 0)
     {
         if (string.IsNullOrEmpty(classPath) || !new FileInfo(classPath).Exists)
         {
@@ -114,15 +121,17 @@ internal static class GdUnitTestSuiteBuilder
 
         try
         {
-            var code = File.ReadAllText(classPath);
-            var root = CSharpSyntaxTree.ParseText(code).GetCompilationUnitRoot();
-            return ParseClassDefinition(root);
+            var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(classPath));
+            var lines = syntaxTree.GetText().Lines;
+            TextSpan? spanToFind = lineNumber > 0 && lineNumber <= lines.Count ? lines[lineNumber - 1].Span : null;
+            var typeSyntax = TypeDeclaration(syntaxTree.GetCompilationUnitRoot(), spanToFind);
+            return typeSyntax == null ? null : new ClassDefinition(NamespaceOf(typeSyntax), typeSyntax.Identifier.ValueText);
         }
 
-        // a source file that cannot be read or contains no class has no class definition
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
+        // a source file that cannot be read has no type definition
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
-            Console.Error.WriteLine($"Can't parse namespace of {classPath}. Error: {e.Message}");
+            Console.Error.WriteLine($"Can't read the source file {classPath}. Error: {e.Message}");
             return null;
         }
     }
@@ -155,18 +164,20 @@ internal static class GdUnitTestSuiteBuilder
     internal static string? FindMethod(string sourcePath, int lineNumber)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(sourcePath));
-        var programClassSyntax = ClassDeclaration(syntaxTree.GetCompilationUnitRoot());
         var spanToFind = syntaxTree.GetText().Lines[lineNumber - 1].Span;
+        var typeSyntax = TypeDeclaration(syntaxTree.GetCompilationUnitRoot(), spanToFind);
+        if (typeSyntax == null)
+            return null;
 
         // lookup on properties
-        foreach (var m in programClassSyntax.Members.OfType<PropertyDeclarationSyntax>())
+        foreach (var m in typeSyntax.Members.OfType<PropertyDeclarationSyntax>())
         {
             if (m.FullSpan.IntersectsWith(spanToFind))
                 return m.Identifier.Text;
         }
 
         // lookup on methods
-        foreach (var m in programClassSyntax.Members.OfType<MethodDeclarationSyntax>())
+        foreach (var m in typeSyntax.Members.OfType<MethodDeclarationSyntax>())
         {
             if (m.FullSpan.IntersectsWith(spanToFind))
                 return m.Identifier.Text;
@@ -175,16 +186,26 @@ internal static class GdUnitTestSuiteBuilder
         return null;
     }
 
-    private static ClassDefinition ParseClassDefinition(CompilationUnitSyntax root)
+    /// <summary>
+    ///     Finds the innermost class, struct, interface or record containing the span, or the first one of the file without a span.
+    /// </summary>
+    private static TypeDeclarationSyntax? TypeDeclaration(CompilationUnitSyntax root, TextSpan? spanToFind)
     {
-        var namespaceSyntax = ParseNameSpaceSyntax(root);
-        if (namespaceSyntax != null)
-        {
-            var classSyntax = namespaceSyntax.Members.OfType<ClassDeclarationSyntax>().First();
-            return new ClassDefinition(namespaceSyntax.Name.ToString(), classSyntax.Identifier.ValueText);
-        }
+        // the nodes are ordered by their position, so a nested type follows the type that contains it
+        var types = root.DescendantNodes().OfType<TypeDeclarationSyntax>().ToList();
+        if (spanToFind == null)
+            return types.FirstOrDefault();
+        return types.LastOrDefault(type => type.FullSpan.IntersectsWith(spanToFind.Value)) ?? types.FirstOrDefault();
+    }
 
-        return new ClassDefinition(null, root.Members.OfType<ClassDeclarationSyntax>().First().Identifier.ValueText);
+    private static string? NamespaceOf(TypeDeclarationSyntax typeSyntax)
+    {
+        var names = typeSyntax.Ancestors()
+            .OfType<BaseNamespaceDeclarationSyntax>()
+            .Reverse()
+            .Select(namespaceSyntax => namespaceSyntax.Name.ToString())
+            .ToList();
+        return names.Count == 0 ? null : string.Join('.', names);
     }
 
     private static Type? FindClassWithTestSuiteAttribute(string classPath, bool isTestSuite)
@@ -213,10 +234,6 @@ internal static class GdUnitTestSuiteBuilder
         Console.WriteLine($"Warning: No class found in the provided code ({classPath}).");
         return null;
     }
-
-    private static BaseNamespaceDeclarationSyntax? ParseNameSpaceSyntax(CompilationUnitSyntax root) =>
-        root.Members.OfType<FileScopedNamespaceDeclarationSyntax>().FirstOrDefault() as BaseNamespaceDeclarationSyntax ??
-        root.Members.OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
 
     private static Type? FindTypeOnAssembly(string clazz)
     {
@@ -256,13 +273,9 @@ internal static class GdUnitTestSuiteBuilder
             .Replace(TAG_SOURCE_CLASS_NAME, classDefinition.Name)
             .Replace(TAG_SOURCE_CLASS_VARNAME, classDefinition.Name);
 
+    // the test suite is the first class of its file, inside or outside a namespace
     private static ClassDeclarationSyntax ClassDeclaration(CompilationUnitSyntax root)
-    {
-        var namespaceSyntax = ParseNameSpaceSyntax(root);
-        return namespaceSyntax == null
-            ? root.Members.OfType<ClassDeclarationSyntax>().First()
-            : namespaceSyntax.Members.OfType<ClassDeclarationSyntax>().First();
-    }
+        => root.DescendantNodes().OfType<ClassDeclarationSyntax>().First();
 
     private static bool TestCaseExists(CompilationUnitSyntax root, string testCaseName) =>
         ClassDeclaration(root).Members.OfType<MethodDeclarationSyntax>()

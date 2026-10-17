@@ -58,6 +58,8 @@ v5.1.0
           The supported .NET versions are .NET 8 and .NET 10, projects targeting `net9.0` use the `net8.0` build.
 * GD-485: Removed the `Microsoft.CodeAnalysis` and `Microsoft.CodeAnalysis.CSharp.Workspaces` dependencies, the async data point timeout now reads its source location from the debug symbols.
 * GD-486: Replaced `Newtonsoft.Json` by `System.Text.Json` on the pipe to the Godot runtime, which now accepts only the known message types, the package no longer depends on `Newtonsoft.Json`.
+* GD-511: Creating a test from the Godot editor supports methods and properties of structs, interfaces and records, of nested types
+          and of every type in a file with several types, the test suite is named after the type that contains the selected line.
 
 v5.0.0
 

@@ -136,14 +136,163 @@ public class GdUnitTestSuiteBuilderTest
     public void CreateTestSuiteSourceWithoutClass()
     {
         var tmp = CreateTempDir("build-test-suite-test");
-        var sourceInterface = Path.Combine(tmp, "IPerson.cs");
-        File.WriteAllText(sourceInterface, "namespace GdUnit4.Example.Test.Resources;\n\npublic interface IPerson\n{\n    string FirstName { get; }\n}\n");
+        var source = CreateSource(tmp, "Types.cs", "namespace Examples;\n\npublic enum Color { Red, Green }\n\npublic delegate void Changed(Color color);\n");
 
-        AssertObject(GdUnitTestSuiteBuilder.ParseFullqualifiedClassName(sourceInterface)).IsNull();
-        var dictionary = GdUnitTestSuiteBuilder.Build(sourceInterface, 5, Path.Combine(tmp, "IPersonTest.cs"));
+        AssertObject(GdUnitTestSuiteBuilder.ParseFullqualifiedClassName(source)).IsNull();
+        var dictionary = GdUnitTestSuiteBuilder.Build(source, 3, Path.Combine(tmp, "TypesTest.cs"));
         AssertThat((string)dictionary["error"])
-            .StartsWith("Can't parse class type from")
-            .EndsWith("IPerson.cs:5.");
+            .StartsWith("Can't find a class, struct, interface or record in")
+            .EndsWith("Types.cs:3.");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void CreateTestSuiteForInterfaceWithDefaultMethod()
+    {
+        var tmp = CreateTempDir("build-test-suite-test");
+        var source = CreateSource(
+            tmp,
+            "IPerson.cs",
+            """
+            namespace Examples;
+
+            public interface IPerson
+            {
+                string FirstName { get; }
+
+                string FullName() => $"Mr. {FirstName}";
+            }
+            """);
+
+        AssertObject(GdUnitTestSuiteBuilder.ParseFullqualifiedClassName(source))
+            .IsEqual(new GdUnitTestSuiteBuilder.ClassDefinition("Examples", "IPerson"));
+        AssertTestSuiteCreated(source, 7, Path.Combine(tmp, "IPersonTest.cs"), "Examples", "IPersonTest", "FullName");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void CreateTestSuiteForStruct()
+    {
+        var tmp = CreateTempDir("build-test-suite-test");
+        var source = CreateSource(
+            tmp,
+            "Point.cs",
+            """
+            namespace Examples;
+
+            public struct Point
+            {
+                public int X;
+
+                public readonly int Length() => X;
+            }
+            """);
+
+        AssertTestSuiteCreated(source, 7, Path.Combine(tmp, "PointTest.cs"), "Examples", "PointTest", "Length");
+    }
+
+    [TestCase("record")]
+    [TestCase("record class")]
+    [TestCase("record struct")]
+    [RequireGodotRuntime]
+    public void CreateTestSuiteForRecord(string kind)
+    {
+        var tmp = CreateTempDir("build-test-suite-test");
+        var source = CreateSource(
+            tmp,
+            "Person.cs",
+            $$"""
+              namespace Examples;
+
+              public {{kind}} Person(string FirstName)
+              {
+                  public string Greet() => $"Hello {FirstName}";
+              }
+              """);
+
+        AssertTestSuiteCreated(source, 5, Path.Combine(tmp, "PersonTest.cs"), "Examples", "PersonTest", "Greet");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void CreateTestSuiteForTypesOfOneFile()
+    {
+        var tmp = CreateTempDir("build-test-suite-test");
+        var source = CreateSource(
+            tmp,
+            "Types.cs",
+            """
+            namespace Examples;
+
+            public class First
+            {
+                public void Run() { }
+            }
+
+            public class Second
+            {
+                public void Stop() { }
+            }
+            """);
+
+        AssertTestSuiteCreated(source, 5, Path.Combine(tmp, "FirstTest.cs"), "Examples", "FirstTest", "Run");
+        AssertTestSuiteCreated(source, 10, Path.Combine(tmp, "SecondTest.cs"), "Examples", "SecondTest", "Stop");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void CreateTestSuiteForNestedType()
+    {
+        var tmp = CreateTempDir("build-test-suite-test");
+        var source = CreateSource(
+            tmp,
+            "Outer.cs",
+            """
+            namespace Examples;
+
+            public class Outer
+            {
+                public void Run() { }
+
+                public class Inner
+                {
+                    public void Stop() { }
+                }
+            }
+            """);
+
+        AssertTestSuiteCreated(source, 5, Path.Combine(tmp, "OuterTest.cs"), "Examples", "OuterTest", "Run");
+        AssertTestSuiteCreated(source, 9, Path.Combine(tmp, "InnerTest.cs"), "Examples", "InnerTest", "Stop");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void CreateTestSuiteForNestedNamespaceAndTypeOutsideNamespace()
+    {
+        var tmp = CreateTempDir("build-test-suite-test");
+        var source = CreateSource(
+            tmp,
+            "Types.cs",
+            """
+            namespace Outer
+            {
+                namespace Inner
+                {
+                    public class Nested
+                    {
+                        public void Run() { }
+                    }
+                }
+            }
+
+            public class Global
+            {
+                public void Stop() { }
+            }
+            """);
+
+        AssertTestSuiteCreated(source, 7, Path.Combine(tmp, "NestedTest.cs"), "Outer.Inner", "NestedTest", "Run");
+        AssertTestSuiteCreated(source, 14, Path.Combine(tmp, "GlobalTest.cs"), "GdUnitDefaultTestNamespace", "GlobalTest", "Stop");
     }
 
     [TestCase]
@@ -214,6 +363,24 @@ public class GdUnitTestSuiteBuilderTest
 
         // we expect that the contents of the test-suite will not be changed
         AssertThat(File.ReadAllText(testSuite, Encoding.UTF8)).IsEqual(expected);
+    }
+
+    private static string CreateSource(string directory, string fileName, string source)
+    {
+        var path = Path.Combine(directory, fileName);
+        File.WriteAllText(path, source);
+        return path;
+    }
+
+    private static void AssertTestSuiteCreated(string source, int lineNumber, string testSuite, string expectedNamespace, string expectedSuiteName, string expectedTestCase)
+    {
+        var dictionary = GdUnitTestSuiteBuilder.Build(source, lineNumber, testSuite);
+        AssertThat(dictionary.ContainsKey("error")).IsFalse();
+        AssertThat((int)dictionary["line"]).IsEqual(16);
+        AssertThat(File.ReadAllText(testSuite, Encoding.UTF8))
+            .Contains($"namespace {expectedNamespace}")
+            .Contains($"public class {expectedSuiteName}")
+            .Contains($"public void {expectedTestCase}()");
     }
 
     private static string UpdatedTestSuite(string sourceClass) =>
