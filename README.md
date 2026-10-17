@@ -23,33 +23,41 @@
       <th>gdUnit4.test.adapter Version</th>
       <th>gdUnit4.analyzers Version</th>
       <th>.NET Version</th>
+      <th>Minimum .NET SDK</th>
       <th>Godot minimal required/compatible Version</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>master (v5.1.0-rc6)</td><td>master (v3.2.0)</td><td>master (v1.0.0)</td><td>.NET 8, .NET 10</td><td>v4.6, v4.6.3, v4.7.1, v4.7.2</td>
+      <td>master (v5.1.0-rc6)</td><td>master (v3.2.0)</td><td>master (v1.0.0)</td><td>.NET 8, .NET 10</td><td>8.0.100, analyzers 10.0.100</td>
+      <td>v4.6, v4.6.3, v4.7.1, v4.7.2</td>
     </tr>
     <tr>
-      <td>v5.1.0-rc1 - v5.1.0-rc5</td><td>v3.0.0 - v3.1.1</td><td>v1.0.0</td><td>.NET 8, .NET 9</td><td>v4.3, v4.4, v4.4.1, v4.5</td>
+      <td>v5.1.0-rc1 - v5.1.0-rc5</td><td>v3.0.0 - v3.1.1</td><td>v1.0.0</td><td>.NET 8, .NET 9</td><td>8.0.100, analyzers 9.0.300</td><td>v4.3, v4.4, v4.4.1, v4.5</td>
     </tr>
     <tr>
-      <td>v5.0.0</td><td>v3.0.0</td><td>v1.0.0</td><td>.NET 8, .NET 9</td><td>v4.2, v4.2.1, v4.2.2, v4.3, v4.4</td>
+      <td>v5.0.0</td><td>v3.0.0</td><td>v1.0.0</td><td>.NET 8, .NET 9</td><td>8.0.100, analyzers 9.0.300</td><td>v4.2, v4.2.1, v4.2.2, v4.3, v4.4</td>
     </tr>
     <tr>
-      <td>v4.3.0, v4.3.1</td><td>v2.0.0</td><td>-</td><td>.NET 7, .NET 8</td><td>v4.2, v4.2.1, v4.2.2</td>
+      <td>v4.3.0, v4.3.1</td><td>v2.0.0</td><td>-</td><td>.NET 7, .NET 8</td><td>7.0.100</td><td>v4.2, v4.2.1, v4.2.2</td>
     </tr>
     <tr>
-      <td>v4.2.4, v4.2.5</td><td>v1.1.2</td><td>-</td><td>.NET 7, .NET 8</td><td>v4.2, v4.2.1, v4.2.2</td>
+      <td>v4.2.4, v4.2.5</td><td>v1.1.2</td><td>-</td><td>.NET 7, .NET 8</td><td>7.0.100</td><td>v4.2, v4.2.1, v4.2.2</td>
     </tr>
     <tr>
-      <td>v4.2.2, v4.2.3</td><td>v1.1.0, v1.1.1</td><td>-</td><td>.NET 7, .NET 8</td><td>v4.2, v4.2.1</td>
+      <td>v4.2.2, v4.2.3</td><td>v1.1.0, v1.1.1</td><td>-</td><td>.NET 7, .NET 8</td><td>7.0.100</td><td>v4.2, v4.2.1</td>
     </tr>
     <tr>
-      <td>v4.2.1, v4.2.1.1</td><td>v1.0.0</td><td>-</td><td>.NET 7</td><td>v4.2, v4.2.1</td>
+      <td>v4.2.1, v4.2.1.1</td><td>v1.0.0</td><td>-</td><td>.NET 7</td><td>7.0.100</td><td>v4.2, v4.2.1</td>
     </tr>
   </tbody>
 </table>
+
+<p align="center">
+  The analyzers need the compiler of the named .NET SDK.
+  The .NET SDK 9.0.300 ships with Visual Studio 17.14, the .NET SDK 10.0.100 with Visual Studio 2026.<br/>
+  With an older compiler, the build reports the warning <code>CS8032</code> and the analyzers do not run.
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/VSTest-Compatible-green?logo=visualstudio&logoColor=white" alt="VSTest compatible">
