@@ -31,6 +31,8 @@ v5.1.0
           The check now reads the version of the Godot binary and also detects Godot builds without C# support.
 * GD-492: Fixing the object deep equal comparison, which skipped a property when comparing its value threw an exception.
           The exception now reaches the test, properties that cannot be read (indexers, throwing getters, ref struct values) are still skipped.
+* GD-526: Fixing the stdout capture of a test, which lost the Godot output written right before the capture stops,
+          and on Windows kept reading after the capture stopped and took the output of a later capture.
 
 ✨ Improvements
 * GD-311: Verify the Godot binary has C# support before running godot runtime tests to avoid invalid test execution.

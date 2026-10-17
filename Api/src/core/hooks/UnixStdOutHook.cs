@@ -30,7 +30,8 @@ internal sealed class UnixStdOutHook : IStdOutHook
     private readonly IntPtr originalStdOutHandle;
     private readonly int[] pipeHandles = new int[2];
     private readonly StdOutConsoleHook stdOutHook = new();
-    private bool isCapturing;
+    private readonly Decoder decoder = Encoding.UTF8.GetDecoder();
+    private volatile bool isCapturing;
     private Thread? readThread;
 
     public UnixStdOutHook()
@@ -81,15 +82,21 @@ internal sealed class UnixStdOutHook : IStdOutHook
     [SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "Method called for side effects only, return value intentionally ignored")]
     public void StopCapture()
     {
-        stdOutHook.StopCapture();
-        isCapturing = false;
-        readThread?.Join(100);
-        readThread = null;
-
-        // Restore original stdout
+        // Restore original stdout first, the output written after it is not captured
 #pragma warning disable CA1806 // Do ignore method results
         dup2(originalStdOutHandle.ToInt32(), STD_OUTPUT_HANDLE);
 #pragma warning restore CA1806
+        isCapturing = false;
+        readThread?.Join();
+        readThread = null;
+
+        // Collect the output still in the pipe before the capture stops, the read end is non-blocking and returns -1 when empty
+        var buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = read(pipeHandles[PIPE_READ], buffer, buffer.Length)) > 0)
+            ProcessReadData(buffer, (uint)bytesRead);
+
+        stdOutHook.StopCapture();
     }
 
     public string GetCapturedOutput() => stdOutHook.GetCapturedOutput();
@@ -127,10 +134,14 @@ internal sealed class UnixStdOutHook : IStdOutHook
         }
     }
 
+    // the decoder keeps a character that is split over two reads
     private void ProcessReadData(byte[] buffer, uint bytesRead)
     {
-        if (bytesRead > 0)
-            Console.Write(Encoding.UTF8.GetString(buffer, 0, (int)bytesRead));
+        if (bytesRead == 0)
+            return;
+        var chars = new char[decoder.GetCharCount(buffer, 0, (int)bytesRead)];
+        _ = decoder.GetChars(buffer, 0, (int)bytesRead, chars, 0);
+        Console.Write(chars);
     }
 
     [StructLayout(LayoutKind.Sequential)]

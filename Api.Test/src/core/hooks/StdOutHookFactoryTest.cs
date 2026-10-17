@@ -1,6 +1,7 @@
 namespace GdUnit4.Tests.Core.Hooks;
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 using GdUnit4.Core.Execution;
@@ -92,6 +93,42 @@ public class StdOutHookFactoryTest
             .IsEqual($"Godot: Short after 'StartCapture'{System.Environment.NewLine}" +
                      $"Godot: A message{System.Environment.NewLine}" +
                      $"Godot: Short before 'StopCapture'{System.Environment.NewLine}");
+    }
+
+    [TestCase]
+    public void CaptureStdOutGodotStoppedRightAfterPrinting()
+    {
+        using var stdOutHook = StdOutHookFactory.CreateStdOutHook();
+
+        stdOutHook.StartCapture();
+        var expected = new StringBuilder();
+        for (var line = 0; line < 500; line++)
+        {
+            GD.PrintS($"Godot: line {line}");
+            expected.Append($"Godot: line {line}{System.Environment.NewLine}");
+        }
+
+        // stop it without waiting, the output written before must be captured
+        stdOutHook.StopCapture();
+
+        AssertThat(stdOutHook.GetCapturedOutput()).IsEqual(expected.ToString());
+    }
+
+    [TestCase]
+    public void CaptureStdOutGodotTwice()
+    {
+        using var stdOutHook = StdOutHookFactory.CreateStdOutHook();
+
+        stdOutHook.StartCapture();
+        GD.PrintS("Godot: first capture");
+        stdOutHook.StopCapture();
+        AssertThat(stdOutHook.GetCapturedOutput()).IsEqual($"Godot: first capture{System.Environment.NewLine}");
+
+        // the second capture must collect its own output only
+        stdOutHook.StartCapture();
+        GD.PrintS("Godot: second capture");
+        stdOutHook.StopCapture();
+        AssertThat(stdOutHook.GetCapturedOutput()).IsEqual($"Godot: second capture{System.Environment.NewLine}");
     }
 
     [TestCase]
