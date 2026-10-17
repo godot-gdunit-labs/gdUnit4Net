@@ -46,12 +46,13 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/MikeSchulze/gdUnit4Net</RepositoryUrl>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <!-- The assembly is packed as an analyzer only, the projects using the package need no library reference to it -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="$(AnalyzersRoslynVersion)" PrivateAssets="all"/>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -62,7 +63,6 @@
 
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-    <Content Include="../LICENSE"/>
     <None Include="README.md" Pack="true" PackagePath="/"/>
     <None Include="ReleaseNotes.txt" Pack="true" PackagePath="/"/>
     <None Include="../LICENSE" Pack="true" PackagePath="/"/>

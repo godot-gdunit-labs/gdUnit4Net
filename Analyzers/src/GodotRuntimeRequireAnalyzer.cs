@@ -89,10 +89,7 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
     ///     Gets the supported diagnostics.
     /// </summary>
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-    [
-        GodotEngine.RequiresGodotRuntimeOnClass,
-            GodotEngine.RequiresGodotRuntimeOnMethod
-    ];
+        ImmutableArray.Create(GodotEngine.RequiresGodotRuntimeOnClass, GodotEngine.RequiresGodotRuntimeOnMethod);
 
     /// <summary>
     ///     Initializes the analyzer with the analysis context.

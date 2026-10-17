@@ -22,7 +22,7 @@ public class DataPointAttributeAnalyzer : DiagnosticAnalyzer
     /// <summary>
     ///     Gets the set of diagnostic descriptors supported by this analyzer.
     /// </summary>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [DataPoint.MultipleTestCaseAttributes];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DataPoint.MultipleTestCaseAttributes);
 
     /// <summary>
     ///     Initializes the analyzer with the analysis context.

@@ -1,15 +1,13 @@
 ﻿v1.1.0
 
-**BREAKING CHANGES:**
-* GD-484: The analyzers are built against Roslyn 5.0 and need the .NET SDK 10.0.100 or Visual Studio 2026.
-          An older compiler reports the warning CS8032 and does not run the analyzers.
-
 ✨ New Features
 * GD-502: GdUnit0202: Test case names must be unique, reports TestCase attributes of a test method that set the same TestName,
           contributed by @Tayrtahn.
 
 ✨ Improvements
 * GD-478: The DataPoint attribute analysis caches the resolved types per compilation and runs faster, contributed by @Tayrtahn.
+* GD-520: The analyzers run with the .NET SDK 8.0.100 and Visual Studio 17.8 or newer, v1.0.0 needed the .NET SDK 9.0.300.
+          The package no longer adds the analyzers as a library reference to the projects that use it.
 
 🪲 Bug Fixes
 * GD-462: Fixing a stack overflow that crashes the compiler when a test or test hook calls a recursive method,

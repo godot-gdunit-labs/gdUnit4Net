@@ -29,7 +29,7 @@
   </thead>
   <tbody>
     <tr>
-      <td>master (v5.1.0-rc6)</td><td>master (v3.2.0)</td><td>master (v1.1.0)</td><td>.NET 8, .NET 10</td><td>8.0.100, analyzers 10.0.100</td>
+      <td>master (v5.1.0-rc6)</td><td>master (v3.2.0)</td><td>master (v1.1.0)</td><td>.NET 8, .NET 10</td><td>8.0.100</td>
       <td>v4.6, v4.6.3, v4.7.1, v4.7.2</td>
     </tr>
     <tr>
@@ -55,8 +55,8 @@
 
 <p align="center">
   The analyzers need the compiler of the named .NET SDK.
-  The .NET SDK 9.0.300 ships with Visual Studio 17.14, the .NET SDK 10.0.100 with Visual Studio 2026.<br/>
-  With an older compiler, the build reports the warning <code>CS8032</code> and the analyzers do not run.
+  The .NET SDK 9.0.300 ships with Visual Studio 17.14, the .NET SDK 8.0.100 with Visual Studio 17.8.<br/>
+  With an older compiler, the build reports the warning <code>CS9057</code> and the analyzers do not run.
 </p>
 
 <p align="center">

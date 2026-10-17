@@ -11,6 +11,11 @@
     <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
     <!-- Keep Microsoft.CodeAnalysis.Analyzers on the compiler version of the .NET SDK in global.json -->
     <MicrosoftCodeAnalysisAnalyzersVersion>5.9.0</MicrosoftCodeAnalysisAnalyzersVersion>
+    <!--
+    The analyzers run only in a compiler at least as new as the Roslyn version they are built against.
+    Keep it on Roslyn 4.8, which ships with the .NET SDK 8.0.100 and Visual Studio 17.8, the oldest toolchain of net8.0.
+    -->
+    <AnalyzersRoslynVersion>4.8.0</AnalyzersRoslynVersion>
   </PropertyGroup>
 
   <!-- Test Packages (also referenced by the Godot test project, which cannot use Central Package Management) -->

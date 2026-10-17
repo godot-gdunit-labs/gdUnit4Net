@@ -19,7 +19,7 @@ using static DiagnosticRules;
 public sealed class UniqueTestCaseNameAnalyzer : DiagnosticAnalyzer
 {
     /// <inheritdoc/>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [TestCase.TestCaseNamesMustBeUnique];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(TestCase.TestCaseNamesMustBeUnique);
 
     /// <inheritdoc/>
     public override void Initialize(AnalysisContext context)
