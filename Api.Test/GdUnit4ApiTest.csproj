@@ -22,10 +22,8 @@
         <PackageReference Include="Moq" Version="$(MoqVersion)"/>
         <ProjectReference Include="..\Api\GdUnit4Api.csproj"/>
         <ProjectReference Include="..\TestAdapter\GdUnit4TestAdapter.csproj"/>
-        <PackageReference Include="gdUnit4.analyzers" Version="$(GdUnitAnalyzersVersion)">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <!-- The analyzers of the repository check the tests, so the test project needs no published analyzers package -->
+        <ProjectReference Include="..\Analyzers\GdUnit4Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
     <ItemGroup>
         <None Include="nuget.config"/>

@@ -31,6 +31,36 @@ public sealed class UniqueTestCaseNameAnalyzerTest
     }
 
     [TestMethod]
+    public void TestCaseWithoutTestName()
+    {
+        var source = Instrument(
+            """
+            [TestCase]
+            public void TestMethod()
+            {
+            }
+            """);
+
+        RoslynAssert.Valid(analyzer, source);
+    }
+
+    [TestMethod]
+    public void MultipleTestCasesWithAndWithoutTestName()
+    {
+        var source = Instrument(
+            """
+            [TestCase(1)]
+            [TestCase(2, TestName = "A")]
+            [TestCase(3)]
+            public void TestMethod(int value)
+            {
+            }
+            """);
+
+        RoslynAssert.Valid(analyzer, source);
+    }
+
+    [TestMethod]
     public void MultipleTestCasesNoMatch()
     {
         var source = Instrument(

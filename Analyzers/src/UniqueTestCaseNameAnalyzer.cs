@@ -60,8 +60,8 @@ public sealed class UniqueTestCaseNameAnalyzer : DiagnosticAnalyzer
         HashSet<string> usedNames = [];
         foreach (var attr in testCaseAttributes)
         {
-            // Get the explicitly-set TestName value.
-            if (attr.NamedArguments.Single(kvp => kvp.Key == "TestName").Value.Value is not string name)
+            // Get the explicitly-set TestName value, a TestCase without a TestName has no name to compare.
+            if (attr.NamedArguments.FirstOrDefault(kvp => kvp.Key == "TestName").Value.Value is not string name)
                 continue;
 
             // Check if we've already encountered this name.
