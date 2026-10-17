@@ -13,6 +13,13 @@
     <MicrosoftCodeAnalysisAnalyzersVersion>5.9.0</MicrosoftCodeAnalysisAnalyzersVersion>
   </PropertyGroup>
 
+  <!-- Test Packages (also referenced by the Godot test project, which cannot use Central Package Management) -->
+  <PropertyGroup>
+    <MicrosoftNETTestSdkVersion>18.0.1</MicrosoftNETTestSdkVersion>
+    <MSTestTestFrameworkVersion>3.10.4</MSTestTestFrameworkVersion>
+    <MoqVersion>4.20.72</MoqVersion>
+  </PropertyGroup>
+
   <!-- Godot Configuration -->
   <PropertyGroup>
     <!-- Note: Keep GodotVersion in sync with global.json msbuild-sdks.Godot.NET.Sdk -->

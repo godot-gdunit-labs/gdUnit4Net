@@ -16,10 +16,10 @@
         <DefineConstants>$(DefineConstants);GDUNIT4NET_API_V5</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)"/>
         <!-- We only include here the MSTest framework to run tests mixed with MSTest assertions, but set it to private to prevent conflicts -->
-        <PackageReference Include="MSTest.TestFramework" Version="3.10.4" ExcludeAssets="build;analyzers;native"/>
-        <PackageReference Include="Moq" Version="4.20.72"/>
+        <PackageReference Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" ExcludeAssets="build;analyzers;native"/>
+        <PackageReference Include="Moq" Version="$(MoqVersion)"/>
         <ProjectReference Include="..\Api\GdUnit4Api.csproj"/>
         <ProjectReference Include="..\TestAdapter\GdUnit4TestAdapter.csproj"/>
         <PackageReference Include="gdUnit4.analyzers" Version="$(GdUnitAnalyzersVersion)">

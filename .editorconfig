@@ -427,6 +427,9 @@ dotnet_diagnostic.CA1311.severity = none
 dotnet_diagnostic.CA1822.severity = none
 dotnet_diagnostic.CA1861.severity = none # Allow constant arrays as arguments
 
+# Public types stay public, the packages expose them and the test frameworks require them
+dotnet_diagnostic.CA1515.severity = none # Consider making public types internal
+
 # Usage category warnings
 dotnet_analyzer_diagnostic.category-Usage.severity = warning
 
@@ -445,12 +448,7 @@ dotnet_diagnostic.SA1204.severity = error # Static elements should appear before
 dotnet_diagnostic.SA1206.severity = error # Declaration keywords should follow order
 dotnet_diagnostic.IDE0011.severity = none # Add braces
 dotnet_diagnostic.IDE0290.severity = none # Use primary constructor
-dotnet_diagnostic.CA1515.severity = none # Consider making public types internal
 dotnet_diagnostic.CA1707.severity = none # Identifiers should not contain underscores (allow SCREAMING_SNAKE_CASE)
-
-# Test-specific rules
-[**/*Test.cs]
-dotnet_diagnostic.CA1515.severity = none
 
 # Consumer sample: no repository file header, fluent assertions return the assert only for chaining
 [Example/**.cs]

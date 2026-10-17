@@ -91,13 +91,4 @@
     <NoWarn>$(NoWarn);SA1503</NoWarn>
   </PropertyGroup>
 
-  <!--
-  Test Project Specific Configuration:
-  Relaxed rules for test projects to allow more flexible coding patterns
-  -->
-  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Test')) Or $(MSBuildProjectName.EndsWith('Tests'))">
-    <!-- Test projects may keep their types public -->
-    <NoWarn>$(NoWarn);CA1515</NoWarn>
-  </PropertyGroup>
-
 </Project>
