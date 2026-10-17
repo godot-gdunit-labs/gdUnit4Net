@@ -1,8 +1,8 @@
 v3.2.0
 
 **BREAKING CHANGES:**
-* GD-477: The minimum supported Godot version is now 4.6, older Godot versions are no longer supported.
-          Projects using Godot 4.5 or older must upgrade to Godot 4.6 or newer.
+* GD-477, GD-522: The minimum supported Godot version is now 4.7, older Godot versions are no longer supported.
+          Projects using Godot 4.6 or older must upgrade to Godot 4.7 or newer.
 
 ✨ Improvements
 * GD-466: Add the option `TolerateExitCodeAfterCompletion` to not fail the test run when the Godot runtime

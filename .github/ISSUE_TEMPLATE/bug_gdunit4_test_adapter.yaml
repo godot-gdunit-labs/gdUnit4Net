@@ -35,7 +35,7 @@ body:
     attributes:
       label: The used Godot version
       description: Which Godot version are you using?
-      placeholder: v4.6.stable.mono.official [89cea1439]
+      placeholder: v4.7.stable.mono.official [5b4e0cb0f]
     validations:
       required: true
 

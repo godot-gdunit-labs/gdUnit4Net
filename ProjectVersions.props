@@ -28,7 +28,7 @@
   <!-- Godot Configuration -->
   <PropertyGroup>
     <!-- Note: Keep GodotVersion in sync with global.json msbuild-sdks.Godot.NET.Sdk -->
-    <GodotVersion>4.6</GodotVersion>
+    <GodotVersion>4.7</GodotVersion>
     <GodotNetSdkVersion>$(GodotVersion)</GodotNetSdkVersion>
   </PropertyGroup>
 

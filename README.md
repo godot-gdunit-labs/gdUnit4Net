@@ -5,12 +5,11 @@
   </a>
 </p>
 
-<p align="center">This version of GdUnit4.api is based on Godot <strong>v4.6.stable.mono.official [89cea1439]</strong> (master branch)</p>
+<p align="center">This version of GdUnit4.api is based on Godot <strong>v4.7.stable.mono.official [5b4e0cb0f]</strong> (master branch)</p>
 
 <h1 align="center">Supported Godot Versions</h1>
 <p align="center">
-  <img src="https://img.shields.io/badge/Godot-v4.6.0-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
-  <img src="https://img.shields.io/badge/Godot-v4.6.3-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
+  <img src="https://img.shields.io/badge/Godot-v4.7.0-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
   <img src="https://img.shields.io/badge/Godot-v4.7.1-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
   <img src="https://img.shields.io/badge/Godot-v4.7.2-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
 </p>
@@ -30,7 +29,7 @@
   <tbody>
     <tr>
       <td>master (v5.1.0-rc6)</td><td>master (v3.2.0)</td><td>master (v1.1.0)</td><td>.NET 8, .NET 10</td><td>8.0.100</td>
-      <td>v4.6, v4.6.3, v4.7.1, v4.7.2</td>
+      <td>v4.7, v4.7.1, v4.7.2</td>
     </tr>
     <tr>
       <td>v5.1.0-rc1 - v5.1.0-rc5</td><td>v3.0.0 - v3.1.1</td><td>v1.0.0</td><td>.NET 8, .NET 9</td><td>8.0.100, analyzers 9.0.300</td><td>v4.3, v4.4, v4.4.1, v4.5</td>
