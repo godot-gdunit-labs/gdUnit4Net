@@ -278,6 +278,8 @@ jobs:
       - name: "Run TestAdapter Tests"
         timeout-minutes: 5
         run: |
+          # The discovery tests read the assembly of the example project, which the Linux jobs take from the build cache
+          dotnet build ./Example/ExampleProject.csproj
           cd ./TestAdapter.Test
           dotnet test --settings .runsettings --verbosity normal
 
