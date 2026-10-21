@@ -119,9 +119,8 @@ internal static class GodotObjectExtensions
                 converted.Add(item.ToVariant());
             }
 
-            // the conversion throws InvalidOperationException for a type without a Variant representation,
-            // and InvalidCastException for a decimal, which it unboxes as ulong
-            catch (Exception e) when (e is InvalidOperationException or InvalidCastException)
+            // the conversion throws InvalidOperationException for a type without a Variant representation
+            catch (InvalidOperationException e)
             {
                 Console.WriteLine($"Can't convert {item} to Variant\n {e.StackTrace}");
                 converted.Add(Variant.CreateFrom("n.a"));

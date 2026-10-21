@@ -33,6 +33,7 @@ v5.1.0
           The exception now reaches the test, properties that cannot be read (indexers, throwing getters, ref struct values) are still skipped.
 * GD-526: Fixing the stdout capture of a test, which lost the Godot output written right before the capture stops,
           and on Windows kept reading after the capture stopped and took the output of a later capture.
+* GD-528: Fixing the conversion of a `decimal` to a Godot `Variant`, which always failed, a `decimal` is now converted to a `float`.
 
 ✨ Improvements
 * GD-311: Verify the Godot binary has C# support before running godot runtime tests to avoid invalid test execution.

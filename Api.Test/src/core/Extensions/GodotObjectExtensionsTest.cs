@@ -144,8 +144,8 @@ public class GodotObjectExtensionsTest
     {
         using var converted = new object[] { 1, new(), 2.5m, "text" }.ToGodotArray();
 
-        // a type without a Variant conversion and a decimal, which the conversion unboxes as ulong, both end up as 'n.a'
-        AssertThat(converted.Select(value => value.ToString())).ContainsExactly("1", "n.a", "n.a", "text");
+        // a type without a Variant conversion ends up as 'n.a', a decimal is converted to a float
+        AssertThat(converted.Select(value => value.ToString())).ContainsExactly("1", "n.a", "2.5", "text");
     }
 
     #endregion
