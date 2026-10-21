@@ -30,4 +30,13 @@ public interface ITestEventListener
     /// </summary>
     /// <param name="testEvent">The test event to publish.</param>
     void PublishEvent(ITestEvent testEvent);
+
+    /// <summary>
+    ///     Reports why the given test cases may not be executed, e.g. the Godot runtime crashed or the test session ran into its timeout.
+    /// </summary>
+    /// <param name="testIds">The ids of the test cases whose execution was stopped.</param>
+    /// <param name="cause">The cause, phrased to complete the sentence "The test was not executed, ...".</param>
+    void ReportNotExecutedCause(IEnumerable<Guid> testIds, string cause)
+    {
+    }
 }

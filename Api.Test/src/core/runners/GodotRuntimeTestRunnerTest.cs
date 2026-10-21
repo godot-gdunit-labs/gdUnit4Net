@@ -378,6 +378,12 @@ public class GodotRuntimeTestRunnerTest
             """.Replace("\r\n", "\n", StringComparison.Ordinal));
     }
 
+    [TestCase(139, false, "the Godot runtime exited with exit code 139 (SIGSEGV) before all test results were reported")]
+    [TestCase(139, true, "the Godot runtime exited with exit code 139 before all test results were reported")]
+    [TestCase(0, false, "the Godot runtime exited with exit code 0 before all test results were reported")]
+    public void DescribeNotExecutedCause(int exitCode, bool isWindows, string expected)
+        => AssertThat(GodotRuntimeTestRunner.DescribeNotExecutedCause(exitCode, isWindows)).IsEqual(expected);
+
     [TestCase(134, false, " (SIGABRT)")]
     [TestCase(137, false, " (SIGKILL)")]
     [TestCase(139, false, " (SIGSEGV)")]

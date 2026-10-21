@@ -58,6 +58,8 @@ v5.1.0
    ```
 * GD-477: Add support of `PackedVector4Array` on Variant assertions, which failed before with a `NotImplementedException`
 * GD-484: The package now targets `net8.0` and `net10.0` (C# 14) instead of `net8.0` and `net9.0`.
+* GD-530: The test engine reports why tests were not executed, a crash of the Godot runtime with its exit code and signal or the test session timeout,
+          to the new `ITestEventListener.ReportNotExecutedCause`, which has a default implementation that ignores the cause.
           The supported .NET versions are .NET 8 and .NET 10, projects targeting `net9.0` use the `net8.0` build.
 * GD-485: Removed the `Microsoft.CodeAnalysis` and `Microsoft.CodeAnalysis.CSharp.Workspaces` dependencies, the async data point timeout now reads its source location from the debug symbols.
 * GD-486: Replaced `Newtonsoft.Json` by `System.Text.Json` on the pipe to the Godot runtime, which now accepts only the known message types, the package no longer depends on `Newtonsoft.Json`.

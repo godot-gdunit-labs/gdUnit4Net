@@ -89,6 +89,54 @@ public class TestEventReportListenerTest
             .ContainsExactly(TestOutcome.Failed);
     }
 
+    [TestMethod]
+    public void ReportNotExecutedTestsNamesTheReportedCause()
+    {
+        var listener = new TestEventReportListener(frameworkHandle.Object, [testA, testB]);
+
+        listener.ReportNotExecutedCause([testA.Id], "the Godot runtime exited with exit code 139 (SIGSEGV) before all test results were reported");
+        listener.ReportNotExecutedTests();
+
+        // a test without a reported cause keeps the message without a cause
+        _ = AssertThat(recordedResults)
+            .Extract("ErrorMessage")
+            .ContainsExactly(
+                "The test 'Examples.ASuiteTest.First' was not executed, the Godot runtime exited with exit code 139 (SIGSEGV) before all test results were reported.",
+                "The test 'Examples.BSuiteTest.Second' was not executed, the test engine reported no result for it.");
+    }
+
+    [TestMethod]
+    public void ReportNotExecutedCauseKeepsTheFirstCause()
+    {
+        var listener = new TestEventReportListener(frameworkHandle.Object, [testA]);
+
+        listener.ReportNotExecutedCause([testA.Id], "the test session ran into its timeout of 30s");
+        listener.ReportNotExecutedCause([testA.Id], "the Godot runtime exited with exit code 137 (SIGKILL) before all test results were reported");
+        listener.ReportNotExecutedTests();
+
+        _ = AssertThat(recordedResults)
+            .Extract("ErrorMessage")
+            .ContainsExactly("The test 'Examples.ASuiteTest.First' was not executed, the test session ran into its timeout of 30s.");
+    }
+
+    [TestMethod]
+    public void ReportNotExecutedCauseIgnoresReportedTests()
+    {
+        var listener = new TestEventReportListener(frameworkHandle.Object, [testA, testB]);
+        listener.PublishEvent(TestAfterEvent(testA));
+        recordedResults.Clear();
+
+        listener.ReportNotExecutedCause([testA.Id, testB.Id], "the test session ran into its timeout of 30s");
+        listener.ReportNotExecutedTests();
+
+        _ = AssertThat(recordedResults)
+            .Extract("TestCase.FullyQualifiedName")
+            .ContainsExactly("Examples.BSuiteTest.Second");
+        _ = AssertThat(recordedResults)
+            .Extract("ErrorMessage")
+            .ContainsExactly("The test 'Examples.BSuiteTest.Second' was not executed, the test session ran into its timeout of 30s.");
+    }
+
     private static ITestEvent TestAfterEvent(TestCase testCase)
         => Mock.Of<ITestEvent>(e =>
             e.Type == EventType.TestAfter

@@ -94,6 +94,9 @@ internal sealed class GdUnit4TestEngine(TestEngineSettings settings, ITestEngine
 
                      ╚════════════════════════════════════════════════════════════════════════════════════╝
                      """);
+
+                // report the cause before cancelling, the cancelled Godot runtime would otherwise report its kill as the cause
+                eventListener.ReportNotExecutedCause(TestIds(testAssemblyNodes), DescribeSessionTimeoutCause(Settings.SessionTimeout));
                 Cancel();
             }
 
@@ -130,6 +133,9 @@ internal sealed class GdUnit4TestEngine(TestEngineSettings settings, ITestEngine
         }
     }
 
+    internal static string DescribeSessionTimeoutCause(int sessionTimeout)
+        => $"the test session ran into its timeout of {TimeSpan.FromMilliseconds(sessionTimeout).Humanize()}, increase 'TestSessionTimeout' in your '.runsettings' file";
+
     private static (List<TestSuiteNode> DirectExecutorTestSuites, List<TestSuiteNode> GodotExecutorTestSuites) SplitTestSuitesByRequiredRuntime(List<TestSuiteNode> testSuiteNodes)
     {
         var directExecutorTestSuites = new List<TestSuiteNode>();
@@ -156,6 +162,9 @@ internal sealed class GdUnit4TestEngine(TestEngineSettings settings, ITestEngine
             totalTests += assemblyNode.Suites.Sum(ts => ts.Tests.Count);
         return totalTests;
     }
+
+    private static IEnumerable<Guid> TestIds(IReadOnlyCollection<TestAssemblyNode> testAssemblyNodes)
+        => testAssemblyNodes.SelectMany(assemblyNode => assemblyNode.Suites).SelectMany(suite => suite.Tests).Select(test => test.Id);
 
     private Task ExecuteTestsInAssembly(
         TestAssemblyNode testAssemblyNode,

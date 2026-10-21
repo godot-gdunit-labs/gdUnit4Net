@@ -26,6 +26,7 @@ using TestCase = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase;
 internal sealed class TestEventReportListener : ITestEventListener
 {
     private readonly ConcurrentDictionary<Guid, bool> reportedTests = new();
+    private readonly ConcurrentDictionary<Guid, string> notExecutedCauses = new();
 
     public TestEventReportListener(IFrameworkHandle framework, IReadOnlyList<TestCase> testCases)
     {
@@ -127,6 +128,13 @@ internal sealed class TestEventReportListener : ITestEventListener
         }
     }
 
+    public void ReportNotExecutedCause(IEnumerable<Guid> testIds, string cause)
+    {
+        // the first cause wins, a later one is a consequence of it, e.g. the kill of the Godot runtime after the session timeout
+        foreach (var testId in testIds.Where(testId => !reportedTests.ContainsKey(testId)))
+            _ = notExecutedCauses.TryAdd(testId, cause);
+    }
+
     public void Dispose()
     {
     }
@@ -134,7 +142,8 @@ internal sealed class TestEventReportListener : ITestEventListener
     /// <summary>
     ///     Reports every test case the test engine has not reported a result for as failed.
     ///     A test case without a result was dropped during execution, e.g. because it could not be mapped to its test method,
-    ///     and must not be lost silently from the test run.
+    ///     or its execution was stopped, e.g. by a crash of the Godot runtime, and must not be lost silently from the test run.
+    ///     The failure message names the cause reported by the test engine, if any.
     /// </summary>
     public void ReportNotExecutedTests()
     {
@@ -151,7 +160,9 @@ internal sealed class TestEventReportListener : ITestEventListener
             {
                 DisplayName = IdeType is Ide.DotNet or Ide.Unknown ? testCase.FullyQualifiedName : testCase.DisplayName,
                 Outcome = TestOutcome.Failed,
-                ErrorMessage = $"The test '{testCase.FullyQualifiedName}' was not executed, the test engine reported no result for it.",
+                ErrorMessage = notExecutedCauses.TryGetValue(testCase.Id, out var cause)
+                    ? $"The test '{testCase.FullyQualifiedName}' was not executed, {cause}."
+                    : $"The test '{testCase.FullyQualifiedName}' was not executed, the test engine reported no result for it.",
                 EndTime = DateTimeOffset.Now
             };
 
