@@ -31,4 +31,18 @@ public class GodotVariantExtensionsTest
         AssertObject(v).IsEqual(value == null ? default(Variant) : Variant.CreateFrom(value));
         AssertObject(v.VariantType).IsEqual(type);
     }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void ToVariantOnDecimal()
+    {
+        // Godot has no decimal type, a decimal becomes a float with its fractional digits
+        object value = 2.5m;
+        var v = value.ToVariant();
+        AssertObject(v.VariantType).IsEqual(Variant.Type.Float);
+        AssertThat(v.AsDouble()).IsEqual(2.5);
+
+        value = decimal.MaxValue;
+        AssertThat(value.ToVariant().AsDouble()).IsEqual((double)decimal.MaxValue);
+    }
 }

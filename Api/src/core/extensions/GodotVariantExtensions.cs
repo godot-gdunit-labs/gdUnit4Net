@@ -76,7 +76,7 @@ internal static class GodotVariantExtensions
             TypeCode.UInt64 => Variant.CreateFrom((ulong)obj),
             TypeCode.Single => Variant.CreateFrom((float)obj),
             TypeCode.Double => Variant.CreateFrom((double)obj),
-            TypeCode.Decimal => Variant.CreateFrom((ulong)obj),
+            TypeCode.Decimal => Variant.CreateFrom((double)(decimal)obj), // Godot has no decimal type, its float is a double
             TypeCode.Object => ToVariantByType(obj),
             TypeCode.DBNull => ToVariantByType(obj),
             TypeCode.DateTime => ToVariantByType(obj),
