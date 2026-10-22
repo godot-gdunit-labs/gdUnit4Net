@@ -121,7 +121,7 @@ Create a `.runsettings` file in your solution root:
         <CaptureStdOut>true</CaptureStdOut>
         
         <!-- Compilation timeout for large projects (milliseconds) -->
-        <CompileProcessTimeout>20000</CompileProcessTimeout>
+        <CompileProcessTimeout>120000</CompileProcessTimeout>
         
         <!-- Connect timeout to the Godot runtime host for slow or variable environments (milliseconds) -->
         <GodotConnectTimeout>10000</GodotConnectTimeout>
@@ -139,7 +139,7 @@ Create a `.runsettings` file in your solution root:
 | `Parameters`                      | Additional command-line arguments passed to Godot               | `""`         | `"--verbose --headless"` |
 | `DisplayName`                     | Test name format in results                                     | `SimpleName` | `FullyQualifiedName`     |
 | `CaptureStdOut`                   | Capture test output in results                                  | `false`      | `true`                   |
-| `CompileProcessTimeout`           | Godot compilation timeout (ms)                                  | `20000`      | `30000`                  |
+| `CompileProcessTimeout`           | Godot compilation timeout (ms)                                  | `120000`     | `300000`                 |
 | `GodotConnectTimeout`             | Godot runtime host connect timeout (ms)                         | `10000`      | `60000`                  |
 | `TolerateExitCodeAfterCompletion` | Report a failing Godot exit after all test results as a warning | `false`      | `true`                   |
 
