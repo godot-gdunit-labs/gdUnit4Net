@@ -18,6 +18,8 @@ v3.2.0
 * GD-484: The package now targets `net8.0` and `net10.0` (C# 14) instead of `net8.0` and `net9.0`.
           The supported .NET versions are .NET 8 and .NET 10, projects targeting `net9.0` use the `net8.0` build.
 * GD-486: Removed the unused dependency `Newtonsoft.Json`, the pipe to the Godot runtime now uses `System.Text.Json` of `gdUnit4.api`.
+* GD-530: A test that was not executed names the cause in its failure message, a crash of the Godot runtime with its exit code and signal,
+          e.g. `SIGSEGV`, or the test session timeout. Requires `gdUnit4.api` v5.1.0-rc6 or newer.
 
 🪲 Bug Fixes
 * GD-465: Fixing that only the first test suite is executed when the test assembly is built with full PDBs.

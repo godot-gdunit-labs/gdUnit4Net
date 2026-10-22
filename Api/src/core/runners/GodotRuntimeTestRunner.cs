@@ -178,6 +178,12 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
                 // read the error output to the end, a crash backtrace is written right before the exit
                 _ = stdErrClosed.Task.Wait(2000, CancellationToken.None);
                 ReportProcessExit(process.ExitCode);
+                if (!IsRunCompleted)
+                {
+                    eventListener.ReportNotExecutedCause(
+                        testSuiteNodes.SelectMany(suite => suite.Tests).Select(test => test.Id),
+                        DescribeNotExecutedCause(process.ExitCode, OperatingSystem.IsWindows()));
+                }
             }
 
             CloseProcess(process);
@@ -218,6 +224,9 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             message += $"\nLast error output of the Godot runtime host:\n{string.Join('\n', errorOutput.Select(line => $"  {line}"))}";
         return (level, message);
     }
+
+    internal static string DescribeNotExecutedCause(int exitCode, bool isWindows)
+        => $"the Godot runtime exited with exit code {exitCode}{DescribeSignal(exitCode, isWindows)} before all test results were reported";
 
     /// <summary>
     ///     Names the signal that terminated a process, as encoded by .NET on Unix in the exit code (128 + signal number).
