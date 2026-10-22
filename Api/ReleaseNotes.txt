@@ -34,6 +34,8 @@ v5.1.0
 * GD-526: Fixing the stdout capture of a test, which lost the Godot output written right before the capture stops,
           and on Windows kept reading after the capture stopped and took the output of a later capture.
 * GD-528: Fixing the conversion of a `decimal` to a Godot `Variant`, which always failed, a `decimal` is now converted to a `float`.
+* GD-532: Fixing the named pipe collision when the same test assembly runs in parallel, e.g. from two checkouts or CI jobs on one machine.
+          Each run now uses its own pipe to the Godot runtime.
 
 ✨ Improvements
 * GD-311: Verify the Godot binary has C# support before running godot runtime tests to avoid invalid test execution.

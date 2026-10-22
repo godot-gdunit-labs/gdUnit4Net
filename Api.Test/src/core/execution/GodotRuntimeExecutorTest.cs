@@ -34,6 +34,21 @@ public class GodotRuntimeExecutorTest
     }
 
     [TestCase(Timeout = 5000)]
+    public async Task StartWithoutServerLogsPipeName()
+    {
+        using var capture = LogCapture.Watch<GodotRuntimeExecutor>();
+        var pipeName = PipeServer.NewPipeName();
+        await using var executor = new GodotRuntimeExecutor(pipeName, 100);
+
+        var exception = await AssertThrown(executor.StartAsync());
+
+        exception!.IsInstanceOf<TimeoutException>();
+        AssertThat(capture.EntriesOf(LogLevel.Error))
+            .Extract("Message")
+            .ContainsExactly($"Starting GodotRuntimeExecutor failed, connecting to pipe '{pipeName}'.\n\t The operation has timed out.");
+    }
+
+    [TestCase(Timeout = 5000)]
     public async Task ExecuteCommandWithoutConnectionReturnsError()
     {
         await using var executor = new GodotRuntimeExecutor(PipeServer.NewPipeName(), 100);
