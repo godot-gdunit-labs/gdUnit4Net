@@ -12,6 +12,7 @@ using GdUnit4.Core.Runners;
 using Moq;
 
 using static Assertions;
+using static GdUnit4.Asserts.IStringAssert.Compare;
 
 /// <summary>
 ///     Tests for GodotRuntimeTestRunner's InstallTestRunnerClasses method.
@@ -395,6 +396,28 @@ public class GodotRuntimeTestRunnerTest
     [TestCase(255, false, "")]
     public void DescribeSignal(int exitCode, bool isWindows, string expected)
         => AssertThat(GodotRuntimeTestRunner.DescribeSignal(exitCode, isWindows)).IsEqual(expected);
+
+    [TestCase]
+    public void NewPipeNameIsUniquePerRun()
+    {
+        var pipeNames = Enumerable.Range(0, 1000).Select(_ => GodotRuntimeTestRunner.NewPipeName()).ToList();
+
+        AssertThat(pipeNames.Distinct()).HasSize(1000);
+    }
+
+    [TestCase]
+    public void NewPipeNameFitsTheMacOSSocketPathLimit()
+    {
+        var pipeName = GodotRuntimeTestRunner.NewPipeName();
+
+        AssertThat(pipeName)
+            .StartsWith("gdunit4-")
+            .HasLength(8 + GodotRuntimeTestRunner.PIPE_NAME_RANDOM_LENGTH);
+
+        // .NET creates the pipe socket in the macOS temp directory, its path is limited to 104 bytes
+        AssertThat($"/var/folders/xx/{new string('x', 32)}/T/CoreFxPipe_{pipeName}")
+            .HasLength(104, LESS_THAN);
+    }
 
     #region Helper Methods
 

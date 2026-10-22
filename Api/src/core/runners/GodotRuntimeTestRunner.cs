@@ -6,6 +6,7 @@ namespace GdUnit4.Core.Runners;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 
 using Api;
@@ -40,6 +41,8 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
     /// </summary>
     internal const int VERIFY_GODOT_TIMEOUT = 5000;
 
+    internal const int PIPE_NAME_RANDOM_LENGTH = 12;
+
     private static readonly ITestEngineLogger Logger = LoggerFactory.GetLogger<GodotRuntimeTestRunner>();
     private readonly string pipeName;
 
@@ -52,13 +55,18 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
     /// <summary>
     ///     Initializes a new instance of the <see cref="GodotRuntimeTestRunner" /> class.
     /// </summary>
-    /// <param name="assemblyId">Assembly identifier used to create a unique pipe name, preventing collisions when running multiple assemblies in parallel.</param>
+    /// <param name="assemblyId">Assembly identifier used to scope the log output.</param>
     /// <param name="debuggerFramework">Framework for debugging support.</param>
     /// <param name="settings">Test engine configuration settings.</param>
     internal GodotRuntimeTestRunner(string assemblyId, IDebuggerFramework debuggerFramework, TestEngineSettings settings)
-        : base(new GodotRuntimeExecutor($"gdunit4-{assemblyId}", settings.GodotConnectTimeout), settings)
+        : this(NewPipeName(), assemblyId, debuggerFramework, settings)
     {
-        pipeName = $"gdunit4-{assemblyId}";
+    }
+
+    private GodotRuntimeTestRunner(string pipeName, string assemblyId, IDebuggerFramework debuggerFramework, TestEngineSettings settings)
+        : base(new GodotRuntimeExecutor(pipeName, settings.GodotConnectTimeout), settings)
+    {
+        this.pipeName = pipeName;
         scope = LoggerFactory.Instance.GetScope() ?? new ScopeLogger(Logger, assemblyId);
         this.settings = settings;
         DebuggerFramework = debuggerFramework;
@@ -224,6 +232,9 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             message += $"\nLast error output of the Godot runtime host:\n{string.Join('\n', errorOutput.Select(line => $"  {line}"))}";
         return (level, message);
     }
+
+    internal static string NewPipeName()
+        => $"gdunit4-{RandomNumberGenerator.GetHexString(PIPE_NAME_RANDOM_LENGTH, true)}";
 
     internal static string DescribeNotExecutedCause(int exitCode, bool isWindows)
         => $"the Godot runtime exited with exit code {exitCode}{DescribeSignal(exitCode, isWindows)} before all test results were reported";
