@@ -1,0 +1,221 @@
+name: 'check package'
+description: 'Reads the package version of a project and, when the version is not yet on NuGet, verifies the release notes of the package'
+
+# The release notes are the ReleaseNotes.txt in the directory of the project. They must start with the version without
+# its prerelease suffix (e.g. 'v5.1.0' for '5.1.0-rc6'), must be changed since the latest version published on NuGet and
+# must list the issue (GD-<number>) of every commit that changed the project directory since then.
+# Commits whose issue or pull request is labeled 'exclude from release notes' are not required, nor are commits whose
+# issue or pull request carries only the package labels of other packages (e.g. 'gdunit4.api' for the analyzers).
+# Needs the git history of the commits since the latest published version.
+
+inputs:
+  project:
+    description: 'Path of the project file of the package.'
+    required: true
+  github-token:
+    description: 'Token to read the labels of the issues and pull requests.'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  project:
+    description: 'Path of the project file of the package.'
+    value: ${{ steps.read.outputs.project }}
+  id:
+    description: 'The NuGet package id.'
+    value: ${{ steps.read.outputs.id }}
+  version:
+    description: 'The package version.'
+    value: ${{ steps.read.outputs.version }}
+  status:
+    description: "'already published', 'to publish' or 'release notes not updated', the findings are reported as annotations."
+    value: ${{ steps.verify.outputs.status || steps.read.outputs.status }}
+
+runs:
+  using: composite
+  steps:
+    - name: 'Read Package Version'
+      id: read
+      shell: bash
+      env:
+        PROJECT: ${{ inputs.project }}
+        NUGET_FLAT_CONTAINER_URL: 'https://api.nuget.org/v3-flatcontainer'
+      run: |
+        set -euo pipefail
+        id=$(dotnet msbuild "$PROJECT" -getProperty:PackageId)
+        version=$(dotnet msbuild "$PROJECT" -getProperty:Version)
+
+        index=$(mktemp)
+        trap 'rm -f "$index"' EXIT
+        status=$(curl -s -o "$index" -w '%{http_code}' "$NUGET_FLAT_CONTAINER_URL/${id,,}/index.json")
+        case "$status" in
+          200) published=$(jq --arg version "${version,,}" '.versions | index($version) != null' "$index") ;;
+          404) published=false ;;
+          *)
+            echo "::error::Requesting the versions of $id from NuGet failed with HTTP $status."
+            exit 1
+            ;;
+        esac
+
+        {
+          echo "project=$PROJECT"
+          echo "id=$id"
+          echo "version=$version"
+          echo "release-notes=$(dirname "$PROJECT")/ReleaseNotes.txt"
+          echo "published=$published"
+          if [ "$published" = true ]; then
+            echo "status=already published"
+          fi
+        } | tee -a "$GITHUB_OUTPUT"
+
+    - name: 'Verify Release Notes'
+      id: verify
+      if: ${{ steps.read.outputs.published == 'false' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PACKAGE_ID: ${{ steps.read.outputs.id }}
+        VERSION: ${{ steps.read.outputs.version }}
+        RELEASE_NOTES: ${{ steps.read.outputs.release-notes }}
+        NUGET_FLAT_CONTAINER_URL: 'https://api.nuget.org/v3-flatcontainer'
+        NUGET_REGISTRATION_URL: 'https://api.nuget.org/v3/registration5-gz-semver2'
+      run: |
+        set -euo pipefail
+        EXCLUDE_LABEL="exclude from release notes"
+        # The package labels are the lower case package ids, e.g. 'gdunit4.api'
+        PACKAGE_LABEL_PREFIX="gdunit4."
+
+        # Downloads the url to the output file, returns 1 when the url does not exist
+        fetch() {
+          local url=$1 output=$2 status
+          status=$(curl -s --compressed -o "$output" -w '%{http_code}' "$url")
+          case "$status" in
+            200) return 0 ;;
+            404) return 1 ;;
+            *)
+              echo "::error::Requesting $url failed with HTTP $status." >&2
+              exit 2
+              ;;
+          esac
+        }
+
+        # Prints the listed versions of the package with their publish date, one '<version> <date>' per line in ascending
+        # order. Unlisted versions are skipped, NuGet reports them as published on 1900-01-01.
+        # The registration inlines small pages and links large ones.
+        published_versions() {
+          local id=${1,,} registration="$WORK/registration.json" page="$WORK/registration-page.json" pages index
+          local entries='.items[] | .catalogEntry | select(.listed != false) | "\(.version) \(.published)"'
+          fetch "$NUGET_REGISTRATION_URL/$id/index.json" "$registration" || return 0
+          pages=$(jq '.items | length' "$registration")
+          for ((index = 0; index < pages; index++)); do
+            if jq -e ".items[$index].items != null" "$registration" > /dev/null; then
+              jq -r ".items[$index] | $entries" "$registration"
+            elif fetch "$(jq -r ".items[$index].\"@id\"" "$registration")" "$page"; then
+              jq -r "$entries" "$page"
+            else
+              echo "::error::The registration page $index of $1 is not found on NuGet." >&2
+              exit 2
+            fi
+          done
+        }
+
+        # Writes the release notes of the published package version to the output file
+        published_release_notes() {
+          local id=${1,,} version=${2,,} output=$3 package="$WORK/package.nupkg"
+          fetch "$NUGET_FLAT_CONTAINER_URL/$id/$version/$id.$version.nupkg" "$package" && unzip -p "$package" ReleaseNotes.txt > "$output"
+        }
+
+        # Prints the subjects of the commits that changed the directory since the date
+        commits_since() {
+          git log --since="$1" --format='%s' -- "$2/"
+        }
+
+        # Prints the labels of the issue or pull request, one per line
+        labels_of() {
+          if ! gh api "repos/$GITHUB_REPOSITORY/issues/$1" --jq '.labels[].name' < /dev/null; then
+            echo "::error::Requesting the labels of #$1 failed." >&2
+            exit 2
+          fi
+        }
+
+        # Returns 0 when the release notes of the package must not list the issue, because the issue or pull request
+        # is labeled to be excluded from the release notes or names only other packages by their package labels
+        is_not_required() {
+          local id=$1 number labels="$WORK/labels.txt"
+          shift
+          for number in "$@"; do labels_of "$number"; done > "$labels"
+          if grep -qxF "$EXCLUDE_LABEL" "$labels"; then
+            return 0
+          fi
+          grep -q "^$PACKAGE_LABEL_PREFIX" "$labels" && ! grep -qixF "$id" "$labels"
+        }
+
+        # Reports the issues of the commits since the published version that are not listed in the release notes
+        verify_issues() {
+          local id=$1 notes=$2 latest=$3 date=$4 subject issues pull_request issue missing=0
+          while IFS= read -r subject; do
+            issues=$(grep -oE 'GD-[0-9]+' <<< "$subject" | sort -u || true)
+            pull_request=$(sed -nE 's/.*\(#([0-9]+)\)$/\1/p' <<< "$subject")
+            if [ -z "$issues" ]; then
+              echo "::warning::The commit '$subject' since $id $latest names no issue, it is not verified."
+              continue
+            fi
+            for issue in $issues; do
+              # shellcheck disable=SC2086 # the pull request is optional
+              if grep -qw -- "$issue" "$notes" || is_not_required "$id" "${issue#GD-}" $pull_request; then
+                continue
+              fi
+              echo "::error file=$notes::The release notes of $id do not list $issue of the commit '$subject' since the published version $latest, add it, label the pull request with the package labels it changes or with '$EXCLUDE_LABEL'."
+              missing=1
+            done
+          done < <(commits_since "$date" "$(dirname "$notes")")
+          return "$missing"
+        }
+
+        # Prints the file (stdin without argument) without byte order mark, carriage returns, trailing spaces and surrounding empty lines
+        normalize() {
+          awk '
+            { if (NR == 1) sub(/^\357\273\277/, ""); sub(/\r$/, ""); sub(/[ \t]+$/, ""); lines[NR] = $0 }
+            END {
+              first = 1; while (first <= NR && lines[first] == "") first++
+              last = NR; while (last >= first && lines[last] == "") last--
+              for (i = first; i <= last; i++) print lines[i]
+            }' "${1:--}"
+        }
+
+        verify_release_notes() {
+          local id=$1 version=$2 notes=$3 header expected latest date
+          header=$(head -n 1 "$notes" | normalize)
+          expected="v${version%%-*}"
+          if [ "$header" != "$expected" ]; then
+            echo "::error file=$notes,line=1::The release notes of $id start with '$header', expected '$expected' for version $version."
+            return 1
+          fi
+
+          published_versions "$id" > "$WORK/versions.txt"
+          read -r latest date < <(awk -v version="${version,,}" 'tolower($1) != version' "$WORK/versions.txt" | tail -n 1) || true
+          if [ -z "$latest" ]; then
+            echo "The release notes of $id $version are updated, first published version."
+            return 0
+          fi
+
+          if ! published_release_notes "$id" "$latest" "$WORK/published.txt"; then
+            echo "::error::The release notes of the published version $id $latest are not found on NuGet."
+            return 1
+          fi
+          if [ "$(normalize "$WORK/published.txt")" = "$(normalize "$notes")" ]; then
+            echo "::error file=$notes::The release notes of $id are unchanged since the published version $latest."
+            return 1
+          fi
+          verify_issues "$id" "$notes" "$latest" "$date" || return 1
+          echo "The release notes of $id $version are updated, changed since the published version $latest."
+        }
+
+        WORK=$(mktemp -d)
+        trap 'rm -rf "$WORK"' EXIT
+        # Outdated release notes are reported by the status, a failing request fails the step
+        if verify_release_notes "$PACKAGE_ID" "$VERSION" "$RELEASE_NOTES"; then
+          echo "status=to publish" >> "$GITHUB_OUTPUT"
+        else
+          echo "status=release notes not updated" >> "$GITHUB_OUTPUT"
+        fi

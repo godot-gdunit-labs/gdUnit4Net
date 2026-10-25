@@ -1,0 +1,211 @@
+name: publish
+run-name: publish-${{ inputs.dry-run && 'dry-run' || 'release' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Build and check the packages without pushing them to NuGet'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  check:
+    name: "🔍 Check Packages"
+    runs-on: 'ubuntu-24.04'
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      packages: ${{ steps.collect.outputs.packages }}
+    steps:
+      - name: "Verify Branch"
+        if: ${{ github.ref != 'refs/heads/master' && !inputs.dry-run }}
+        run: |
+          echo "::error::The packages are published only from master, the workflow runs on '${{ github.ref_name }}'."
+          exit 1
+
+      # The release notes are verified against the commits since the latest published versions
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: "Setup .NET SDK"
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: 'global.json'
+
+      # The api is published first, the test adapter depends on it
+      - name: "Check Package: Api"
+        id: api
+        uses: ./.github/actions/check-package
+        with:
+          project: Api/GdUnit4Api.csproj
+
+      - name: "Check Package: Analyzers"
+        id: analyzers
+        uses: ./.github/actions/check-package
+        with:
+          project: Analyzers/GdUnit4Analyzers.csproj
+
+      - name: "Check Package: Test Adapter"
+        id: adapter
+        uses: ./.github/actions/check-package
+        with:
+          project: TestAdapter/GdUnit4TestAdapter.csproj
+
+      - name: "Collect Packages"
+        id: collect
+        env:
+          PACKAGE_API: ${{ toJSON(steps.api.outputs) }}
+          PACKAGE_ANALYZERS: ${{ toJSON(steps.analyzers.outputs) }}
+          PACKAGE_ADAPTER: ${{ toJSON(steps.adapter.outputs) }}
+        run: |
+          publish='[]'
+          failed=0
+          {
+            echo "### Package Check"
+            echo
+            echo "| Package | Version | Status |"
+            echo "| ------- | ------- | ------ |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for key in api analyzers adapter; do
+            package_variable="PACKAGE_${key^^}"
+            package=${!package_variable}
+            id=$(jq -r '.id' <<< "$package")
+            version=$(jq -r '.version' <<< "$package")
+            status=$(jq -r '.status' <<< "$package")
+            case "$status" in
+              "to publish") publish=$(jq -c --argjson p "$package" '. + [$p | {project, id, version}]' <<< "$publish") ;;
+              "already published") ;;
+              *) failed=1 ;;
+            esac
+            echo "$id $version: $status"
+            echo "| $id | $version | $status |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          if [ "$failed" -ne 0 ]; then
+            echo "::error::The release notes of a package to publish are not updated, see the annotations of the check steps."
+            exit 1
+          fi
+          echo "packages=$publish" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: "📦 Build Packages"
+    needs: check
+    if: ${{ needs.check.outputs.packages != '[]' }}
+    runs-on: 'ubuntu-24.04'
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: "Setup .NET SDK"
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: 'global.json'
+
+      - name: "Build Packages"
+        env:
+          PACKAGES: ${{ needs.check.outputs.packages }}
+        run: |
+          mkdir -p packages
+          jq -c '.[]' <<< "$PACKAGES" | while read -r package; do
+            project=$(jq -r '.project' <<< "$package")
+            file="$(dirname "$project")/nupkg/$(jq -r '.id' <<< "$package").$(jq -r '.version' <<< "$package").nupkg"
+            dotnet build "$project" --configuration Release
+            cp "$file" packages/
+          done
+
+      - name: "Upload Packages"
+        uses: actions/upload-artifact@v7
+        with:
+          retention-days: 10
+          name: packages
+          path: packages/*.nupkg
+          if-no-files-found: error
+
+      - name: "Report Dry Run"
+        if: ${{ inputs.dry-run }}
+        env:
+          PACKAGES: ${{ needs.check.outputs.packages }}
+        run: |
+          {
+            echo "### Dry Run"
+            echo
+            echo "| Package | Version | Result |"
+            echo "| ------- | ------- | ------ |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          jq -r '.[] | "\(.id) \(.version)"' <<< "$PACKAGES" | while read -r id version; do
+            echo "::notice::$id $version is built, the dry run does not push it to NuGet."
+            echo "| $id | $version | built, not pushed |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+  publish:
+    name: "🚀 Publish Packages"
+    needs: [check, build]
+    if: ${{ !inputs.dry-run }}
+    runs-on: 'ubuntu-24.04'
+    timeout-minutes: 5
+    environment: nuget
+    permissions:
+      id-token: write
+    steps:
+      - name: "Download Packages"
+        uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: packages
+
+      - name: "NuGet Login"
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: "Push Packages"
+        env:
+          PACKAGES: ${{ needs.check.outputs.packages }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          # The skipped duplicate is detected by the English message of the push
+          DOTNET_CLI_UI_LANGUAGE: en
+        run: |
+          {
+            echo "### Published Packages"
+            echo
+            echo "| Package | Version | Result |"
+            echo "| ------- | ------- | ------ |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          jq -r '.[] | "\(.id) \(.version)"' <<< "$PACKAGES" | while read -r id version; do
+            package="[$id](https://www.nuget.org/packages/$id/$version)"
+            if ! output=$(dotnet nuget push "packages/$id.$version.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate 2>&1); then
+              echo "$output"
+              echo "::error::Pushing $id $version to NuGet failed, the following packages are not pushed."
+              echo "| $package | $version | failed |" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+            echo "$output"
+            # With --skip-duplicate NuGet reports a version that is already pushed but not yet listed as already existing
+            if grep -q "already exists" <<< "$output"; then
+              echo "::warning::$id $version is already pushed to NuGet, the push is skipped."
+              echo "| $package | $version | skipped, already pushed |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::notice::$id $version is published to NuGet."
+              echo "| $package | $version | published |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
