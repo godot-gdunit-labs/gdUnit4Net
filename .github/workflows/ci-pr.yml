@@ -139,6 +139,8 @@ jobs:
           dotnet format Api/GdUnit4Api.csproj --verify-no-changes --verbosity diagnostic
           dotnet format Api.Test/GdUnit4ApiTest.csproj --verify-no-changes --verbosity diagnostic
           dotnet format Example/ExampleProject.csproj --verify-no-changes --verbosity diagnostic
+          dotnet format Example.MultiProject/Game/Game.csproj --verify-no-changes --verbosity diagnostic
+          dotnet format Example.MultiProject/Game.Test/Game.Test.csproj --verify-no-changes --verbosity diagnostic
 
   # Test Adapter
   adapter-style-check:

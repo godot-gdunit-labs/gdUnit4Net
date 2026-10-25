@@ -48,6 +48,7 @@
     <None Include="../CONTRIBUTING.md" Pack="true" PackagePath="/"/>
     <None Include="../icon.png" Pack="true" PackagePath="/"/>
     <None Include="build/gdUnit4.api.props" Pack="true" PackagePath="build/gdUnit4.api.props"/>
+    <None Include="build/gdUnit4.api.targets" Pack="true" PackagePath="build/gdUnit4.api.targets;buildTransitive/gdUnit4.api.targets"/>
     <None Include="buildTransitive/gdUnit4.api.props" Pack="true" PackagePath="buildTransitive/gdUnit4.api.props"/>
 
     <!-- provide the test runner scene as resource -->

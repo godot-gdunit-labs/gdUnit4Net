@@ -1,0 +1,26 @@
+<Project>
+  <!--
+  Writes each ProjectReference to a Godot project (a directory with a project.godot) as assembly metadata into the test assembly.
+  At test runtime gdUnit4 mounts these projects, so their resources, scenes and settings are available in the tests.
+  Set GdUnit4MountGodotProjectReferences to false to turn it off.
+  -->
+  <Target Name="GdUnit4GodotProjectReferences"
+          BeforeTargets="GetAssemblyAttributes;CoreCompile"
+          Condition="'$(GdUnit4MountGodotProjectReferences)' != 'false'">
+    <PropertyGroup>
+      <_GdUnit4TestProjectDir>$(GodotProjectDir)</_GdUnit4TestProjectDir>
+      <_GdUnit4TestProjectDir Condition="'$(_GdUnit4TestProjectDir)' == ''">$(MSBuildProjectDirectory)</_GdUnit4TestProjectDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_GdUnit4ProjectReferenceDir Include="@(ProjectReference->'%(RootDir)%(Directory)')"/>
+      <_GdUnit4GodotProjectReference Include="@(_GdUnit4ProjectReferenceDir)"
+                                     Condition="Exists('%(_GdUnit4ProjectReferenceDir.Identity)project.godot')"/>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'@(_GdUnit4GodotProjectReference)' != ''">
+        <_Parameter1>GdUnit4.GodotProjectReference</_Parameter1>
+        <_Parameter2>$([MSBuild]::MakeRelative('$(_GdUnit4TestProjectDir)', '%(_GdUnit4GodotProjectReference.Identity)'))</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+    <Warning Condition="'$(GenerateAssemblyInfo)' == 'false' and '@(_GdUnit4GodotProjectReference)' != ''"
+             Text="gdUnit4 can't mount the referenced Godot projects, the build generates no assembly attributes (GenerateAssemblyInfo is false). Enable GenerateAssemblyInfo, or set GdUnit4MountGodotProjectReferences to false."/>
+  </Target>
+</Project>

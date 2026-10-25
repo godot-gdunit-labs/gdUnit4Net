@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="PlayerStats" format=3]
+
+[ext_resource type="Script" path="res://Characters/PlayerStats.cs" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+Speed = 1000.0
+JumpVelocity = 900.0

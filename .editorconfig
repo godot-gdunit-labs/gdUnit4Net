@@ -451,7 +451,7 @@ dotnet_diagnostic.IDE0290.severity = none # Use primary constructor
 dotnet_diagnostic.CA1707.severity = none # Identifiers should not contain underscores (allow SCREAMING_SNAKE_CASE)
 
 # Consumer sample: no repository file header, fluent assertions return the assert only for chaining
-[Example/**.cs]
+[{Example,Example.MultiProject}/**.cs]
 dotnet_diagnostic.IDE0073.severity = none
 dotnet_diagnostic.IDE0058.severity = none
 dotnet_diagnostic.IDE0060.severity = none # Test case rows may ignore their parameters

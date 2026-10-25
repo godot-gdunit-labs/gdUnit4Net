@@ -11,6 +11,8 @@ using Godot;
 
 using Logging;
 
+using Projects;
+
 /// <summary>
 ///     The GdUnit4Net test runner scene.
 /// </summary>
@@ -25,6 +27,7 @@ public partial class GdUnit4TestRunnerSceneCore : SceneTree
     {
         try
         {
+            GodotProjectMounter.MountReferencedProjects(Root, new GodotLogger());
             Root.AddChild(new TestRunner());
         }
 

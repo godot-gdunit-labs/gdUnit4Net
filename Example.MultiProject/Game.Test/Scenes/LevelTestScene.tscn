@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://Levels/Level.tscn" id="1_level"]
+[ext_resource type="PackedScene" path="res://Items/Coin.tscn" id="2_coin"]
+
+[node name="LevelTestScene" type="Node2D"]
+
+[node name="Level" parent="." instance=ExtResource("1_level")]
+
+[node name="BonusCoin" parent="Level/Coins" instance=ExtResource("2_coin")]
+position = Vector2(400, 100)
+Value = 50
+
+[editable path="Level"]
