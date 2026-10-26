@@ -268,6 +268,12 @@ jobs:
         with:
           global-json-file: 'global.json'
 
+      - name: "Build Local gdUnit4 Packages"
+        run: |
+          dotnet build Analyzers/GdUnit4Analyzers.csproj --configuration Release
+          dotnet build Api/GdUnit4Api.csproj --configuration Release
+          dotnet build TestAdapter/GdUnit4TestAdapter.csproj --configuration Release
+
       - name: "Run Unit Tests"
         if: ${{ !cancelled() }}
         timeout-minutes: 5

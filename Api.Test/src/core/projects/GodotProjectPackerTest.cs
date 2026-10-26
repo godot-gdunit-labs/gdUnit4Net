@@ -255,8 +255,12 @@ public class GodotProjectPackerTest
     }
 
     [TestCase]
-    public void CreatePackIgnoresAnOldPackThatCanNotBeDeleted()
+    public void CreatePackIgnoresAnOldReadOnlyPackOnWindows()
     {
+        // On Unix, read-only files can still be unlinked, only Windows blocks this delete.
+        if (!OperatingSystem.IsWindows())
+            return;
+
         var (previousPack, previousMarker, _) = CreatePack(Reference);
         File.Delete(previousMarker);
         File.Delete(Path.Combine(Reference.ProjectDir, "icon.svg"));
@@ -531,8 +535,12 @@ public class GodotProjectPackerTest
     }
 
     [TestCase]
-    public void DisposingThePacksIgnoresAMarkerThatCanNotBeDeleted()
+    public void DisposingThePacksIgnoresAReadOnlyMarkerOnWindows()
     {
+        // On Unix, read-only files can still be unlinked, only Windows blocks this delete.
+        if (!OperatingSystem.IsWindows())
+            return;
+
         var (packFile, inUseMarker, _) = CreatePack(Reference);
         var (otherPack, otherMarker, _) = GodotProjectPacker.CreatePack(Reference, Path.Combine(TempDir, "Other.Test"), GodotProjectPacker.Scan(Reference.ProjectDir), TimeSpan.FromSeconds(5));
         var packs = new GodotProjectPacks();

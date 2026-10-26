@@ -140,6 +140,10 @@ jobs:
       - name: "Check Code Formatting"
         if: ${{ !cancelled() }}
         run: |
+          # The multi-project example restores the locally built gdUnit4 packages.
+          dotnet build Analyzers/GdUnit4Analyzers.csproj --configuration Release
+          dotnet build Api/GdUnit4Api.csproj --configuration Release
+          dotnet build TestAdapter/GdUnit4TestAdapter.csproj --configuration Release
           dotnet format Api/GdUnit4Api.csproj --verify-no-changes --verbosity diagnostic
           dotnet format Api.Test/GdUnit4ApiTest.csproj --verify-no-changes --verbosity diagnostic
           dotnet format Example/ExampleProject.csproj --verify-no-changes --verbosity diagnostic
