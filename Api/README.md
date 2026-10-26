@@ -8,26 +8,29 @@ gdUnit4.api is the C# package to enable GdUnit4 to run/write unit tests in C#.
 
 * **Writing And Executing Tests** in C# for Net8.0 and Net10.0 C#14
 * **Convenient interface** for running test-suites directly from Godot<br>
-  One of the main features of GdUnit4 is the ability to run test-suites directly from the Godot editor using the context menu. You can run test-suites from the FileSystem panel,
-  the ScriptEditor, or the GdUnit Inspector. To do this, simply right-click on the desired test-suite or test-case and select "Run Test(s)" from the context menu. This will run the
-  selected tests and display the results in the GdUnit Inspector.<br>
-  You can create new test cases directly from the ScriptEditor by right-clicking on the function you want to test and selecting "Create TestCase" from the context menu.
+  One of the main features of GdUnit4 is the ability to run test-suites directly from the Godot editor using the context menu. You can run test-suites from the
+  FileSystem panel, the ScriptEditor, or the GdUnit Inspector. Right-click the desired test-suite or test-case and select "Run Test(s)" to run tests and display
+  the results in the GdUnit Inspector.<br>
+  Create new test cases from the ScriptEditor by right-clicking on the function you want to test and selecting "Create TestCase" from the context menu.
 * **Fluent Syntax** for writing test cases that's easy to read and understand
 * **Wide range of Assertions** for verifying the behavior and output of your code
 * **Test Fuzzing support:** for generating random inputs to test edge cases and boundary conditions
 * **Parameterized Tests:** (Test Cases) for testing functions with multiple sets of inputs and expected outputs
 * **Dynamic Tests Data:** 'DataPoint' attribute to define test data sets
 * **Scene runner:** for simulating different kinds of inputs and actions, such as mouse clicks and keyboard inputs<br>
-  For example, you can simulate mouse clicks and keyboard inputs by calling the appropriate methods on the runner instance. Additionally, you can wait for a specific signal to be
-  emitted by the scene, or you can wait for a specific function to return a certain value.
-* **Integration with Test Adapter:** Works seamlessly with the [gdUnit4.test.adapter](../TestAdapter/README.md) for running tests in Visual Studio, VS Code, and JetBrains Rider
+  For example, you can simulate mouse clicks and keyboard inputs by calling the appropriate methods on the runner instance. You can also wait for a specific
+  signal to be emitted by the scene or wait for a specific function to return a certain value.
+* **Integration with Test Adapter:** Works seamlessly with the [gdUnit4.test.adapter](../TestAdapter/README.md) for running tests in Visual Studio, VS Code,
+  and JetBrains Rider
+* **Multi-project testing (`5.1.0-rc7`):** A separate test project can reference a Godot game project and load its resources, scenes, scripts, and settings at
+  runtime. See the [multi-project guide](https://github.com/godot-gdunit-labs/gdUnit4Net/blob/master/Api/doc/multi-project.md).
 
 ## Installation
 
 You can install the GdUnit4 API by adding it as a package reference to your project:
 
 ```xml
-<PackageReference Include="gdUnit4.api" Version="5.0.0"/>
+<PackageReference Include="gdUnit4.api" Version="5.1.0-rc7"/>
 ```
 
 ## Related Packages

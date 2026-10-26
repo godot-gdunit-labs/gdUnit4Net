@@ -46,6 +46,8 @@ public class GameSceneTest
         AssertThat(player.Lives).IsEqual(3);
     }
 
+    #region documented examples
+    // The following test verifies Api/doc/multi-project.md.
     [TestCase]
     public async Task GameSceneReactsOnInputAction()
     {
@@ -54,6 +56,7 @@ public class GameSceneTest
         await runner.AwaitInputProcessed();
         AssertThat(((Player)runner.Scene()!).JumpCount).IsEqual(1);
     }
+    #endregion
 
     [TestCase]
     public async Task GameSceneReactsOnKeyMappedByGameInputMap()
