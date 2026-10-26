@@ -228,6 +228,29 @@ public class GodotProjectPackerTest
     }
 
     [TestCase]
+    public void CreatePackReplacesThePackWhenContentChangesWithoutMetadataChanges()
+    {
+        var assetPath = Path.Combine(Reference.ProjectDir, "icon.svg");
+        File.WriteAllText(assetPath, "before");
+        var timestamp = File.GetLastWriteTimeUtc(assetPath);
+        var length = new FileInfo(assetPath).Length;
+        var (previousPack, previousMarker, _) = CreatePack(Reference);
+        File.Delete(previousMarker);
+
+        File.WriteAllText(assetPath, "after!");
+        File.SetLastWriteTimeUtc(assetPath, timestamp);
+
+        var packFile = CreatePack(Reference).PackFile;
+
+        AssertThat(new FileInfo(assetPath).Length).IsEqual(length);
+        AssertThat(File.GetLastWriteTimeUtc(assetPath)).IsEqual(timestamp);
+        AssertThat(packFile).IsNotEqual(previousPack);
+        using var pack = ZipFile.OpenRead(packFile);
+        using var reader = new StreamReader(pack.GetEntry("icon.svg")!.Open());
+        AssertThat(reader.ReadToEnd()).IsEqual("after!");
+    }
+
+    [TestCase]
     public void CreatePackKeepsAPackInUseByALiveProcess()
     {
         var previousPack = CreatePack(Reference).PackFile;
@@ -405,6 +428,23 @@ public class GodotProjectPackerTest
 
         WriteFile(Reference.ProjectDir, entry, "changed content");
 
+        AssertThat(ImportFingerprint()).IsNotEqual(fingerprint);
+    }
+
+    [TestCase]
+    public void ImportFingerprintChangesWhenContentChangesWithoutMetadataChanges()
+    {
+        var assetPath = Path.Combine(Reference.ProjectDir, "icon.svg");
+        File.WriteAllText(assetPath, "before");
+        var timestamp = File.GetLastWriteTimeUtc(assetPath);
+        var length = new FileInfo(assetPath).Length;
+        var fingerprint = ImportFingerprint();
+
+        File.WriteAllText(assetPath, "after!");
+        File.SetLastWriteTimeUtc(assetPath, timestamp);
+
+        AssertThat(new FileInfo(assetPath).Length).IsEqual(length);
+        AssertThat(File.GetLastWriteTimeUtc(assetPath)).IsEqual(timestamp);
         AssertThat(ImportFingerprint()).IsNotEqual(fingerprint);
     }
 

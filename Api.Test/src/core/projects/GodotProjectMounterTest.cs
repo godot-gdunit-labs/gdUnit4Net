@@ -387,6 +387,28 @@ public class GodotProjectMounterTest
         AssertThat(ProjectSettings.GetSetting("gdunit4/report/report_count").VariantType).IsEqual(reportCount.VariantType);
     }
 
+    [TestCase]
+    public void ApplySettingsKeepsSettingsThatRequireRestart()
+    {
+        const string settingName = "gdunit4_test/restart_required";
+        ProjectSettings.SetSetting(settingName, 5);
+        ProjectSettings.SetRestartIfChanged(settingName, true);
+        using var settings = new ConfigFile();
+        using var testSettings = new ConfigFile();
+        settings.SetValue("gdunit4_test", "restart_required", 3);
+        try
+        {
+            GodotProjectMounter.ApplySettings(settings, testSettings);
+
+            AssertThat(ProjectSettings.GetSetting(settingName).AsInt32()).IsEqual(5);
+        }
+        finally
+        {
+            ProjectSettings.SetRestartIfChanged(settingName, false);
+            ProjectSettings.Clear(settingName);
+        }
+    }
+
     #endregion
 
     #region ApplyAudioBusLayout
@@ -395,6 +417,8 @@ public class GodotProjectMounterTest
     public void ApplyAudioBusLayoutOfTheReferencedProject()
     {
         var originalLayout = AudioServer.GenerateBusLayout();
+        var hadLayoutSetting = ProjectSettings.HasSetting("audio/buses/default_bus_layout");
+        var originalLayoutSetting = ProjectSettings.GetSetting("audio/buses/default_bus_layout");
         var layoutPath = Path.Combine(TempDir, "game_bus_layout.tres").Replace('\\', '/');
         AudioServer.AddBus();
         AudioServer.SetBusName(AudioServer.BusCount - 1, "GdUnit4Music");
@@ -407,10 +431,15 @@ public class GodotProjectMounterTest
             GodotProjectMounter.ApplyAudioBusLayout(settings, new ConfigFile());
 
             AssertThat(AudioServer.GetBusIndex("GdUnit4Music")).IsNotEqual(-1);
+            AssertThat(ProjectSettings.GetSetting("audio/buses/default_bus_layout").AsString()).IsEqual(layoutPath);
         }
         finally
         {
             AudioServer.SetBusLayout(originalLayout);
+            if (hadLayoutSetting)
+                ProjectSettings.SetSetting("audio/buses/default_bus_layout", originalLayoutSetting);
+            else
+                ProjectSettings.Clear("audio/buses/default_bus_layout");
         }
     }
 

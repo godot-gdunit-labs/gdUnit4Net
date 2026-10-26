@@ -3,6 +3,7 @@
 
 namespace GdUnit4.Core.Projects;
 
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -262,12 +263,36 @@ internal static class GodotProjectPacker
 
     private static string Fingerprint(IEnumerable<(string Path, string Entry)> files)
     {
-        var lines = files.Select(file =>
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        Span<byte> lengthBuffer = stackalloc byte[sizeof(long)];
+        var buffer = new byte[64 * 1024];
+        foreach (var (path, entry) in files)
         {
-            var info = new FileInfo(file.Path);
-            return $"{file.Entry}|{info.Length}|{info.LastWriteTimeUtc.Ticks}";
-        });
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join('\n', lines))));
+            var entryBytes = Encoding.UTF8.GetBytes(entry);
+            BinaryPrimitives.WriteInt32LittleEndian(lengthBuffer[..sizeof(int)], entryBytes.Length);
+            hash.AppendData(lengthBuffer[..sizeof(int)]);
+            hash.AppendData(entryBytes);
+
+            using var stream = File.OpenRead(path);
+            var fileLength = stream.Length;
+            BinaryPrimitives.WriteInt64LittleEndian(lengthBuffer, fileLength);
+            hash.AppendData(lengthBuffer);
+
+            var bytesRemaining = fileLength;
+            while (bytesRemaining > 0)
+            {
+                var bytesRead = stream.Read(buffer, 0, (int)Math.Min(buffer.Length, bytesRemaining));
+                if (bytesRead == 0)
+                    throw new EndOfStreamException($"The file '{path}' changed while fingerprinting it.");
+                hash.AppendData(buffer, 0, bytesRead);
+                bytesRemaining -= bytesRead;
+            }
+
+            if (stream.ReadByte() != -1)
+                throw new IOException($"The file '{path}' changed while fingerprinting it.");
+        }
+
+        return Convert.ToHexString(hash.GetHashAndReset());
     }
 
     private static void WritePack(string packFile, List<(string Path, string Entry)> files, string fingerprint)

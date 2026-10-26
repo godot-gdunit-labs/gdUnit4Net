@@ -18,13 +18,13 @@ using Mono.Cecil;
 internal sealed record GodotProjectReference(string ProjectDir)
 {
     internal const string METADATA_KEY = "GdUnit4.GodotProjectReference";
-
-    private const string ASSEMBLY_NAME_SETTING = "project/assembly_name=";
+    internal const string ASSEMBLY_NAME_SETTING = "project/assembly_name=";
 
     internal string Name => new DirectoryInfo(ProjectDir).Name;
 
     // Unique per project directory, two referenced projects can share their folder name.
-    internal string Id => $"{Name}-{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(ProjectDir.ToUpperInvariant())))[..8]}";
+    internal string Id
+        => $"{Name}-{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(NormalizeProjectPath(ProjectDir))))[..8]}";
 
     // Describes the import state of the project cache, shared by all test projects that reference the project.
     internal string ImportStampFile => Path.Combine(ProjectDir, ".godot", "gdunit4.import.stamp");
@@ -93,11 +93,15 @@ internal sealed record GodotProjectReference(string ProjectDir)
             .. relativePaths
                 .OfType<string>()
                 .Select(path => FullPath(Path.Combine(testProjectDir, path.Replace('\\', '/'))))
-                .Where(projectDir => !string.Equals(projectDir, testDir, StringComparison.OrdinalIgnoreCase))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(projectDir => !ProjectPathComparer().Equals(projectDir, testDir))
+                .Distinct(ProjectPathComparer())
                 .Select(projectDir => new GodotProjectReference(projectDir))
         ];
     }
+
+    private static StringComparer ProjectPathComparer() => OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+
+    private static string NormalizeProjectPath(string projectDir) => OperatingSystem.IsWindows() ? projectDir.ToUpperInvariant() : projectDir;
 
     private static string FullPath(string path) => Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
 }

@@ -70,6 +70,8 @@ v5.1.0
 * GD-539: Tests can live in a separate project that references the Godot game project with a `ProjectReference`.
           At test runtime the referenced project is mounted: its scenes and resources load by `res://` and `uid://` paths,
           and its input map, autoloads, project settings and audio bus layout are applied. Its assets are imported only when they changed.
+          Cache invalidation detects content changes even when size and timestamps are unchanged.
+          Settings that require restart keep the test project's startup values.
           Set `<GdUnit4MountGodotProjectReferences>false</GdUnit4MountGodotProjectReferences>` to turn it off.
 
 v5.0.0

@@ -220,12 +220,18 @@ internal static class GodotProjectMounter
     // A setting the test project sets itself keeps its value, like a file of the test project hides the file of the referenced project.
     internal static void ApplySettings(ConfigFile settings, ConfigFile testSettings)
     {
+        var restartRequiredSettings = ProjectSettings.Singleton.GetPropertyList()
+            .Where(property => (((PropertyUsageFlags)property["usage"].AsInt32()) & PropertyUsageFlags.RestartIfChanged) != 0)
+            .Select(property => property["name"].AsString())
+            .ToHashSet(StringComparer.Ordinal);
+
         foreach (var section in settings.GetSections().Except(NotAppliedSections, StringComparer.Ordinal))
         {
             foreach (var key in settings.GetSectionKeys(section).Where(key => !testSettings.HasSectionKey(section, key)))
             {
                 var name = $"{section}/{key}";
-                if (!NotAppliedKeyPrefixes.Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal)))
+                if (!restartRequiredSettings.Contains(name)
+                    && !NotAppliedKeyPrefixes.Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal)))
                     ProjectSettings.SetSetting(name, settings.GetValue(section, key));
             }
         }
@@ -259,7 +265,10 @@ internal static class GodotProjectMounter
 
         var layoutPath = settings.GetValue("audio", "buses/default_bus_layout", DEFAULT_BUS_LAYOUT).AsString();
         if (ResourceLoader.Exists(layoutPath))
+        {
+            ProjectSettings.SetSetting("audio/buses/default_bus_layout", layoutPath);
             AudioServer.SetBusLayout(GD.Load<AudioBusLayout>(layoutPath));
+        }
     }
 
     // Godot loads the translations at engine start from the test project, the translations of the referenced project are added.

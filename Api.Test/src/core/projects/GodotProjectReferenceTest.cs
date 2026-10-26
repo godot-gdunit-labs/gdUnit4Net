@@ -57,14 +57,16 @@ public class GodotProjectReferenceTest
     }
 
     [TestCase]
-    public void FromAssemblyFileIgnoresTheCaseOfDuplicates()
+    public void FromAssemblyFileUsesPlatformPathCaseSensitivity()
     {
         var assemblyPath = Path.Combine(TempDir, "Test.dll");
         ProjectReferenceAssembly.Write(assemblyPath, "../Game/", "../game");
 
-        AssertThat(GodotProjectReference.FromAssemblyFile(assemblyPath, TestProjectDir))
-            .Extract("ProjectDir")
-            .ContainsExactly(Path.Combine(TempDir, "Game"));
+        var references = GodotProjectReference.FromAssemblyFile(assemblyPath, TestProjectDir).Select(reference => reference.ProjectDir);
+        if (OperatingSystem.IsWindows())
+            AssertThat(references).ContainsExactly(Path.Combine(TempDir, "Game"));
+        else
+            AssertThat(references).ContainsExactly(Path.Combine(TempDir, "Game"), Path.Combine(TempDir, "game"));
     }
 
     [TestCase]
@@ -151,4 +153,16 @@ public class GodotProjectReferenceTest
     public void IdDiffersForProjectsWithTheSameName()
         => AssertThat(new GodotProjectReference(Path.Combine(TempDir, "Game")).Id)
             .IsNotEqual(new GodotProjectReference(Path.Combine(TempDir, "Other", "Game")).Id);
+
+    [TestCase]
+    public void IdUsesPlatformPathCaseSensitivity()
+    {
+        var upperCasePath = new GodotProjectReference(Path.Combine(TempDir, "Workspace", "Game")).Id;
+        var lowerCasePath = new GodotProjectReference(Path.Combine(TempDir, "workspace", "Game")).Id;
+
+        if (OperatingSystem.IsWindows())
+            AssertThat(upperCasePath).IsEqual(lowerCasePath);
+        else
+            AssertThat(upperCasePath).IsNotEqual(lowerCasePath);
+    }
 }
