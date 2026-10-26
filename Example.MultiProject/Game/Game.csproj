@@ -1,0 +1,10 @@
+<Project Sdk="Godot.NET.Sdk">
+    <PropertyGroup>
+        <!-- Disable Central Package Management for Godot projects -->
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Game</RootNamespace>
+    </PropertyGroup>
+</Project>

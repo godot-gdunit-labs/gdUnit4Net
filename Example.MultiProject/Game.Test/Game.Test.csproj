@@ -1,0 +1,33 @@
+<Project Sdk="Godot.NET.Sdk">
+    <PropertyGroup>
+        <!-- Disable Central Package Management for Godot projects -->
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Game.Test</RootNamespace>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <!-- Disable the warning of an incompatible GodotSharp version between the Godot SDK and the gdUnit4 API -->
+        <NoWarn>NU1605</NoWarn>
+        <!-- Prevent MSTest adapter from being discovered -->
+        <VSTestTestAdapterPath>none</VSTestTestAdapterPath>
+        <TestFramework>GdUnit4</TestFramework>
+        <RunSettingsFilePath>$(MSBuildProjectDirectory)/.runsettings</RunSettingsFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- The game project: gdUnit4 mounts its resources, scenes and settings at test runtime -->
+        <ProjectReference Include="../Game/Game.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)"/>
+        <!-- Use the locally built packages to exercise the same build targets as a consumer project. -->
+        <PackageReference Include="gdUnit4.api" Version="$(GdUnitAPIVersion)"/>
+        <PackageReference Include="gdUnit4.test.adapter" Version="$(GdUnitTestAdapterVersion)"/>
+        <PackageReference Include="gdUnit4.analyzers" Version="$(GdUnitAnalyzersVersion)">
+            <PrivateAssets>none</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+</Project>

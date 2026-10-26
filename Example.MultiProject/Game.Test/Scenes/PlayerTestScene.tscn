@@ -1,0 +1,11 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scenes/PlayerTestHarness.cs" id="1_harness"]
+[ext_resource type="PackedScene" uid="uid://bgplayer01" path="res://Characters/Player.tscn" id="2_player"]
+[ext_resource type="Resource" path="res://Resources/test_player_stats.tres" id="3_stats"]
+
+[node name="PlayerTestScene" type="Node2D"]
+script = ExtResource("1_harness")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+Stats = ExtResource("3_stats")

@@ -38,3 +38,6 @@ test/godot.log
 
 # Crash artifacts
 *.stackdump
+
+# Project backups the Godot editor writes when it migrates a C# project file
+*.csproj.old

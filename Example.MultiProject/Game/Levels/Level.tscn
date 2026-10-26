@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://bglevel001"]
+
+[ext_resource type="Script" path="res://Levels/Level.cs" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://bgplayer01" path="res://Characters/Player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://bgcoin0001" path="res://Items/Coin.tscn" id="3_coin"]
+
+[node name="Level" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(100, 100)
+
+[node name="Coins" type="Node2D" parent="."]
+
+[node name="Coin1" parent="Coins" instance=ExtResource("3_coin")]
+position = Vector2(200, 100)
+
+[node name="Coin2" parent="Coins" instance=ExtResource("3_coin")]
+position = Vector2(300, 100)
+Value = 25

@@ -7,9 +7,12 @@ using System.Linq;
 
 using Api;
 
+using GdUnit4.Core.Projects;
 using GdUnit4.Core.Runners;
 
 using Moq;
+
+using Projects;
 
 using static Assertions;
 using static GdUnit4.Asserts.IStringAssert.Compare;
@@ -418,6 +421,158 @@ public class GodotRuntimeTestRunnerTest
         AssertThat($"/var/folders/xx/{new string('x', 32)}/T/CoreFxPipe_{pipeName}")
             .HasLength(104, LESS_THAN);
     }
+
+    #region PrepareReferencedGodotProjects
+
+    [TestCase]
+    public void PrepareReferencedGodotProjectsWithoutReferences()
+    {
+        var assemblyPath = Path.Combine(TestTempDirectory!, "Test.dll");
+        ProjectReferenceAssembly.Write(assemblyPath);
+        var runner = CreateTestRunner(1000);
+
+        using var packs = runner.PrepareReferencedGodotProjects([assemblyPath], TestTempDirectory!, MockGodotBinPath);
+        AssertThat(packs!.Files).IsEmpty();
+        AssertThat(Directory.Exists(GodotProjectReference.WorkingDir(TestTempDirectory!))).IsFalse();
+    }
+
+    [TestCase]
+    public void PrepareReferencedGodotProjectsFailsOnAMissingProject()
+    {
+        var testProjectDir = Path.Combine(TestTempDirectory!, "Game.Test");
+        var assemblyPath = Path.Combine(TestTempDirectory!, "Test.dll");
+        ProjectReferenceAssembly.Write(assemblyPath, "../Game");
+        var runner = CreateTestRunner(1000);
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        AssertObject(runner.PrepareReferencedGodotProjects([assemblyPath], testProjectDir, MockGodotBinPath)).IsNull();
+        VerifyLoggerError(capture, $"The referenced Godot project '{Path.Combine(TestTempDirectory!, "Game")}' has no 'project.godot'.");
+    }
+
+    [TestCase]
+    public void PrepareReferencedGodotProjectsSkipsAnUnreadableAssembly()
+    {
+        var assemblyPath = Path.Combine(TestTempDirectory!, "Test.dll");
+        File.WriteAllText(assemblyPath, "no assembly");
+        var runner = CreateTestRunner(1000);
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        using var packs = runner.PrepareReferencedGodotProjects([assemblyPath], TestTempDirectory!, MockGodotBinPath);
+
+        AssertThat(packs!.Files).IsEmpty();
+        AssertThat(capture.EntriesOf(LogLevel.Error)).IsEmpty();
+        AssertThat(capture.EntriesOf(LogLevel.Warning).Any(entry => entry.Message.StartsWith($"The referenced Godot projects of '{assemblyPath}' can't be read: ", StringComparison.Ordinal)))
+            .OverrideFailureMessage(FormatFailure(capture, LogLevel.Warning, $"The referenced Godot projects of '{assemblyPath}' can't be read: ..."))
+            .IsTrue();
+    }
+
+    [TestCase]
+    public void PrepareReferencedGodotProjectsPacksAnImportedProjectWithoutImport()
+    {
+        var testProjectDir = Path.Combine(TestTempDirectory!, "Game.Test");
+        var reference = new GodotProjectReference(Path.Combine(TestTempDirectory!, "Game"));
+        foreach (var entry in new[] { "project.godot", "icon.svg", ".godot/imported/icon.svg-1234.ctex", ".godot/uid_cache.bin" })
+        {
+            var path = Path.Combine(reference.ProjectDir, entry);
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, string.Empty);
+        }
+
+        GodotProjectPacker.WriteImportStamp(reference, GodotProjectPacker.Scan(reference.ProjectDir), MockGodotBinPath);
+        var assemblyPath = Path.Combine(TestTempDirectory!, "Test.dll");
+        ProjectReferenceAssembly.Write(assemblyPath, "../Game");
+        var runner = CreateTestRunner(1000);
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        // the mock Godot binary does not exist, an import would fail
+        using var packs = runner.PrepareReferencedGodotProjects([assemblyPath], testProjectDir, MockGodotBinPath);
+        AssertThat(packs!.Files).HasSize(1);
+        AssertThat(File.Exists(packs.Files[0])).IsTrue();
+        AssertThat(Directory.GetFiles(GodotProjectReference.WorkingDir(testProjectDir), "*.inuse")).HasSize(1);
+
+        packs.Dispose();
+
+        AssertThat(Directory.GetFiles(GodotProjectReference.WorkingDir(testProjectDir), "*.inuse")).IsEmpty();
+        VerifyLoggerInfo(capture, $"The assets of the referenced Godot project '{reference.ProjectDir}' are up to date.");
+    }
+
+    [TestCase]
+    public void PrepareReferencedGodotProjectsReadsTheTestProjectAssemblyOnly()
+    {
+        var testProjectDir = Path.Combine(TestTempDirectory!, "Core.Test");
+        _ = Directory.CreateDirectory(testProjectDir);
+        File.WriteAllText(Path.Combine(testProjectDir, "project.godot"), "[dotnet]\nproject/assembly_name=\"Core.Test\"\n");
+        var helperAssembly = Path.Combine(TestTempDirectory!, "Helper.dll");
+        ProjectReferenceAssembly.Write(helperAssembly, "../Core");
+        var runner = CreateTestRunner(1000);
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        using var packs = runner.PrepareReferencedGodotProjects([helperAssembly], testProjectDir, MockGodotBinPath);
+
+        AssertThat(packs!.Files).IsEmpty();
+        AssertThat(capture.EntriesOf(LogLevel.Error)).IsEmpty();
+    }
+
+    [TestCase]
+    public void PrepareReferencedGodotProjectsReadsTheTestProjectAssemblyNextToAFilteredHelperAssembly()
+    {
+        var testProjectDir = Path.Combine(TestTempDirectory!, "Level.Test");
+        _ = Directory.CreateDirectory(testProjectDir);
+        File.WriteAllText(Path.Combine(testProjectDir, "project.godot"), "[dotnet]\nproject/assembly_name=\"Level.Test\"\n");
+        var reference = new GodotProjectReference(Path.Combine(TestTempDirectory!, "Level"));
+        _ = Directory.CreateDirectory(reference.ProjectDir);
+        File.WriteAllText(Path.Combine(reference.ProjectDir, "project.godot"), string.Empty);
+        GodotProjectPacker.WriteImportStamp(reference, GodotProjectPacker.Scan(reference.ProjectDir), MockGodotBinPath);
+        var outputDir = Path.Combine(TestTempDirectory!, "bin");
+        _ = Directory.CreateDirectory(outputDir);
+        ProjectReferenceAssembly.Write(Path.Combine(outputDir, "Level.Test.dll"), "../Level");
+        var helperAssembly = Path.Combine(outputDir, "Helper.dll");
+        ProjectReferenceAssembly.Write(helperAssembly, "../Other");
+        var runner = CreateTestRunner(1000);
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        using var packs = runner.PrepareReferencedGodotProjects([helperAssembly], testProjectDir, MockGodotBinPath);
+
+        AssertThat(packs!.Files).HasSize(1);
+        AssertThat(Path.GetFileName(packs.Files[0])).StartsWith($"{reference.Id}-");
+        AssertThat(capture.EntriesOf(LogLevel.Error)).IsEmpty();
+    }
+
+    [TestCase]
+    public void PrepareReferencedGodotProjectsListsTheFirstCollisions()
+    {
+        var testProjectDir = Path.Combine(TestTempDirectory!, "Game.Test");
+        var reference = new GodotProjectReference(Path.Combine(TestTempDirectory!, "Game"));
+        var shared = Enumerable.Range(1, 12).Select(index => $"Items/item_{index:00}.tres").ToList();
+        foreach (var entry in shared.Concat(["project.godot", ".godot/uid_cache.bin"]))
+        {
+            var path = Path.Combine(reference.ProjectDir, entry);
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, string.Empty);
+        }
+
+        foreach (var entry in shared)
+        {
+            var path = Path.Combine(testProjectDir, entry);
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, string.Empty);
+        }
+
+        GodotProjectPacker.WriteImportStamp(reference, GodotProjectPacker.Scan(reference.ProjectDir), MockGodotBinPath);
+        var assemblyPath = Path.Combine(TestTempDirectory!, "Test.dll");
+        ProjectReferenceAssembly.Write(assemblyPath, "../Game");
+        var runner = CreateTestRunner(1000);
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        using var packs = runner.PrepareReferencedGodotProjects([assemblyPath], testProjectDir, MockGodotBinPath);
+
+        var listed = string.Join('\n', shared.Take(10).Select(entry => $"  res://{entry}"));
+        AssertThat(capture.EntriesOf(LogLevel.Warning).Select(entry => entry.Message)).ContainsExactly(
+            $"The referenced Godot project '{reference.ProjectDir}' contains 12 files that also exist in the test project, "
+            + $"the files of the test project are used:\n{listed}\n  ... and 2 more");
+    }
+
+    #endregion
 
     #region Helper Methods
 

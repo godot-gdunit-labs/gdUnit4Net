@@ -46,8 +46,8 @@ dotnet test Api.Test --settings Api.Test/.runsettings
 dotnet test Api.Test --settings Api.Test/.runsettings --filter "FullyQualifiedName~StringAssertTest"
 ```
 
-`Api.Test` and `Example` are Godot projects whose tests start the Godot runtime. Their `.runsettings` set
-`GODOT_BIN` to the Godot Mono binary (`EnvironmentVariables`); adjust that path to your machine.
+`Api.Test`, `Example` and `Example.MultiProject/Game.Test` are Godot projects whose tests start the Godot runtime.
+Their `.runsettings` set `GODOT_BIN` to the Godot Mono binary (`EnvironmentVariables`); adjust that path to your machine.
 Annotate tests that touch Godot features (nodes, scenes, resources) with `[RequireGodotRuntime]`.
 
 ### C# Build and Format
@@ -64,6 +64,8 @@ dotnet format Analyzers/GdUnit4Analyzers.csproj --verify-no-changes --verbosity 
 dotnet format Analyzers.Test/GdUnit4Analyzers.Tests.csproj --verify-no-changes --verbosity diagnostic
 dotnet format Api.Test/GdUnit4ApiTest.csproj --verify-no-changes --verbosity diagnostic
 dotnet format Example/ExampleProject.csproj --verify-no-changes --verbosity diagnostic
+dotnet format Example.MultiProject/Game/Game.csproj --verify-no-changes --verbosity diagnostic
+dotnet format Example.MultiProject/Game.Test/Game.Test.csproj --verify-no-changes --verbosity diagnostic
 ```
 
 Test projects relax rules that do not fit test code through their `test.ruleset`. `Example` is the consumer
@@ -98,6 +100,7 @@ markdownlint-cli2 --config ../gdUnit4/.github/actions/formatting_checks/.markdow
 | `TestAdapter/` | `gdUnit4.test.adapter` | VSTest adapter: discovery and execution in IDEs and `dotnet test` |
 | `Analyzers/` | `gdUnit4.analyzers` | Roslyn analyzers that validate test attributes at compile time |
 | `Example/` | — | Example Godot project consuming the packages |
+| `Example.MultiProject/` | — | Example of a game and a separate test project referencing it (`Game`, `Game.Test`) |
 
 ### Source Modules
 

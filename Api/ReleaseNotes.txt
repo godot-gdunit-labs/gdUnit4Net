@@ -67,6 +67,12 @@ v5.1.0
 * GD-486: Replaced `Newtonsoft.Json` by `System.Text.Json` on the pipe to the Godot runtime, which now accepts only the known message types, the package no longer depends on `Newtonsoft.Json`.
 * GD-511: Creating a test from the Godot editor supports methods and properties of structs, interfaces and records, of nested types
           and of every type in a file with several types, the test suite is named after the type that contains the selected line.
+* GD-539: Tests can live in a separate project that references the Godot game project with a `ProjectReference`.
+          At test runtime the referenced project is mounted: its scenes and resources load by `res://` and `uid://` paths,
+          and its input map, autoloads, project settings and audio bus layout are applied. Its assets are imported only when they changed.
+          Cache invalidation hashes project files and the Godot binary, so timestamp-preserving content changes are detected.
+          Settings that require restart keep the test project's startup values.
+          Set `<GdUnit4MountGodotProjectReferences>false</GdUnit4MountGodotProjectReferences>` to turn it off.
 
 v5.0.0
 

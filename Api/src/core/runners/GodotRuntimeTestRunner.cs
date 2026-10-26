@@ -15,6 +15,8 @@ using Execution;
 
 using Logging;
 
+using Projects;
+
 /// <summary>
 ///     Test runner implementation that executes tests in a separate Godot runtime process.
 ///     Handles process management, IPC, and test execution coordination with the Godot engine.
@@ -42,6 +44,8 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
     internal const int VERIFY_GODOT_TIMEOUT = 5000;
 
     internal const int PIPE_NAME_RANDOM_LENGTH = 12;
+
+    internal const int MAX_LISTED_ENTRIES = 10;
 
     private static readonly ITestEngineLogger Logger = LoggerFactory.GetLogger<GodotRuntimeTestRunner>();
     private readonly string pipeName;
@@ -125,10 +129,14 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
 
             if (!ReCompileGodotProject(Environment.CurrentDirectory, godotBinary))
                 return;
+
+            using var packs = PrepareReferencedGodotProjects(testSuiteNodes.Select(suite => suite.AssemblyPath), Environment.CurrentDirectory, godotBinary);
+            if (packs is null)
+                return;
             Logger.LogInfo("Starting GodotRuntimeTestRunner");
 
             var processStartInfo =
-                new ProcessStartInfo(godotBinary, BuildGodotArguments())
+                new ProcessStartInfo(godotBinary, BuildGodotArguments(packs.Files))
                 {
                     StandardOutputEncoding = Encoding.Default,
                     RedirectStandardOutput = true,
@@ -507,8 +515,205 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
         }
     }
 
-    private string BuildGodotArguments()
-        => $"--path . -s res://{TEMP_TEST_RUNNER_DIR}/GdUnit4TestRunnerScene.cs {settings.Parameters} --pipe-name {pipeName}";
+    /// <summary>
+    ///     Prepares the Godot projects the test assemblies reference: imports their assets when they changed since the last
+    ///     import and packs their files, the Godot runtime mounts the packs at startup.
+    /// </summary>
+    /// <param name="assemblyPaths">The paths of the test assemblies.</param>
+    /// <param name="testProjectDir">The test project directory.</param>
+    /// <param name="godotBinary">The Godot executable.</param>
+    /// <returns>The resource packs to mount, kept in use until disposed; null when a referenced Godot project can't be prepared.</returns>
+    internal GodotProjectPacks? PrepareReferencedGodotProjects(IEnumerable<string> assemblyPaths, string testProjectDir, string godotBinary)
+    {
+        var packs = new GodotProjectPacks();
+        try
+        {
+            var references = TestProjectAssemblies(assemblyPaths, testProjectDir)
+                .SelectMany(assemblyPath => ReadReferences(assemblyPath, testProjectDir))
+                .DistinctBy(reference => reference.Id)
+                .ToList();
+            foreach (var reference in references)
+            {
+                if (!PrepareReferencedGodotProject(reference, testProjectDir, godotBinary, packs))
+                {
+                    packs.Dispose();
+                    return null;
+                }
+            }
+
+            return packs;
+        }
+
+        // File system boundary: reading the test assembly or the project files and writing the pack fail with IO and metadata exceptions
+#pragma warning disable CA1031
+        catch (Exception e)
+#pragma warning restore CA1031
+        {
+            Logger.LogError($"Preparing the referenced Godot projects fails with: {e.Message}\n {e.StackTrace}");
+            packs.Dispose();
+            return null;
+        }
+    }
+
+    // The runtime mounts the references of the test project assembly, test suites of other assemblies carry paths relative to their own project.
+    private static IEnumerable<string> TestProjectAssemblies(IEnumerable<string> assemblyPaths, string testProjectDir)
+    {
+        var paths = assemblyPaths.Distinct(StringComparer.Ordinal).ToList();
+        try
+        {
+            // a filtered run may hold only the test suites of a helper assembly, the build copies it next to the test project assembly
+            var assemblyName = GodotProjectReference.ResolveAssemblyName(testProjectDir);
+            return paths
+                .Select(path => Path.Combine(Path.GetDirectoryName(path)!, $"{assemblyName}.dll"))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(File.Exists);
+        }
+        catch (InvalidOperationException)
+        {
+            return paths;
+        }
+    }
+
+    // Runs for every test run, also without referenced projects, an assembly that can't be read references no Godot project.
+    private static IReadOnlyList<GodotProjectReference> ReadReferences(string assemblyPath, string testProjectDir)
+    {
+        try
+        {
+            return GodotProjectReference.FromAssemblyFile(assemblyPath, testProjectDir);
+        }
+        catch (Exception e) when (e is IOException or BadImageFormatException or UnauthorizedAccessException)
+        {
+            Logger.LogWarning($"The referenced Godot projects of '{assemblyPath}' can't be read: {e.Message}");
+            return [];
+        }
+    }
+
+    private static string ListEntries(IReadOnlyCollection<string> entries)
+    {
+        var listed = entries.Take(MAX_LISTED_ENTRIES).Select(entry => $"  res://{entry}");
+        var more = entries.Count > MAX_LISTED_ENTRIES ? $"\n  ... and {entries.Count - MAX_LISTED_ENTRIES} more" : string.Empty;
+        return string.Join('\n', listed) + more;
+    }
+
+    private bool PrepareReferencedGodotProject(GodotProjectReference reference, string testProjectDir, string godotBinary, GodotProjectPacks packs)
+    {
+        if (!File.Exists(Path.Combine(reference.ProjectDir, "project.godot")))
+        {
+            Logger.LogError($"The referenced Godot project '{reference.ProjectDir}' has no 'project.godot'.");
+            return false;
+        }
+
+        var timeout = TimeSpan.FromMilliseconds(2.0 * settings.CompileProcessTimeout);
+        var skipped = new SortedSet<string>(StringComparer.Ordinal);
+        IReadOnlyList<(string Path, string Entry)> files;
+
+        // a parallel run holds the lock for up to one import
+        using (GodotProjectPacker.Lock(reference, timeout))
+        {
+            files = GodotProjectPacker.Scan(reference.ProjectDir, skipped);
+            if (GodotProjectPacker.IsImportUpToDate(reference, files, godotBinary))
+                Logger.LogInfo($"The assets of the referenced Godot project '{reference.ProjectDir}' are up to date.");
+            else
+            {
+                var restoreProjectFiles = GodotProjectPacker.BackupProjectFiles(reference.ProjectDir);
+                try
+                {
+                    if (!ImportGodotProject(reference.ProjectDir, godotBinary))
+                        return false;
+                }
+                finally
+                {
+                    restoreProjectFiles();
+                }
+
+                files = GodotProjectPacker.Scan(reference.ProjectDir, skipped);
+                GodotProjectPacker.WriteImportStamp(reference, files, godotBinary);
+            }
+        }
+
+        if (skipped.Count > 0)
+        {
+            Logger.LogWarning(
+                $"The referenced Godot project '{reference.ProjectDir}' contains {skipped.Count} files or directories that can't be read, they are not packed:\n"
+                + ListEntries(skipped));
+        }
+
+        var (packFile, inUseMarker, collisions) = GodotProjectPacker.CreatePack(reference, testProjectDir, files, timeout);
+        packs.Add(packFile, inUseMarker);
+        if (collisions.Count > 0)
+        {
+            Logger.LogWarning(
+                $"The referenced Godot project '{reference.ProjectDir}' contains {collisions.Count} files that also exist in the test project, "
+                + $"the files of the test project are used:\n{ListEntries(collisions)}");
+        }
+
+        return true;
+    }
+
+    private bool ImportGodotProject(string projectDir, string godotBinary)
+    {
+        using var importProcess = new Process();
+        try
+        {
+            importProcess.StartInfo = new ProcessStartInfo(godotBinary)
+            {
+                ArgumentList = { "--path", projectDir, "--headless", "--import" },
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = false,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                WorkingDirectory = projectDir
+            };
+
+            Logger.LogInfo($"Importing the referenced Godot project '{projectDir}' ...");
+            var importLogger = scope.WithSource("Godot");
+            importProcess.OutputDataReceived += importLogger.Output;
+            importProcess.ErrorDataReceived += importLogger.Error;
+            if (!importProcess.Start())
+            {
+                Logger.LogError("Importing the referenced Godot project fails on process start.");
+                return false;
+            }
+
+            importProcess.BeginErrorReadLine();
+            importProcess.BeginOutputReadLine();
+            if (!importProcess.WaitForExit(settings.CompileProcessTimeout))
+            {
+                Logger.LogError(
+                    $"Importing the referenced Godot project '{projectDir}' did not complete within the configured timeout of {settings.CompileProcessTimeout}ms. "
+                    + "To increase it, set the 'CompileProcessTimeout' property in the <GdUnit4> section of your .runsettings.");
+                importProcess.Kill(true);
+                return false;
+            }
+
+            // Ensure all async output is processed before reading ExitCode
+            importProcess.WaitForExit();
+            if (importProcess.ExitCode == 0)
+                return true;
+
+            Logger.LogError($"Importing the referenced Godot project '{projectDir}' ends with exit code: {importProcess.ExitCode}");
+            return false;
+        }
+
+        // Process boundary: starting and watching the external Godot process fails with process exceptions, the import then counts as failed
+#pragma warning disable CA1031
+        catch (Exception e)
+#pragma warning restore CA1031
+        {
+            Logger.LogError($"Importing the referenced Godot project fails with: {e.Message}\n {e.StackTrace}");
+            return false;
+        }
+        finally
+        {
+            CloseProcess(importProcess);
+        }
+    }
+
+    private string BuildGodotArguments(IReadOnlyList<string> packFiles)
+        => $"--path . -s res://{TEMP_TEST_RUNNER_DIR}/GdUnit4TestRunnerScene.cs {settings.Parameters} --pipe-name {pipeName}"
+           + string.Concat(packFiles.Select(packFile => $" {GodotProjectMounter.PACK_ARGUMENT} \"{packFile}\""));
 
     private bool RunDotnetRestore(string workingDirectory)
     {
