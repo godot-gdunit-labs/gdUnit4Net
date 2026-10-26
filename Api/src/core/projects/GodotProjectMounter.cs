@@ -76,7 +76,16 @@ internal static class GodotProjectMounter
 
     // The test host packs the referenced projects and passes the packs, a pack is named by its content and differs per run.
     internal static IReadOnlyList<string> PackFiles(string[] args)
-        => [.. args.SkipLast(1).Select((arg, index) => (arg, index)).Where(arg => arg.arg == PACK_ARGUMENT).Select(arg => args[arg.index + 1])];
+    {
+        var packFiles = new List<string>();
+        for (var index = 0; index < args.Length - 1; index++)
+        {
+            if (args[index] == PACK_ARGUMENT)
+                packFiles.Add(args[++index]);
+        }
+
+        return packFiles;
+    }
 
     // Without their files the referenced projects are not mounted at all, the tests then fail on the reported cause.
     internal static bool MountPacks(IReadOnlyList<string> packFiles, ITestEngineLogger logger)
