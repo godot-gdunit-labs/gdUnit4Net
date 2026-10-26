@@ -223,7 +223,8 @@ internal static class GodotProjectPacker
     private static string ImportStamp(IReadOnlyList<(string Path, string Entry)> files, string godotBinary)
     {
         var binary = new FileInfo(godotBinary);
-        return $"{ImportFingerprint(files)}\n{binary.FullName}|{(binary.Exists ? binary.Length : 0)}|{binary.LastWriteTimeUtc.Ticks}";
+        var binaryFingerprint = binary.Exists ? Fingerprint([(binary.FullName, "GodotBinary")]) : "missing";
+        return $"{ImportFingerprint(files)}\n{binary.FullName}|{binaryFingerprint}";
     }
 
     private static bool IsReadable(FileInfo file)

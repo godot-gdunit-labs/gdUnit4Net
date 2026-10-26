@@ -530,8 +530,10 @@ public class GodotProjectPackerTest
     public void IsImportUpToDateAfterTheGodotBinaryChanged()
     {
         GodotProjectPacker.WriteImportStamp(Reference, GodotProjectPacker.Scan(Reference.ProjectDir), GodotBinary);
+        var timestamp = File.GetLastWriteTimeUtc(GodotBinary);
 
         File.WriteAllText(GodotBinary, "4.6");
+        File.SetLastWriteTimeUtc(GodotBinary, timestamp);
 
         AssertThat(IsImportUpToDate()).IsFalse();
     }
