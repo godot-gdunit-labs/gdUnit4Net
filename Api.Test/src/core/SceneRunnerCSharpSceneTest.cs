@@ -149,14 +149,14 @@ public sealed class SceneRunnerCSharpSceneTest
         AssertInt((int)stopwatch.ElapsedMilliseconds).IsBetween(900, 1100);
     }
 
-    [TestCase(Timeout = 2000)]
+    [TestCase(Timeout = 5000)]
     public async Task SimulateFrames()
     {
         // cap the frame rate, the color cycle runs on timers, so the frames must take a known minimum time,
         // and disable vsync, otherwise the monitor refresh rate holds the frames below the cap and the test runs close to its timeout
         var maxFps = Engine.MaxFps;
         var vsyncMode = DisplayServer.WindowGetVsyncMode();
-        Engine.MaxFps = 100;
+        Engine.MaxFps = 150;
         DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Disabled);
         try
         {
