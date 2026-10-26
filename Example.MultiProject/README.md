@@ -39,10 +39,14 @@ To turn it off, set `<GdUnit4MountGodotProjectReferences>false</GdUnit4MountGodo
 
 ## Run
 
-Set `GODOT_BIN` in `Game.Test/.runsettings` to the Godot Mono binary of your machine, then:
+Build the local gdUnit4 packages from the repository root, then set `GODOT_BIN` in
+`Example.MultiProject/Game.Test/.runsettings` to the Godot Mono binary of your machine:
 
 ```bash
-cd Game.Test
+dotnet build Analyzers/GdUnit4Analyzers.csproj --configuration Release
+dotnet build Api/GdUnit4Api.csproj --configuration Release
+dotnet build TestAdapter/GdUnit4TestAdapter.csproj --configuration Release
+cd Example.MultiProject/Game.Test
 dotnet test
 ```
 

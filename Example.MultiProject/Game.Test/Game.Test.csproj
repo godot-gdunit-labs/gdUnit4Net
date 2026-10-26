@@ -21,16 +21,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1"/>
-        <!--
-        The example tests the gdUnit4 sources of this repository. A project of your own references the packages instead:
-        <PackageReference Include="gdUnit4.api" Version="..."/>
-        <PackageReference Include="gdUnit4.test.adapter" Version="..."/>
-        -->
-        <ProjectReference Include="../../Api/GdUnit4Api.csproj"/>
-        <ProjectReference Include="../../TestAdapter/GdUnit4TestAdapter.csproj"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)"/>
+        <!-- Use the locally built packages to exercise the same build targets as a consumer project. -->
+        <PackageReference Include="gdUnit4.api" Version="$(GdUnitAPIVersion)"/>
+        <PackageReference Include="gdUnit4.test.adapter" Version="$(GdUnitTestAdapterVersion)"/>
+        <PackageReference Include="gdUnit4.analyzers" Version="$(GdUnitAnalyzersVersion)">
+            <PrivateAssets>none</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
-
-    <!-- The gdUnit4.api package imports these targets, a project reference does not -->
-    <Import Project="../../Api/build/gdUnit4.api.targets"/>
 </Project>

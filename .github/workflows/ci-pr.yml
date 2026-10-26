@@ -45,6 +45,10 @@ jobs:
 
       - name: "Build Projects"
         run: |
+          # The multi-project example consumes the locally built NuGet packages.
+          dotnet build Analyzers/GdUnit4Analyzers.csproj --configuration Release
+          dotnet build Api/GdUnit4Api.csproj --configuration Release
+          dotnet build TestAdapter/GdUnit4TestAdapter.csproj --configuration Release
           dotnet restore
           # Build with the repository settings, so warnings the format check cannot detect fail the build
           dotnet build
