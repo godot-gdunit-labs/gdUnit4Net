@@ -197,6 +197,67 @@ public class GodotRuntimeRequireOnTestCaseAttributeTest
     }
 
     [TestMethod]
+    public void TestCaseUsingTypedSceneRunnerField()
+    {
+        var source = Instrument(
+            """
+
+            private ISceneRunner<Node2D> sceneRunner = null!;
+
+            [TestCase]
+            public void TestMethod()
+            {
+                sceneRunner.SimulateActionPressed("ui_accept");
+            }
+
+            """);
+
+        var expected = ExpectedDiagnostic
+            .Create(
+                DiagnosticRules.RuleIds.REQUIRES_GODOT_RUNTIME_ON_METHOD_ID,
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DiagnosticRules.GodotEngine.RequiresGodotRuntimeOnMethod.MessageFormat.ToString(),
+                    "TestMethod"))
+            .WithPosition(new FileLinePositionSpan("TestClass.cs", new LinePosition(21, 12), new LinePosition(21, 12)));
+
+        RoslynAssert.Diagnostics(analyzer, expected, source);
+    }
+
+    [TestMethod]
+    public void TestCaseUsingInterfaceDerivedFromSceneRunner()
+    {
+        var source = Instrument(
+            """
+
+            public interface IPlayerRunner : ISceneRunner<Node2D>
+            {
+                void Jump();
+            }
+
+            private IPlayerRunner sceneRunner = null!;
+
+            [TestCase]
+            public void TestMethod()
+            {
+                sceneRunner.Jump();
+            }
+
+            """);
+
+        var expected = ExpectedDiagnostic
+            .Create(
+                DiagnosticRules.RuleIds.REQUIRES_GODOT_RUNTIME_ON_METHOD_ID,
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DiagnosticRules.GodotEngine.RequiresGodotRuntimeOnMethod.MessageFormat.ToString(),
+                    "TestMethod"))
+            .WithPosition(new FileLinePositionSpan("TestClass.cs", new LinePosition(26, 12), new LinePosition(26, 12)));
+
+        RoslynAssert.Diagnostics(analyzer, expected, source);
+    }
+
+    [TestMethod]
     public void TestCaseCallingMethodDeclaredInAnotherFile()
     {
         var source = Instrument(

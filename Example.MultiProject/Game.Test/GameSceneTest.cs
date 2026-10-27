@@ -22,9 +22,8 @@ public class GameSceneTest
     [TestCase]
     public void LoadGameSceneByPath()
     {
-        var coin = ISceneRunner.Load("res://Items/Coin.tscn", true).Scene() as Coin;
-        AssertObject(coin).IsNotNull();
-        AssertThat(coin!.Value).IsEqual(10);
+        var coin = ISceneRunner.Load<Coin>("res://Items/Coin.tscn", true).Scene();
+        AssertThat(coin.Value).IsEqual(10);
     }
 
     [TestCase]
@@ -34,7 +33,7 @@ public class GameSceneTest
     [TestCase]
     public void GameSceneUsesGameResources()
     {
-        var player = (Player)ISceneRunner.Load("res://Characters/Player.tscn", true).Scene()!;
+        var player = ISceneRunner.Load<Player>("res://Characters/Player.tscn", true).Scene();
         AssertThat(player.Stats.Speed).IsEqual(200f);
         AssertObject(player.GetNode<Sprite2D>("Sprite").Texture).IsNotNull();
     }
@@ -42,7 +41,7 @@ public class GameSceneTest
     [TestCase]
     public void GameSceneReadsProjectSetting()
     {
-        var player = (Player)ISceneRunner.Load("res://Characters/Player.tscn", true).Scene()!;
+        var player = ISceneRunner.Load<Player>("res://Characters/Player.tscn", true).Scene();
         AssertThat(player.Lives).IsEqual(3);
     }
 
@@ -51,27 +50,27 @@ public class GameSceneTest
     [TestCase]
     public async Task GameSceneReactsOnInputAction()
     {
-        var runner = ISceneRunner.Load("res://Characters/Player.tscn", true);
+        var runner = ISceneRunner.Load<Player>("res://Characters/Player.tscn", true);
         runner.SimulateActionPressed("jump");
         await runner.AwaitInputProcessed();
-        AssertThat(((Player)runner.Scene()!).JumpCount).IsEqual(1);
+        AssertThat(runner.Scene().JumpCount).IsEqual(1);
     }
     #endregion
 
     [TestCase]
     public async Task GameSceneReactsOnKeyMappedByGameInputMap()
     {
-        var runner = ISceneRunner.Load("res://Characters/Player.tscn", true);
+        var runner = ISceneRunner.Load<Player>("res://Characters/Player.tscn", true);
         runner.SimulateKeyPressed(Key.Space);
         await runner.AwaitInputProcessed();
-        AssertThat(((Player)runner.Scene()!).JumpCount).IsEqual(1);
+        AssertThat(runner.Scene().JumpCount).IsEqual(1);
     }
 
     [TestCase]
     public async Task GameSceneMovesOnHeldAction()
     {
-        var runner = ISceneRunner.Load("res://Characters/Player.tscn", true);
-        var player = (Player)runner.Scene()!;
+        var runner = ISceneRunner.Load<Player>("res://Characters/Player.tscn", true);
+        var player = runner.Scene();
         var start = player.Position.X;
         runner.SimulateActionPress("move_right");
         await runner.SimulateFrames(10);
@@ -82,7 +81,7 @@ public class GameSceneTest
     [TestCase]
     public void GameSceneWithGameSubScenes()
     {
-        var level = (Level)ISceneRunner.Load("res://Levels/Level.tscn", true).Scene()!;
+        var level = ISceneRunner.Load<Level>("res://Levels/Level.tscn", true).Scene();
         AssertThat(level.Player.Stats.Speed).IsEqual(200f);
         AssertThat(level.Coins.Select(coin => coin.Value)).ContainsExactly(10, 25);
     }
@@ -90,7 +89,7 @@ public class GameSceneTest
     [TestCase]
     public void GameSceneUsesAutoload()
     {
-        var level = (Level)ISceneRunner.Load("res://Levels/Level.tscn", true).Scene()!;
+        var level = ISceneRunner.Load<Level>("res://Levels/Level.tscn", true).Scene();
         level.CollectAll();
         AssertThat(level.GetNode<GameState>("/root/GameState").Score).IsEqual(35);
     }
