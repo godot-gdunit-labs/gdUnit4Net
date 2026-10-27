@@ -24,7 +24,7 @@ using static Assertions;
 
 using ExecutionContext = Execution.ExecutionContext;
 
-internal sealed class SceneRunner : ISceneRunner
+internal class SceneRunner : ISceneRunner
 {
     private readonly ICollection<string> actionOnPress = new HashSet<string>();
     private readonly Node currentScene;
@@ -67,6 +67,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public ISceneRunner SimulateActionPress(string action)
     {
+        ThrowIfDisposed();
         var inputEvent = new InputEventAction
         {
             Pressed = true,
@@ -85,6 +86,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public ISceneRunner SimulateActionRelease(string action)
     {
+        ThrowIfDisposed();
         var inputEvent = new InputEventAction
         {
             Pressed = false,
@@ -96,6 +98,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public ISceneRunner SimulateKeyPress(Key keyCode, bool shiftPressed = false, bool controlPressed = false)
     {
+        ThrowIfDisposed();
         PrintCurrentFocus();
         var inputEvent = new InputEventKey
         {
@@ -121,6 +124,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public ISceneRunner SimulateKeyRelease(Key keyCode, bool shiftPressed = false, bool controlPressed = false)
     {
+        ThrowIfDisposed();
         PrintCurrentFocus();
         var inputEvent = new InputEventKey
         {
@@ -139,6 +143,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public ISceneRunner SetMousePos(Vector2 position)
     {
+        ThrowIfDisposed();
         var inputEvent = new InputEventMouseMotion
         {
             Position = position,
@@ -150,9 +155,10 @@ internal sealed class SceneRunner : ISceneRunner
 
     public Vector2 GetMousePosition()
     {
+        ThrowIfDisposed();
         if (LastInputEvent is InputEventMouse me)
             return me.Position;
-        return currentScene.GetViewport().GetMousePosition();
+        return Scene().GetViewport().GetMousePosition();
     }
 
     public Vector2 GetGlobalMousePosition() =>
@@ -160,6 +166,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public ISceneRunner SimulateMouseMove(Vector2 position)
     {
+        ThrowIfDisposed();
         var inputEvent = new InputEventMouseMotion
         {
             Position = position,
@@ -190,6 +197,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public ISceneRunner SimulateMouseButtonPress(MouseButton buttonIndex, bool doubleClick = false)
     {
+        ThrowIfDisposed();
         PrintCurrentFocus();
         var inputEvent = new InputEventMouseButton
         {
@@ -207,6 +215,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public ISceneRunner SimulateMouseButtonRelease(MouseButton buttonIndex)
     {
+        ThrowIfDisposed();
         var inputEvent = new InputEventMouseButton
         {
             ButtonIndex = buttonIndex,
@@ -222,6 +231,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public ISceneRunner SetTimeFactor(double timeFactor = 1.0)
     {
+        ThrowIfDisposed();
         TimeFactor = Math.Min(9.0, timeFactor);
         ActivateTimeFactor();
 
@@ -232,6 +242,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     public async Task SimulateFrames(uint frames, uint deltaPeerFrame)
     {
+        ThrowIfDisposed();
         for (var frame = 0; frame <= frames; frame++)
         {
             await AwaitMillis(deltaPeerFrame)
@@ -241,17 +252,24 @@ internal sealed class SceneRunner : ISceneRunner
 
     public async Task SimulateFrames(uint frames)
     {
+        ThrowIfDisposed();
         var timeShiftFrames = Math.Max(1, frames / TimeFactor);
         for (var frame = 0; frame <= timeShiftFrames; frame++)
             _ = await ISceneRunner.SyncProcessFrame;
     }
 
-    public Node? Scene()
-        => IsDisposed ? null : currentScene;
+    public Node Scene()
+    {
+        ThrowIfDisposed();
+        return currentScene;
+    }
 
     public IGodotMethodAwaitable<TVariant> AwaitMethod<[MustBeVariant] TVariant>(string methodName)
         where TVariant : notnull
-        => new GodotMethodAwaitable<TVariant>(new StackTrace(true), currentScene, methodName);
+    {
+        var scene = Scene();
+        return new GodotMethodAwaitable<TVariant>(new StackTrace(true), scene, methodName);
+    }
 
     public async Task AwaitMillis(uint timeMillis)
     {
@@ -263,36 +281,38 @@ internal sealed class SceneRunner : ISceneRunner
     public async Task AwaitIdleFrame() => await ISceneRunner.SyncProcessFrame;
 
     public Variant Invoke(string name, params Variant[] args)
-        => GodotObjectExtensions.Invoke(currentScene, name, args)
+        => GodotObjectExtensions.Invoke(Scene(), name, args)
             .GetAwaiter()
             .GetResult()
             .ToVariant();
 
     public async Task<Variant> InvokeAsync(string name, params Variant[] args)
     {
-        var result = await GodotObjectExtensions.Invoke(currentScene, name, args)
+        var result = await GodotObjectExtensions.Invoke(Scene(), name, args)
             .ConfigureAwait(true);
         return result.ToVariant();
     }
 
     public dynamic? GetProperty(string name)
     {
+        var scene = Scene();
         if (!PropertyExists(name))
             throw new MissingFieldException($"The property '{name}' not exist on loaded scene.");
-        return currentScene.Get(name).UnboxVariant();
+        return scene.Get(name).UnboxVariant();
     }
 
     public T? GetProperty<T>(string name) => GetProperty(name);
 
     public void SetProperty(string name, Variant value)
     {
+        var scene = Scene();
         if (!PropertyExists(name))
             throw new MissingFieldException($"The property '{name}' not exist on loaded scene.");
-        currentScene.Set(name, value);
+        scene.Set(name, value);
     }
 
     public Node FindChild(string name, bool recursive = true, bool owned = false) =>
-        currentScene.FindChild(name, recursive, owned);
+        Scene().FindChild(name, recursive, owned);
 
     public void MaximizeView()
     {
@@ -304,17 +324,26 @@ internal sealed class SceneRunner : ISceneRunner
     {
         if (IsDisposed)
             return;
-        DeactivateTimeFactor();
-        ResetInputToDefault();
-        SceneTree.Root.RemoveChild(currentScene);
-        if (SceneAutoFree && GodotObject.IsInstanceValid(currentScene))
-            currentScene.Free();
-
-        IsDisposed = true;
+        try
+        {
+            DeactivateTimeFactor();
+            ResetInputToDefault();
+        }
+        finally
+        {
+            IsDisposed = true;
+            if (GodotObject.IsInstanceValid(currentScene))
+            {
+                if (currentScene.GetParent() == SceneTree.Root)
+                    SceneTree.Root.RemoveChild(currentScene);
+                if (SceneAutoFree)
+                    currentScene.Free();
+            }
+        }
     }
 
     public Task<ISignalConstraint> AwaitSignal(string signal, params Variant[] args) =>
-        new SignalAssert(currentScene)
+        new SignalAssert(Scene())
             .IsEmitted(signal, args);
 
     internal static MouseButtonMask ToMouseButtonMask(MouseButton button)
@@ -323,7 +352,7 @@ internal sealed class SceneRunner : ISceneRunner
         return (MouseButtonMask)Enum.ToObject(typeof(MouseButtonMask), button_mask);
     }
 
-    private static Node LoadScene(string resourcePath)
+    private protected static Node LoadScene(string resourcePath)
     {
         if (!ResourceLoader.Exists(resourcePath))
             throw new FileNotFoundException($"GdUnitSceneRunner: Can't load scene by given resource path: '{resourcePath}'. The resource does not exists.");
@@ -427,6 +456,9 @@ internal sealed class SceneRunner : ISceneRunner
         return this;
     }
 
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(IsDisposed, typeof(ISceneRunner));
+
     private void ActivateTimeFactor()
     {
         if (Verbose)
@@ -457,7 +489,7 @@ internal sealed class SceneRunner : ISceneRunner
 
     private void PrintCurrentFocus()
     {
-        if (!Verbose)
+        if (!Verbose || !GodotObject.IsInstanceValid(currentScene))
             return;
         var focusedNode = (currentScene as Control)?.Owner; // .GetFocusOwner();
 

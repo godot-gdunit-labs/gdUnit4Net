@@ -40,10 +40,10 @@ Inside a test suite marked `[RequireGodotRuntime]`, a test can load the game sce
 [TestCase]
 public async Task GameSceneReactsOnInputAction()
 {
-    var runner = ISceneRunner.Load("res://Characters/Player.tscn", true);
+    var runner = ISceneRunner.Load<Player>("res://Characters/Player.tscn", true);
     runner.SimulateActionPressed("jump");
     await runner.AwaitInputProcessed();
-    AssertThat(((Player)runner.Scene()!).JumpCount).IsEqual(1);
+    AssertThat(runner.Scene().JumpCount).IsEqual(1);
 }
 ```
 
