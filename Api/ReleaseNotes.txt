@@ -3,13 +3,20 @@ v5.1.0
 **BREAKING CHANGES:**
 * GD-477, GD-522: The minimum supported Godot version is now 4.7, older Godot versions are no longer supported.
           Projects using Godot 4.6 or older must upgrade to Godot 4.7 or newer.
+* GD-545: Added the typed scene runner `ISceneRunner<TScene>`, `ISceneRunner.Load(new Player())` infers the scene type
+          and `ISceneRunner.Load<Player>("res://player.tscn")` loads by path, failing with a message naming the expected and the actual type.
+          `Scene()` never returns null anymore. After the scene runner is disposed, `Scene()` and every member that uses the scene,
+          the input simulation or the time factor throw an `ObjectDisposedException`.
+          Casts on `Scene()` become redundant (IDE0004) and fail the build in projects that treat warnings as errors, null checks become redundant.
+          Migration: remove them, e.g. `(Player)runner.Scene()!` becomes `runner.Scene()`, and expect the exception after `Dispose()`.
+          Loading by path with `ISceneRunner.Load("res://player.tscn")` still returns `Node`, switch to `ISceneRunner.Load<Player>("res://player.tscn")` first.
 
 🪲 Bug Fixes
 * GD-305: Added missing AppendFailureMessage on assertions
 * GD-311: Catch possible exceptions on command execution and report them as InternalServerError.
 * GD-317: Fixing [IgnoreUntil] is not skipping the test.
 * GD-318: Fixing object deep equal comparison.
-* GD-319: Fixing SceneRunner.Scene() returns disposed object after the scene is auto freed.
+* GD-319: Fixing SceneRunner.Scene() returns disposed object after the scene is auto freed, since GD-545 it throws an `ObjectDisposedException` instead.
 * GD-320: Fixing method Chaining on Asserts breaks type inference after base interface methods,
           fixes also dynamic assert bindings (missing public access).
 * GD-331: Fixing SceneRunner SimulateKey to provide missing Unicode

@@ -19,7 +19,7 @@ public sealed class SceneRunnerInputDispatchTest
         runner.SimulateKeyPressed(Key.A);
         await runner.AwaitInputProcessed();
 
-        var scene = (InputCountingNode)runner.Scene()!;
+        var scene = runner.Scene();
 
         AssertThat(scene.InputCount).IsEqual(2);
         AssertThat(scene.UnhandledCount).IsEqual(2);
@@ -35,7 +35,7 @@ public sealed class SceneRunnerInputDispatchTest
         runner.SimulateMouseButtonPressed(MouseButton.Left);
         await runner.AwaitInputProcessed();
 
-        var scene = (InputCountingNode)runner.Scene()!;
+        var scene = runner.Scene();
 
         AssertThat(scene.InputCount).IsEqual(2);
         AssertThat(scene.UnhandledCount).IsEqual(2);
@@ -51,7 +51,7 @@ public sealed class SceneRunnerInputDispatchTest
         runner.SimulateMouseButtonPressed(MouseButton.Left);
         await runner.AwaitInputProcessed();
 
-        var scene = (InputCountingControl)runner.Scene()!;
+        var scene = runner.Scene();
 
         AssertThat(scene.InputCount).IsEqual(2);
         AssertThat(scene.GuiCount).IsEqual(2);
@@ -63,7 +63,7 @@ public sealed class SceneRunnerInputDispatchTest
     {
         var runner = ISceneRunner.Load(new InputCountingControl { FocusMode = Control.FocusModeEnum.All }, true);
         runner.MaximizeView();
-        var scene = (InputCountingControl)runner.Scene()!;
+        var scene = runner.Scene();
         scene.GrabFocus();
 
         runner.SimulateKeyPressed(Key.A);
@@ -83,7 +83,7 @@ public sealed class SceneRunnerInputDispatchTest
         runner.SimulateKeyPressed(Key.A);
         await runner.AwaitInputProcessed();
 
-        var scene = (InputCountingControl)runner.Scene()!;
+        var scene = runner.Scene();
 
         AssertThat(scene.InputCount).IsEqual(2);
         AssertThat(scene.GuiCount).IsEqual(0);
