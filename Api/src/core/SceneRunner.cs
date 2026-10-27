@@ -420,14 +420,7 @@ internal sealed class SceneRunner : ISceneRunner
         Input.FlushBufferedEvents();
 
         if (GodotObject.IsInstanceValid(currentScene))
-        {
-            Print($"	process event {currentScene} ({SceneName()}) <- {inputEvent.AsText()}");
-            if (currentScene.HasMethod("_gui_input"))
-                _ = currentScene.Call("_gui_input", inputEvent);
-            if (currentScene.HasMethod("_unhandled_input"))
-                _ = currentScene.Call("_unhandled_input", inputEvent);
-            currentScene.GetViewport().SetInputAsHandled();
-        }
+            Print(() => $"	process event {currentScene} ({SceneName()}) <- {inputEvent.AsText()}");
 
         // save the last input event needs to be merged with the next InputEventMouseButton
         LastInputEvent = inputEvent;
@@ -454,6 +447,12 @@ internal sealed class SceneRunner : ISceneRunner
     {
         if (Verbose)
             Console.WriteLine(message, args);
+    }
+
+    private void Print(Func<string> message)
+    {
+        if (Verbose)
+            Console.WriteLine(message());
     }
 
     private void PrintCurrentFocus()
