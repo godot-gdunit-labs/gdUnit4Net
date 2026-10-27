@@ -36,6 +36,8 @@ v5.1.0
 * GD-528: Fixing the conversion of a `decimal` to a Godot `Variant`, which always failed, a `decimal` is now converted to a `float`.
 * GD-532: Fixing the named pipe collision when the same test assembly runs in parallel, e.g. from two checkouts or CI jobs on one machine.
           Each run now uses its own pipe to the Godot runtime.
+* GD-453: Fixing the SceneRunner delivering each simulated input event twice to `_UnhandledInput` and `_GuiInput` of the scene root.
+          Simulated events now pass the Godot input pipeline only, `_GuiInput` of an unfocused Control no longer receives key events.
 
 ✨ Improvements
 * GD-311: Verify the Godot binary has C# support before running godot runtime tests to avoid invalid test execution.
