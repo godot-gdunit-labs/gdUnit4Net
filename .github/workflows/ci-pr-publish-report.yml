@@ -74,7 +74,7 @@ jobs:
 
 
       - name: Publish API Test Results
-        uses: dorny/test-reporter@v3.2.0
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
           name: artifact_analyzer
           # using artifact to download is broken since download-artifact@v4 see https://github.com/dorny/test-reporter/issues/363
@@ -97,7 +97,7 @@ jobs:
           run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
 
       - name: Publish action Test Results
-        uses: dorny/test-reporter@v3.2.0
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
           name: report_action_example_${{ matrix.report }}
           # using artifact to download is broken since download-artifact@v4 see https://github.com/dorny/test-reporter/issues/363
@@ -119,7 +119,7 @@ jobs:
           run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
 
       - name: Publish API Test Results
-        uses: dorny/test-reporter@v3.2.0
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
           name: report_api_tests_${{ matrix.report }}
           # using artifact to download is broken since download-artifact@v4 see https://github.com/dorny/test-reporter/issues/363
@@ -141,7 +141,7 @@ jobs:
           run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
 
       - name: Publish Example Test Results
-        uses: dorny/test-reporter@v3.2.0
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
           name: report_example_tests_${{ matrix.report }}
           path: './home/runner/work/gdUnit4Net/gdUnit4Net/Example/TestResults/test-result.trx'
@@ -151,7 +151,7 @@ jobs:
           use-actions-summary: 'false'
 
       - name: Publish Code Coverage Summary
-        uses: irongut/CodeCoverageSummary@v1.3.0
+        uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 # v1.3.0
         with:
           filename: './home/runner/work/gdUnit4Net/gdUnit4Net/Example/TestResults/**/*.cobertura.xml'
           badge: true
