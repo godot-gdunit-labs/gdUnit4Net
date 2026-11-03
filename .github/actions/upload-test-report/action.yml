@@ -10,7 +10,7 @@ runs:
   using: composite
   steps:
     - name: 'Upload Test Artifacts'
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         retention-days: 10
         name: artifact_${{ inputs.report-name }}
