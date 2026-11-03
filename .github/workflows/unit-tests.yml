@@ -45,6 +45,9 @@ concurrency:
   group: unit-tests-${{ github.head_ref || github.ref_name }}-${{ inputs.godot-version }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
 
   unit-test-runner:
@@ -76,7 +79,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ github.sha }}-${{ github.run_id }}
 
       - name: 'Test Example via gdunit-action - Godot_${{ inputs.godot-version }}-${{ inputs.godot-status }}-net'
-        uses: MikeSchulze/gdUnit4-action@v1
+        uses: godot-gdunit-labs/gdUnit4-action@v1
         env:
           # The action runs `dotnet test` without a filter argument, MSBuild takes the test filter from this variable.
           # `ExampleTest.Failed` fails by design, the job `unit-test-example` verifies that failure.
