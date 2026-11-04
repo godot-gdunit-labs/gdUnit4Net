@@ -228,7 +228,7 @@ jobs:
 
 
     name: "🧪 Test: API on Godot-v${{ matrix.godot-version }}-${{ matrix.godot-status }}"
-    needs: [ compile ]
+    needs: [compile]
     uses: ./.github/workflows/unit-tests.yml
     with:
       gdunit-version: ${{ matrix.gdunit-version }}
@@ -241,7 +241,7 @@ jobs:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     name: Final Results
-    needs: [ analyzer-style-check, api-style-check, adapter-style-check, analyzer-tests, api-tests, test-adapter-test ]
+    needs: [analyzer-style-check, api-style-check, adapter-style-check, analyzer-tests, api-tests, test-adapter-test]
     steps:
       - run: exit 1
         if: >-

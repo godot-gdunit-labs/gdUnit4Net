@@ -11,7 +11,8 @@ body:
       value: |
         ### Thanks for taking your time to fill out this bug report!
         - Please search [open](https://github.com/MikeSchulze/gdUnit4Net/issues?q=is%3Aissue) for existing issues for potential duplicates before submit yours.
-        - Verify that you are using a [supported Godot version](https://docs.godotengine.org/en/stable/about/release_policy.html). Please always check if your issue is reproducible in the latest version – it may already have been fixed!
+        - Verify that you are using a [supported Godot version](https://docs.godotengine.org/en/stable/about/release_policy.html).
+          Please always check if your issue is reproducible in the latest version – it may already have been fixed!
 
   - type: dropdown
     id: gdunit4-api-version
@@ -102,7 +103,8 @@ body:
     attributes:
       label: Minimal reproduction project
       description: |
-        A small project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.godot` folder in the archive (but keep `project.godot`).
+        A small project which reproduces the issue, with no unnecessary files included.
+        Be sure to not include the `.godot` folder in the archive (but keep `project.godot`).
       placeholder: |
         Drag and drop a ZIP archive to upload it (max 10 MB).
         **Do not select another field until the project is done uploading.**

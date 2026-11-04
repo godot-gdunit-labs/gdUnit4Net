@@ -1,7 +1,7 @@
 name: 'Publish Test Report'
 on:
   workflow_run:
-    workflows: [ 'ci-pr' ]  # runs after ci-pr workflow
+    workflows: ['ci-pr']  # runs after ci-pr workflow
     types:
       - completed
   workflow_dispatch:
@@ -33,7 +33,8 @@ jobs:
         run: |
           # Each Godot test run uploads 'artifact_api_tests_Godot<version>-<status>', the suffix names the report of one matrix entry
           reports=$(gh api --paginate "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts" \
-            --jq '.artifacts[] | select(.expired | not) | .name | select(test("^artifact_api_tests_Godot[0-9][0-9.]*-[a-z0-9]+$")) | ltrimstr("artifact_api_tests_")' \
+            --jq '.artifacts[] | select(.expired | not) | .name
+              | select(test("^artifact_api_tests_Godot[0-9][0-9.]*-[a-z0-9]+$")) | ltrimstr("artifact_api_tests_")' \
             | jq --raw-input --null-input --compact-output '[inputs | select(length > 0)] | unique')
           echo "Found reports: $reports"
           echo "reports=$reports" >> "$GITHUB_OUTPUT"

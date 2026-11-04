@@ -165,7 +165,8 @@ runs:
               if grep -qw -- "$issue" "$notes" || is_not_required "$id" "${issue#GD-}" $pull_request; then
                 continue
               fi
-              echo "::error file=$notes::The release notes of $id do not list $issue of the commit '$subject' since the published version $latest, add it, label the pull request with the package labels it changes or with '$EXCLUDE_LABEL'."
+              echo "::error file=$notes::The release notes of $id do not list $issue of the commit '$subject' since the published version $latest," \
+                "add it, label the pull request with the package labels it changes or with '$EXCLUDE_LABEL'."
               missing=1
             done
           done < <(commits_since "$date" "$(dirname "$notes")")
