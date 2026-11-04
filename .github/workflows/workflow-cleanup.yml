@@ -1,6 +1,6 @@
 name: cleanup-workflow-runs
 
-on:
+on: # yamllint disable-line rule:truthy
   schedule:
     - cron: "0 0 * * *" # GMT
   workflow_dispatch:
