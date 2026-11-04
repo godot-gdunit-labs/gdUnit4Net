@@ -226,7 +226,7 @@ Configure multiple output formats for comprehensive test reporting:
 
 ## Documentation
 
-The full documentation can be found [here](https://godot-gdunit-labs.github.io/gdUnit4/latest/csharp_project_setup/vstest-adapter/).
+The full documentation can be found in the [GdUnit4 test adapter documentation](https://godot-gdunit-labs.github.io/gdUnit4/latest/csharp_project_setup/vstest-adapter/).
 
 ### You Are Welcome To
 

@@ -1,3 +1,4 @@
+<!-- markdownlint-disable-next-line MD041 -->
 <h2 align="center">The Unit Testing Framework in C# for Godot</h2>
 <p align="center">
   <a href="https://www.patreon.com/cw/GodotGdUnitLabs">
@@ -9,9 +10,9 @@
 
 <h1 align="center">Supported Godot Versions</h1>
 <p align="center">
-  <img src="https://img.shields.io/badge/Godot-v4.7.0-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
-  <img src="https://img.shields.io/badge/Godot-v4.7.1-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
-  <img src="https://img.shields.io/badge/Godot-v4.7.2-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
+  <img src="https://img.shields.io/badge/Godot-v4.7.0-%23478cbf?logo=godot-engine&logoColor=cyian&color=green" alt="Godot v4.7.0">
+  <img src="https://img.shields.io/badge/Godot-v4.7.1-%23478cbf?logo=godot-engine&logoColor=cyian&color=green" alt="Godot v4.7.1">
+  <img src="https://img.shields.io/badge/Godot-v4.7.2-%23478cbf?logo=godot-engine&logoColor=cyian&color=green" alt="Godot v4.7.2">
 </p>
 
 <h1 align="center">Compatibility Overview</h1>
@@ -128,7 +129,7 @@ as well as sophisticated examples covering professional configurations, complex 
 and exception handling. These working examples showcase GdUnit4Net v5.0 features including selective Godot runtime usage, advanced scene testing,
 and production-ready test setups.
 
-### Short Example
+## Short Example
 
 ```csharp
 namespace GdUnit4.Tests
@@ -218,7 +219,8 @@ dotnet test --filter "(Category=Integration)|(Trait=Speed:Fast)"
 ```
 
 The test run looks like this:
-<p align="center"><a href="https://github.com/MikeSchulze/gdUnit4Net"><img src="https://github.com/MikeSchulze/gdUnit4Net/blob/master/Example/assets/TestExplorerRun.png" width="100%"/></p><br/>
+<p align="center"><a href="https://github.com/MikeSchulze/gdUnit4Net"><img src="https://github.com/MikeSchulze/gdUnit4Net/blob/master/Example/assets/TestExplorerRun.png"
+  alt="Running the tests in the test explorer" width="100%"/></p><br/>
 
 ## What's New in v5.0
 

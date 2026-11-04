@@ -20,7 +20,7 @@ The analyzer must be included by referencing the gdUnit4.analyzer package:
 
 * **Attribute Validation:** The analyzer enforces correct usage of GdUnit4 test attributes
 
-  #### Example: DataPoint and TestCase Combination Validation
+  ### Example: DataPoint and TestCase Combination Validation
 
   Validates proper combination of DataPoint and TestCase attributes:
 

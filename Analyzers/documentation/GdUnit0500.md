@@ -6,7 +6,7 @@
 |------------|-----------------|----------|---------|
 | GdUnit0500 | Attribute Usage | Error    | True    |
 
-# Problem Description
+## Problem Description
 
 Test classes with hooks (`[Before]`, `[After]`, `[BeforeTest]`, `[AfterTest]`) that use Godot functionality
 must be annotated with `[RequireGodotRuntime]`. This ensures proper test execution in the
@@ -14,7 +14,7 @@ Godot engine environment.
 
 Add `[RequireGodotRuntime]` to the test class level.
 
-### Error example:
+### Error example
 
 ```csharp
     [TestSuite]
@@ -30,7 +30,7 @@ Add `[RequireGodotRuntime]` to the test class level.
     }
 ```
 
-### How to fix:
+### How to fix
 
 Add the `[RequireGodotRuntime]` attribute to the test class:
 
