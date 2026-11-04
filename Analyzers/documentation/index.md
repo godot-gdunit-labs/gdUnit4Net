@@ -1,4 +1,4 @@
-﻿# GdUnit4Net Diagnostic Analyzer Overview
+# GdUnit4Net Diagnostic Analyzer Overview
 
 | Id                          | Severity | Title                                                   |
 |-----------------------------|----------|---------------------------------------------------------|

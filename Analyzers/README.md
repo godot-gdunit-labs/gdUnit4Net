@@ -2,8 +2,8 @@
 
 ## What is GdUnit4.Analyzer
 
-GdUnit4.Analyzer is a Roslyn-based analyzer package designed to enhance the development experience when writing tests with GdUnit4. It provides compile-time validation for GdUnit4
-test attributes and helps developers catch configuration errors early in the development process.
+GdUnit4.Analyzer is a Roslyn-based analyzer package designed to enhance the development experience when writing tests with GdUnit4. It provides compile-time
+validation for GdUnit4 test attributes and helps developers catch configuration errors early in the development process.
 
 ## Features
 

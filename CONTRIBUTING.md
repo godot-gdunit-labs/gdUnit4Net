@@ -1,16 +1,20 @@
 # Contributing to gdUnit4NetAPI
 
 **Thank you for considering contributing to gdUnit4NetAPI!**<br>
-We appreciate your input and want to make the contribution process as easy and transparent as possible. Whether you want to report a bug, discuss code improvements, submit a fix, propose new features, or become a maintainer, we welcome your involvement.
+We appreciate your input and want to make the contribution process as easy and transparent as possible. Whether you want to report a bug, discuss code
+improvements, submit a fix, propose new features, or become a maintainer, we welcome your involvement.
 
 ## Reporting Bugs
 
-If you encounter any bugs or issues, please use GitHub's issue tracking system. You can report a bug by [opening a new issue](https://github.com/MikeSchulze/gdUnit4Net/issues/new/choose). When submitting a bug report, please provide detailed information, including the steps to reproduce the issue, relevant background information, and sample code if possible.
+If you encounter any bugs or issues, please use GitHub's issue tracking system. You can report a bug by [opening a new
+issue](https://github.com/MikeSchulze/gdUnit4Net/issues/new/choose). When submitting a bug report, please provide detailed information, including the steps to
+reproduce the issue, relevant background information, and sample code if possible.
 
 ## Development on GitHub
 
 We use GitHub to host our code, track issues and feature requests, and accept pull requests.
-We follow the <a href='https://docs.github.com/en/get-started/quickstart/github-flow' target="_blank">GitHub Flow</a> for making code changes. This means that all code modifications should be proposed through pull requests. Pull requests provide a structured and collaborative way to review and discuss code changes.
+We follow the <a href='https://docs.github.com/en/get-started/quickstart/github-flow' target="_blank">GitHub Flow</a> for making code changes. This means that
+all code modifications should be proposed through pull requests. Pull requests provide a structured and collaborative way to review and discuss code changes.
 
 **If you'd like to contribute, please follow these steps:**
 
@@ -33,7 +37,9 @@ We follow the <a href='https://docs.github.com/en/get-started/quickstart/github-
 
 ## License
 
-By contributing to this project, you agree that your contributions will be licensed under the same <a href='https://github.com/MikeSchulze/gdUnit4Net/blob/master/Api/LICENSE' target="_blank">MIT License</a> that covers the project. If you have any concerns, please reach out to the maintainers.
+By contributing to this project, you agree that your contributions will be licensed under the same
+<a href='https://github.com/MikeSchulze/gdUnit4Net/blob/master/Api/LICENSE' target="_blank">MIT License</a> that covers the project. If you have any concerns,
+please reach out to the maintainers.
 
 ## Coding Style
 

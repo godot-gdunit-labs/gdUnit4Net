@@ -1,4 +1,4 @@
-﻿# GdUnit0202
+# GdUnit0202
 
 ## Test case names must be unique
 

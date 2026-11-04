@@ -1,4 +1,4 @@
-﻿# GdUnit0500
+# GdUnit0500
 
 ## Godot Runtime Required for Test Class
 

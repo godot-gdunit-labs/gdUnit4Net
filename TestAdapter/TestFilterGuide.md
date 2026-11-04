@@ -1,4 +1,4 @@
-﻿# GdUnit4 Test Filter Usage Guide
+# GdUnit4 Test Filter Usage Guide
 
 ## Introduction
 
@@ -23,7 +23,7 @@ The following properties can be used for filtering:
 
 The basic filter syntax follows this pattern:
 
-```
+```text
 PropertyName=Value
 ```
 
@@ -50,7 +50,7 @@ You can combine multiple conditions using logical operators:
 
 You can also use parentheses to group expressions:
 
-```
+```text
 (TestCategory=UnitTest|TestCategory=Fast)&Namespace=MyProject.Tests
 ```
 
@@ -176,49 +176,49 @@ Here are some practical examples:
 
 ### Running tests by category
 
-```
+```text
 TestCategory=UnitTest
 ```
 
 ### Running tests from a specific namespace
 
-```
+```text
 Namespace=GdUnit4.Tests.Core
 ```
 
 ### Running tests from a specific class that aren't integration tests
 
-```
+```text
 Class=CalculatorTests&TestCategory!=Integration
 ```
 
 ### Running tests that match specific naming patterns
 
-```
+```text
 FullyQualifiedName~Test.*Add.*
 ```
 
 ### Running tests with specific traits
 
-```
+```text
 Trait.Owner=TeamA
 ```
 
 ### Running tests with complex conditions
 
-```
+```text
 (TestCategory=UnitTest|TestCategory=Fast)&Class=CalculatorTests
 ```
 
 ### Running tests that don't contain a specific string in their name
 
-```
+```text
 Name!~Legacy
 ```
 
 ### Running only high priority tests from a specific component
 
-```
+```text
 Trait.Priority=High&Trait.Component=Core
 ```
 

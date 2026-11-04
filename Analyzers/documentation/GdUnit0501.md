@@ -1,4 +1,4 @@
-﻿# GdUnit0501
+# GdUnit0501
 
 ## Godot Runtime Required for Test Method
 
