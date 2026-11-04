@@ -8,8 +8,7 @@
 
 ## Problem Description
 
-Methods decorated with DataPoint attribute can only have one TestCase attribute. Multiple TestCase attributes on a method that uses DataPoint will result in
-undefined behavior.
+Methods decorated with DataPoint attribute can only have one TestCase attribute. Multiple TestCase attributes on a method that uses DataPoint will result in undefined behavior. <!-- markdownlint-disable-line MD013 -->
 
 ### Error example
 
