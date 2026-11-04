@@ -78,7 +78,11 @@ public partial class VerifyDocumentationTest
         Assert.IsTrue(lines.Length > 2 && string.IsNullOrEmpty(lines[1]), $"Expected an empty line after the header in {docPath}.");
         StringAssert.Contains(docContent, "# Problem Description", $"Documentation should contain ` Problem Description` section in {docPath}", StringComparison.Ordinal);
         StringAssert.Contains(docContent, $"## {descriptor.Title}", $"Documentation should contain the diagnostic title in {docPath}", StringComparison.Ordinal);
-        StringAssert.Contains(docContent, descriptor.Description.ToString().ReplaceLineEndings("\n"), $"Documentation should contain the diagnostic description in {docPath}", StringComparison.Ordinal);
+        StringAssert.Contains(
+            WhitespaceRegex().Replace(docContent, " "),
+            WhitespaceRegex().Replace(descriptor.Description.ToString(), " "),
+            $"Documentation should contain the diagnostic description in {docPath}",
+            StringComparison.Ordinal);
     }
 
     private static IEnumerable<(DiagnosticDescriptor Descriptor, string Name)> GetAllDiagnosticDescriptors()
@@ -133,6 +137,9 @@ public partial class VerifyDocumentationTest
 
     [GeneratedRegex(@"\|\s*([^\|]+)\s*\|\s*([^\|]+)\s*\|\s*([^\|]+)\s*\|")]
     private static partial Regex IndexTableRowRegex();
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex WhitespaceRegex();
 
     private sealed record DiagnosticRuleTableRecord
     {

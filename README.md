@@ -1,3 +1,4 @@
+<!-- markdownlint-disable-next-line MD041 -->
 <h2 align="center">The Unit Testing Framework in C# for Godot</h2>
 <p align="center">
   <a href="https://www.patreon.com/cw/GodotGdUnitLabs">
@@ -9,9 +10,9 @@
 
 <h1 align="center">Supported Godot Versions</h1>
 <p align="center">
-  <img src="https://img.shields.io/badge/Godot-v4.7.0-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
-  <img src="https://img.shields.io/badge/Godot-v4.7.1-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
-  <img src="https://img.shields.io/badge/Godot-v4.7.2-%23478cbf?logo=godot-engine&logoColor=cyian&color=green">
+  <img src="https://img.shields.io/badge/Godot-v4.7.0-%23478cbf?logo=godot-engine&logoColor=cyian&color=green" alt="Godot v4.7.0">
+  <img src="https://img.shields.io/badge/Godot-v4.7.1-%23478cbf?logo=godot-engine&logoColor=cyian&color=green" alt="Godot v4.7.1">
+  <img src="https://img.shields.io/badge/Godot-v4.7.2-%23478cbf?logo=godot-engine&logoColor=cyian&color=green" alt="Godot v4.7.2">
 </p>
 
 <h1 align="center">Compatibility Overview</h1>
@@ -64,8 +65,8 @@
 
 ## What is gdUnit4Net
 
-GdUnit4Net is a **feature-complete unit testing framework** for Godot C# projects that is **fully compatible with the VSTest standard**. It provides an API and VS test adapter to
-run your Godot C# tests seamlessly in Visual Studio (Code), JetBrains Rider, and any VSTest-compatible environment.
+GdUnit4Net is a **feature-complete unit testing framework** for Godot C# projects that is **fully compatible with the VSTest standard**. It provides an API and
+VS test adapter to run your Godot C# tests seamlessly in Visual Studio (Code), JetBrains Rider, and any VSTest-compatible environment.
 
 ### Key Highlights
 
@@ -81,8 +82,8 @@ run your Godot C# tests seamlessly in Visual Studio (Code), JetBrains Rider, and
 * **Parameterized Tests (Test Cases and DataPoints)** for testing functions with multiple sets of inputs and expected outputs
 * **Advanced Test Filtering** with VSTest filter support, test categories, and traits
 * **Scene runner** for simulating different kinds of inputs and actions, such as mouse clicks and keyboard inputs  
-  For example, you can simulate mouse clicks and keyboard inputs by calling the appropriate methods on the runner instance. Additionally, you can wait for a specific signal to be
-  emitted by the scene, or you can wait for a specific function to return a certain value.
+  For example, you can simulate mouse clicks and keyboard inputs by calling the appropriate methods on the runner instance. Additionally, you can wait for a
+  specific signal to be emitted by the scene, or you can wait for a specific function to return a certain value.
 * **VSTest Adapter** to run and debug your tests with full VSTest compatibility
 * **Powerful test filtering capabilities** to selectively run tests based on various criteria
 * **Exception monitoring** with automatic capture of Godot exceptions and runtime errors
@@ -128,7 +129,7 @@ as well as sophisticated examples covering professional configurations, complex 
 and exception handling. These working examples showcase GdUnit4Net v5.0 features including selective Godot runtime usage, advanced scene testing,
 and production-ready test setups.
 
-### Short Example
+## Short Example
 
 ```csharp
 namespace GdUnit4.Tests
@@ -218,35 +219,36 @@ dotnet test --filter "(Category=Integration)|(Trait=Speed:Fast)"
 ```
 
 The test run looks like this:
-<p align="center"><a href="https://github.com/MikeSchulze/gdUnit4Net"><img src="https://github.com/MikeSchulze/gdUnit4Net/blob/master/Example/assets/TestExplorerRun.png" width="100%"/></p><br/>
+<p align="center"><a href="https://github.com/MikeSchulze/gdUnit4Net"><img src="https://github.com/MikeSchulze/gdUnit4Net/blob/master/Example/assets/TestExplorerRun.png"
+  alt="Running the tests in the test explorer" width="100%"/></p><br/>
 
 ## What's New in v5.0
 
 ### 🚀 Performance Revolution
 
-- **Up to 10x faster** test execution for logic-only tests
-- Tests run without Godot runtime by default
-- Only use `[RequireGodotRuntime]` when you actually need Godot features
+* **Up to 10x faster** test execution for logic-only tests
+* Tests run without Godot runtime by default
+* Only use `[RequireGodotRuntime]` when you actually need Godot features
 
 ### 🎯 VSTest Standard Compliance
 
-- Full compatibility with Visual Studio Test Platform
-- Advanced test filtering with categories and traits
-- Seamless integration with CI/CD pipelines
+* Full compatibility with Visual Studio Test Platform
+* Advanced test filtering with categories and traits
+* Seamless integration with CI/CD pipelines
 
 ### 📊 Enhanced Test Capabilities
 
-- **DataPoint attributes** for dynamic parameterized tests
-- **Exception monitoring** with automatic Godot error capture
-- **Output capture** including stdout and Godot logs
-- **Roslyn analyzers** for compile-time validation
+* **DataPoint attributes** for dynamic parameterized tests
+* **Exception monitoring** with automatic Godot error capture
+* **Output capture** including stdout and Godot logs
+* **Roslyn analyzers** for compile-time validation
 
 ### 🔧 Developer Experience
 
-- Better error reporting and diagnostics
-- Improved test discovery and execution
-- Enhanced debugging capabilities
-- Environment variable support from runsettings
+* Better error reporting and diagnostics
+* Improved test discovery and execution
+* Enhanced debugging capabilities
+* Environment variable support from runsettings
 
 ## Documentation
 
@@ -283,14 +285,15 @@ The test run looks like this:
 ### Contribution Guidelines
 
 **Thank you for your interest in contributing to GdUnit4!**<br>
-To ensure a smooth and collaborative contribution process, please review our [contribution guidelines](https://github.com/MikeSchulze/gdUnit4Net/blob/master/CONTRIBUTING.md) before
-getting started. These guidelines outline the standards and expectations we uphold in this project.
+To ensure a smooth and collaborative contribution process, please review our [contribution
+guidelines](https://github.com/MikeSchulze/gdUnit4Net/blob/master/CONTRIBUTING.md) before getting started. These guidelines outline the standards and
+expectations we uphold in this project.
 
-Code of Conduct: We strictly adhere to the Godot code of conduct in this project. As a contributor, it is important to respect and follow this code to maintain a positive and
-inclusive community.
+Code of Conduct: We strictly adhere to the Godot code of conduct in this project. As a contributor, it is important to respect and follow this code to maintain
+a positive and inclusive community.
 
-Using GitHub Issues: We utilize GitHub issues for tracking feature requests and bug reports. If you have a general question or wish to engage in discussions, we recommend joining
-the [GdUnit Discord Server](https://discord.gg/rdq36JwuaJ) for specific inquiries.
+Using GitHub Issues: We utilize GitHub issues for tracking feature requests and bug reports. If you have a general question or wish to engage in discussions, we
+recommend joining the [GdUnit Discord Server](https://discord.gg/rdq36JwuaJ) for specific inquiries.
 
 We value your input and appreciate your contributions to make GdUnit4 even better!
 

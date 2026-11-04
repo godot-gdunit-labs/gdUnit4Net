@@ -1,7 +1,7 @@
 name: publish
 run-name: publish-${{ inputs.dry-run && 'dry-run' || 'release' }}
 
-on:
+on: # yamllint disable-line rule:truthy
   workflow_dispatch:
     inputs:
       dry-run:
@@ -193,7 +193,8 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           jq -r '.[] | "\(.id) \(.version)"' <<< "$PACKAGES" | while read -r id version; do
             package="[$id](https://www.nuget.org/packages/$id/$version)"
-            if ! output=$(dotnet nuget push "packages/$id.$version.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate 2>&1); then
+            if ! output=$(dotnet nuget push "packages/$id.$version.nupkg" --api-key "$NUGET_API_KEY" \
+              --source https://api.nuget.org/v3/index.json --skip-duplicate 2>&1); then
               echo "$output"
               echo "::error::Pushing $id $version to NuGet failed, the following packages are not pushed."
               echo "| $package | $version | failed |" >> "$GITHUB_STEP_SUMMARY"

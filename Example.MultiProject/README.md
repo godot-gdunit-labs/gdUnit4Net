@@ -3,10 +3,10 @@
 The game and its tests live in two Godot projects. The test project references the game project, and gdUnit4
 makes the game available at test runtime, without copying files or creating symlinks.
 
-| Project | Content |
-| --- | --- |
-| `Game/` | The game: scenes, resources, scripts, input map, autoload, project settings, audio bus layout |
-| `Game.Test/` | The tests, with their own scenes and resources that use game scenes |
+| Project      | Content                                                                                       |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| `Game/`      | The game: scenes, resources, scripts, input map, autoload, project settings, audio bus layout |
+| `Game.Test/` | The tests, with their own scenes and resources that use game scenes                           |
 
 ## Setup
 

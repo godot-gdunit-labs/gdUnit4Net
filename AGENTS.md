@@ -94,23 +94,23 @@ markdownlint-cli2 --config ../gdUnit4/.github/actions/formatting_checks/.markdow
 
 ### Solution Structure
 
-| Project | Package | Purpose |
-| ------- | ------- | ------- |
-| `Api/` | `gdUnit4.api` | Test API: attributes, fluent assertions, scene runner, test engine |
-| `TestAdapter/` | `gdUnit4.test.adapter` | VSTest adapter: discovery and execution in IDEs and `dotnet test` |
-| `Analyzers/` | `gdUnit4.analyzers` | Roslyn analyzers that validate test attributes at compile time |
-| `Example/` | — | Example Godot project consuming the packages |
-| `Example.MultiProject/` | — | Example of a game and a separate test project referencing it (`Game`, `Game.Test`) |
+| Project                 | Package                | Purpose                                                                            |
+| ----------------------- | ---------------------- | ---------------------------------------------------------------------------------- |
+| `Api/`                  | `gdUnit4.api`          | Test API: attributes, fluent assertions, scene runner, test engine                 |
+| `TestAdapter/`          | `gdUnit4.test.adapter` | VSTest adapter: discovery and execution in IDEs and `dotnet test`                  |
+| `Analyzers/`            | `gdUnit4.analyzers`    | Roslyn analyzers that validate test attributes at compile time                     |
+| `Example/`              | —                      | Example Godot project consuming the packages                                       |
+| `Example.MultiProject/` | —                      | Example of a game and a separate test project referencing it (`Game`, `Game.Test`) |
 
 ### Source Modules
 
-| Directory | Purpose |
-| --------- | ------- |
-| `Api/src/api/` | Public engine contracts (`ITestEngine`, `ITestEventListener`, test nodes, settings) |
-| `Api/src/asserts/` | Fluent assertion implementations |
-| `Api/src/core/` | Engine, discovery, execution, hooks, logging, scene runner |
-| `TestAdapter/src/` | VSTest discoverer, executor, debugger frameworks, settings |
-| `Analyzers/src/` | Analyzers and diagnostic rules |
+| Directory          | Purpose                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `Api/src/api/`     | Public engine contracts (`ITestEngine`, `ITestEventListener`, test nodes, settings) |
+| `Api/src/asserts/` | Fluent assertion implementations                                                    |
+| `Api/src/core/`    | Engine, discovery, execution, hooks, logging, scene runner                          |
+| `TestAdapter/src/` | VSTest discoverer, executor, debugger frameworks, settings                          |
+| `Analyzers/src/`   | Analyzers and diagnostic rules                                                      |
 
 ### Test Organization
 

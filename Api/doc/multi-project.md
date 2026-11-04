@@ -8,9 +8,9 @@ projects' files and settings under their own project roots.
 Keep a `project.godot` and a Godot C# project in both the game and test directories. The test project owns its test suites, test scenes, and test resources,
 while the game project owns the scenes, resources, scripts, and settings used by the game.
 
-| Project | Contents |
-| --- | --- |
-| `Game/` | The game project, including `project.godot`, `Game.csproj`, resources, scenes, and scripts. |
+| Project      | Contents                                                                                                           |
+| ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `Game/`      | The game project, including `project.godot`, `Game.csproj`, resources, scenes, and scripts.                        |
 | `Game.Test/` | The test project, including `project.godot`, `Game.Test.csproj`, test suites, and test-owned scenes and resources. |
 
 The complete working sample is in [`Example.MultiProject/`](https://github.com/godot-gdunit-labs/gdUnit4Net/tree/master/Example.MultiProject).

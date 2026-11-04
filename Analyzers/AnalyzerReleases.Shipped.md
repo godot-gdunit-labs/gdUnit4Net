@@ -1,4 +1,6 @@
-﻿## Release 1.1.0
+# Analyzer Releases
+
+## Release 1.1.0
 
 ### New Rules
 
@@ -15,3 +17,5 @@
 | GdUnit0201 | Attribute Usage | Error    | GdUnit0201_AnalyzerName, [Documentation](https://github.com/MikeSchulze/gdUnit4Net/tree/master/Analyzers/documentation/GdUnit0201.md) |
 | GdUnit0500 | Attribute Usage | Error    | GdUnit0501_AnalyzerName, [Documentation](https://github.com/MikeSchulze/gdUnit4Net/tree/master/Analyzers/documentation/GdUnit0500.md) |
 | GdUnit0501 | Attribute Usage | Error    | GdUnit0501_AnalyzerName, [Documentation](https://github.com/MikeSchulze/gdUnit4Net/tree/master/Analyzers/documentation/GdUnit0501.md) |
+
+<!-- markdownlint-configure-file { "MD024": { "siblings_only": true } } -->

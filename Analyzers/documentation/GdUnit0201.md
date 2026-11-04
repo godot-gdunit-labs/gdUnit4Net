@@ -1,4 +1,4 @@
-﻿# GdUnit0201
+# GdUnit0201
 
 ## Multiple TestCase attributes not allowed with DataPoint
 
@@ -6,11 +6,12 @@
 |------------|-----------------|----------|---------|
 | GdUnit0201 | Attribute Usage | Error    | True    |
 
-# Problem Description
+## Problem Description
 
-Methods decorated with DataPoint attribute can only have one TestCase attribute. Multiple TestCase attributes on a method that uses DataPoint will result in undefined behavior.
+Methods decorated with DataPoint attribute can only have one TestCase attribute. Multiple TestCase attributes on a method that uses DataPoint will result in
+undefined behavior.
 
-### Error example:
+### Error example
 
 ```csharp
     [TestCase]
@@ -22,7 +23,7 @@ Methods decorated with DataPoint attribute can only have one TestCase attribute.
     }
 ```
 
-### How to fix:
+### How to fix
 
 Use only one TestCase attribute with DataPoint:
 

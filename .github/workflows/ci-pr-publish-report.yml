@@ -1,7 +1,7 @@
 name: 'Publish Test Report'
-on:
+on: # yamllint disable-line rule:truthy
   workflow_run:
-    workflows: [ 'ci-pr' ]  # runs after ci-pr workflow
+    workflows: ['ci-pr']  # runs after ci-pr workflow
     types:
       - completed
   workflow_dispatch:
@@ -33,7 +33,8 @@ jobs:
         run: |
           # Each Godot test run uploads 'artifact_api_tests_Godot<version>-<status>', the suffix names the report of one matrix entry
           reports=$(gh api --paginate "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts" \
-            --jq '.artifacts[] | select(.expired | not) | .name | select(test("^artifact_api_tests_Godot[0-9][0-9.]*-[a-z0-9]+$")) | ltrimstr("artifact_api_tests_")' \
+            --jq '.artifacts[] | select(.expired | not) | .name
+              | select(test("^artifact_api_tests_Godot[0-9][0-9.]*-[a-z0-9]+$")) | ltrimstr("artifact_api_tests_")' \
             | jq --raw-input --null-input --compact-output '[inputs | select(length > 0)] | unique')
           echo "Found reports: $reports"
           echo "reports=$reports" >> "$GITHUB_OUTPUT"
@@ -79,7 +80,7 @@ jobs:
           name: artifact_analyzer
           # using artifact to download is broken since download-artifact@v4 see https://github.com/dorny/test-reporter/issues/363
           # We do the download manually on step `Download artifacts`
-          #artifact: artifact_gdUnit4_${{ matrix.report }}${{ matrix.godot-net }}
+          # artifact: artifact_gdUnit4_${{ matrix.report }}${{ matrix.godot-net }}
           path: './home/runner/work/gdUnit4Net/gdUnit4Net/Analyzers.Test/TestResults/*.trx'
           reporter: dotnet-trx
           fail-on-error: 'false'
@@ -102,7 +103,7 @@ jobs:
           name: report_action_example_${{ matrix.report }}
           # using artifact to download is broken since download-artifact@v4 see https://github.com/dorny/test-reporter/issues/363
           # We do the download manually on step `Download artifacts`
-          #artifact: artifact_gdUnit4_${{ matrix.report }}${{ matrix.godot-net }}
+          # artifact: artifact_gdUnit4_${{ matrix.report }}${{ matrix.godot-net }}
           path: './home/runner/work/gdUnit4Net/gdUnit4Net/Example/reports/*.xml'
           reporter: dotnet-trx
           fail-on-error: 'false'
@@ -124,7 +125,7 @@ jobs:
           name: report_api_tests_${{ matrix.report }}
           # using artifact to download is broken since download-artifact@v4 see https://github.com/dorny/test-reporter/issues/363
           # We do the download manually on step `Download artifacts`
-          #artifact: artifact_gdUnit4_${{ matrix.report }}${{ matrix.godot-net }}
+          # artifact: artifact_gdUnit4_${{ matrix.report }}${{ matrix.godot-net }}
           path: './home/runner/work/gdUnit4Net/gdUnit4Net/Api.Test/TestResults/*.trx'
           reporter: dotnet-trx
           fail-on-error: 'false'

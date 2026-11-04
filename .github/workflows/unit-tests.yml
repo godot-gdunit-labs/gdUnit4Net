@@ -1,7 +1,7 @@
 name: unit-tests
 run-name: ${{ github.head_ref || github.ref_name }}-unit-tests
 
-on:
+on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       os:
@@ -222,9 +222,12 @@ jobs:
 
           validate_section '<Output>' 'Discover tests done, 6 TestSuites and total 35 Tests found.'
           validate_section '<Results>' "<Message>Expecting: 'True' but is 'False'</Message>"
-          validate_section '<Results>' '<StackTrace>   at Examples.Test.ExampleTest.Failed() in /home/runner/work/gdUnit4Net/gdUnit4Net/Example/test/ExampleTest.cs:line 19'
+          validate_section '<Results>' \
+            '<StackTrace>   at Examples.Test.ExampleTest.Failed() in /home/runner/work/gdUnit4Net/gdUnit4Net/Example/test/ExampleTest.cs:line 19'
           validate_section '<ResultSummary' '<ResultSummary outcome="Failed">'
-          validate_section '<ResultSummary' '<Counters total="39" executed="39" passed="38" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />'
+          counters='<Counters total="39" executed="39" passed="38" failed="1" error="0" timeout="0" aborted="0" inconclusive="0"'
+          counters+=' passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />'
+          validate_section '<ResultSummary' "$counters"
           echo "All tests passes."
 
       - name: Validate Code Coverage Report

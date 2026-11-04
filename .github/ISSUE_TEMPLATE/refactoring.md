@@ -7,11 +7,11 @@ assignees: MikeSchulze
 
 ---
 
-**Describe What**
+## Describe What
 <!-- A clear and concise description of what the refactoring is.-->
 
-**Describe Why**
+## Describe Why
 <!-- A clear and concise description why the refactoring is need.-->
 
-**Dev hints**
+## Dev hints
 <!-- Add some dev nodes here.-->
