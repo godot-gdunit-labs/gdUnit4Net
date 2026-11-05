@@ -42,6 +42,6 @@ public class TestSuiteWithExpectedExceptions
         string? value = null;
 
         // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-        value!.Contains(string.Empty); // This will throw NullReferenceException
+        _ = value!.Contains(string.Empty); // This will throw NullReferenceException
     }
 }
