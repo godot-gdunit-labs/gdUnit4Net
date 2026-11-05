@@ -66,25 +66,6 @@ jobs:
 
   # Analyzer jobs
 
-  analyzer-style-check:
-    name: "🔍 Check Style: Analyzers"
-    needs: setup-dotnet
-    runs-on: 'ubuntu-24.04'
-    timeout-minutes: 2
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v6
-        with:
-          global-json-file: 'global.json'
-
-      - name: "Check Code Formatting"
-        if: ${{ !cancelled() }}
-        run: |
-          dotnet format Analyzers/GdUnit4Analyzers.csproj --verify-no-changes --verbosity diagnostic
-          dotnet format Analyzers.Test/GdUnit4Analyzers.Tests.csproj --verify-no-changes --verbosity diagnostic
-
-
   analyzer-tests:
     name: "🧪 Test: Analyzers"
     needs: compile
@@ -124,9 +105,9 @@ jobs:
             Analyzers.Test/TestResults/test-result.trx
             Analyzers.Test/TestResults/test-result.html
 
-  # API
-  api-style-check:
-    name: "🔍 Check Style: API"
+  # The example projects disable code style enforcement in their build, so dotnet format checks them
+  example-style-check:
+    name: "🔍 Check Style: Examples"
     needs: setup-dotnet
     runs-on: 'ubuntu-24.04'
     timeout-minutes: 5
@@ -144,31 +125,11 @@ jobs:
           dotnet build Analyzers/GdUnit4Analyzers.csproj --configuration Release
           dotnet build Api/GdUnit4Api.csproj --configuration Release
           dotnet build TestAdapter/GdUnit4TestAdapter.csproj --configuration Release
-          dotnet format Api/GdUnit4Api.csproj --verify-no-changes --verbosity diagnostic
-          dotnet format Api.Test/GdUnit4ApiTest.csproj --verify-no-changes --verbosity diagnostic
           dotnet format Example/ExampleProject.csproj --verify-no-changes --verbosity diagnostic
           dotnet format Example.MultiProject/Game/Game.csproj --verify-no-changes --verbosity diagnostic
           dotnet format Example.MultiProject/Game.Test/Game.Test.csproj --verify-no-changes --verbosity diagnostic
 
   # Test Adapter
-  adapter-style-check:
-    name: "🔍 Check Style: Test Adapter"
-    needs: setup-dotnet
-    runs-on: 'ubuntu-24.04'
-    timeout-minutes: 2
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v6
-        with:
-          global-json-file: 'global.json'
-
-      - name: "Check Code Formatting"
-        if: ${{ !cancelled() }}
-        run: |
-          dotnet format TestAdapter/GdUnit4TestAdapter.csproj --verify-no-changes --verbosity diagnostic
-          dotnet format TestAdapter.Test/GdUnit4TestAdapter.Tests.csproj --verify-no-changes --verbosity diagnostic
-
   test-adapter-test:
     name: "🧪 Test: TestAdapter"
     needs: compile
@@ -241,7 +202,7 @@ jobs:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     name: Final Results
-    needs: [analyzer-style-check, api-style-check, adapter-style-check, analyzer-tests, api-tests, test-adapter-test]
+    needs: [example-style-check, analyzer-tests, api-tests, test-adapter-test]
     steps:
       - run: exit 1
         if: >-
