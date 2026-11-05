@@ -18,6 +18,9 @@ updates:
     schedule:
       interval: 'weekly'
       day: 'sunday'
+    exclude-paths:
+      - 'Example/**'
+      - 'Example.MultiProject/**'
     ignore:
       - dependency-name: 'GodotSharp'
       - dependency-name: 'Godot.SourceGenerators'
