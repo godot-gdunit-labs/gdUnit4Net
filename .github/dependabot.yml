@@ -14,13 +14,16 @@ updates:
     open-pull-requests-limit: 5
 
   - package-ecosystem: nuget
-    directory: '/'
+    directories:
+      - '/Analyzers'
+      - '/Analyzers.Test'
+      - '/Api'
+      - '/Api.Test'
+      - '/TestAdapter'
+      - '/TestAdapter.Test'
     schedule:
       interval: 'weekly'
       day: 'sunday'
-    exclude-paths:
-      - 'Example/**'
-      - 'Example.MultiProject/**'
     ignore:
       - dependency-name: 'GodotSharp'
       - dependency-name: 'Godot.SourceGenerators'
