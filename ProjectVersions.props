@@ -20,9 +20,9 @@
 
   <!-- Test Packages (also referenced by the Godot test project, which cannot use Central Package Management) -->
   <PropertyGroup>
-    <MicrosoftNETTestSdkVersion>18.0.1</MicrosoftNETTestSdkVersion>
-    <MSTestTestFrameworkVersion>3.10.4</MSTestTestFrameworkVersion>
-    <MoqVersion>4.20.72</MoqVersion>
+    <MicrosoftNETTestSdkVersion>18.11.0</MicrosoftNETTestSdkVersion>
+    <MSTestTestFrameworkVersion>3.11.1</MSTestTestFrameworkVersion>
+    <MoqVersion>4.21.0</MoqVersion>
   </PropertyGroup>
 
   <!-- Godot Configuration -->
