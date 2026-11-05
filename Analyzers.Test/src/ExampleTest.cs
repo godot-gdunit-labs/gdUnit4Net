@@ -35,19 +35,19 @@ public class ExampleTest
     }
 
     [TestMethod]
-    [DynamicData(nameof(TestDataProvider.GetTestData), typeof(TestDataProvider), DynamicDataSourceType.Method)]
+    [DynamicData(nameof(TestDataProvider.GetTestData), typeof(TestDataProvider))]
     public void TestWithDynamicData(int a, int b, int expected)
     {
     }
 
     [TestMethod]
-    [DynamicData(nameof(TestDataProvider.GetTestData), typeof(TestDataProvider), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetDisplayName))]
+    [DynamicData(nameof(TestDataProvider.GetTestData), typeof(TestDataProvider), DynamicDataDisplayName = nameof(GetDisplayName))]
     public void TestWithDisplayName(int a, int b, int expected)
     {
     }
 
     [TestMethod]
-    [DynamicData(nameof(TestDataProvider.GetTestData), typeof(TestDataProvider), DynamicDataSourceType.Method)]
+    [DynamicData(nameof(TestDataProvider.GetTestData), typeof(TestDataProvider))]
     public void TestWithDisplayName2(int a, int b, int expected)
     {
     }
