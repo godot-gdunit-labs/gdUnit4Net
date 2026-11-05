@@ -337,7 +337,7 @@ public class AssertEnumerableTest : AssertEnumerableConditions
     [TestCase]
     public void ExtractChained()
     {
-        var rootA = new TestObj("root_a", null);
+        TestObj rootA = new TestObj("root_a", null);
         var objA = new TestObj("A", rootA);
         var objB = new TestObj("B", rootA);
         var objC = new TestObj("C", rootA);

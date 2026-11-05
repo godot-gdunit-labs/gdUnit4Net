@@ -19,7 +19,7 @@ public class DataPointAttributeAnalyzerTest
     [TestMethod]
     public void SingleTestCaseWithDataPoint()
     {
-        var source = Instrument(
+        string source = Instrument(
             """
             public static object[] TestData => new object[] { new object[] { 1, 2, 3 } };
 

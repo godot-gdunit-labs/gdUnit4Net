@@ -84,7 +84,7 @@ public sealed class LogCapture : IDisposable
     /// <summary>Stops watching and removes this capture from the registry so no further messages are routed to it.</summary>
     public void Dispose()
     {
-        foreach (var type in registeredTypes)
+        foreach (Type type in registeredTypes)
         {
             if (Registry.TryGetValue(type, out var captures))
                 _ = captures.TryRemove(this, out _);

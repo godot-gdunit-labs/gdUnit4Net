@@ -41,7 +41,7 @@ public class GdUnit4TestDiscovererTest
     [TestMethod]
     public void DiscoverDoNotLoadTestAssembly()
     {
-        var frameworkHandle = new Mock<IFrameworkHandle>();
+        Mock<IFrameworkHandle> frameworkHandle = new Mock<IFrameworkHandle>();
 
         // Setup the mock to capture discovered tests
         var mockDiscoverySink = new Mock<ITestCaseDiscoverySink>();
