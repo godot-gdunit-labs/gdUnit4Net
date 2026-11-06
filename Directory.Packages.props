@@ -11,9 +11,9 @@
   <ItemGroup>
     <!-- Microsoft Test Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)"/>
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.0.1"/>
-    <PackageVersion Include="Microsoft.TestPlatform.AdapterUtilities" Version="18.0.1"/>
-    <PackageVersion Include="MSTest.TestAdapter" Version="3.10.4"/>
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.11.0"/>
+    <PackageVersion Include="Microsoft.TestPlatform.AdapterUtilities" Version="18.11.0"/>
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.11.1"/>
     <PackageVersion Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)"/>
 
     <!-- Roslyn/Code Analysis (compatible with all target frameworks) -->
