@@ -266,13 +266,57 @@ public class GodotRuntimeTestRunnerTest
 
             // Verify the runner file was created in the correct location
             var runnerPath = Path.Combine(workingDirectory, GodotRuntimeTestRunner.TEMP_TEST_RUNNER_DIR, "GdUnit4TestRunnerScene.cs");
-            AssertThat(File.Exists(runnerPath)).OverrideFailureMessage($"Runner file should exist at {runnerPath}").IsTrue();
+            AssertThat(File.ReadAllText(runnerPath)).IsEqual(GodotRuntimeTestRunner.TestRunnerSceneSource());
         }
         finally
         {
             // Cleanup
             Directory.Delete(workingDirectory, true);
         }
+    }
+
+    [TestCase]
+    public void InstallTestRunnerClassesReplacesAnOutdatedRunner()
+    {
+        var workingDirectory = Path.Combine(TestTempDirectory!, "working_dir_outdated");
+        var runnerPath = Path.Combine(workingDirectory, GodotRuntimeTestRunner.TEMP_TEST_RUNNER_DIR, "GdUnit4TestRunnerScene.cs");
+        Directory.CreateDirectory(Path.GetDirectoryName(runnerPath)!);
+        File.WriteAllText(runnerPath, """
+                                      namespace GdUnit4.TestRunner;
+
+                                      using Core.Runners;
+
+                                      public partial class GdUnit4TestRunnerScene : GdUnit4TestRunnerSceneCore
+                                      {
+                                      }
+                                      """);
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        var result = CreateTestRunner(1000).InstallTestRunnerClasses(workingDirectory, false);
+
+        AssertThat(result).IsTrue();
+        AssertThat(File.ReadAllText(runnerPath)).IsEqual(GodotRuntimeTestRunner.TestRunnerSceneSource());
+        AssertThat(capture.EntriesOf(LogLevel.Informational).Select(entry => entry.Message))
+            .ContainsExactly("Updating the outdated GdUnit4TestRunner at", Path.GetDirectoryName(runnerPath));
+    }
+
+    [TestCase]
+    public void InstallTestRunnerClassesKeepsAnInstalledRunner()
+    {
+        var workingDirectory = Path.Combine(TestTempDirectory!, "working_dir_installed");
+        var runnerPath = Path.Combine(workingDirectory, GodotRuntimeTestRunner.TEMP_TEST_RUNNER_DIR, "GdUnit4TestRunnerScene.cs");
+        Directory.CreateDirectory(Path.GetDirectoryName(runnerPath)!);
+
+        // a checkout with Windows line endings
+        var installed = GodotRuntimeTestRunner.TestRunnerSceneSource().ReplaceLineEndings("\r\n");
+        File.WriteAllText(runnerPath, installed);
+        using var capture = LogCapture.Watch<GodotRuntimeTestRunner>();
+
+        var result = CreateTestRunner(1000).InstallTestRunnerClasses(workingDirectory, false);
+
+        AssertThat(result).IsTrue();
+        AssertThat(File.ReadAllText(runnerPath)).IsEqual(installed);
+        AssertThat(capture.EntriesOf(LogLevel.Informational)).IsEmpty();
     }
 
     [TestCase]
@@ -601,6 +645,14 @@ public class GodotRuntimeTestRunnerTest
             Directory.CreateDirectory(Path.GetDirectoryName(destFile)!);
             File.Copy(file, destFile, true);
         }
+
+        // the example uses the published API package, the installed runner needs the API of this build
+        var projectFile = Path.Combine(destDir, "ExampleProject.csproj");
+        var apiProject = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "../Api/GdUnit4Api.csproj"));
+        var project = File.ReadAllText(projectFile);
+        var start = project.IndexOf("<PackageReference Include=\"gdUnit4.api\"", StringComparison.Ordinal);
+        var end = project.IndexOf("/>", start, StringComparison.Ordinal) + 2;
+        File.WriteAllText(projectFile, project[..start] + $"<ProjectReference Include=\"{apiProject}\"/>" + project[end..]);
     }
 
     /// <summary>

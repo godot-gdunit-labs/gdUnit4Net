@@ -51,8 +51,9 @@
     <None Include="build/gdUnit4.api.targets" Pack="true" PackagePath="build/gdUnit4.api.targets;buildTransitive/gdUnit4.api.targets"/>
     <None Include="buildTransitive/gdUnit4.api.props" Pack="true" PackagePath="buildTransitive/gdUnit4.api.props"/>
 
-    <!-- provide the test runner scene as resource -->
-    <EmbeddedResource Include="src\core\runners\GdUnit4TestRunnerSceneTemplate.cs"/>
+    <!-- provide the test runner scene as resource, it is compiled in the test project it is installed into -->
+    <Compile Remove="src\core\runners\GdUnit4TestRunnerScene.cs"/>
+    <EmbeddedResource Include="src\core\runners\GdUnit4TestRunnerScene.cs"/>
 
   </ItemGroup>
 </Project>

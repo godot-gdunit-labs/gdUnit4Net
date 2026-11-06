@@ -288,6 +288,13 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             .Split(['.', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Contains("mono", StringComparer.OrdinalIgnoreCase);
 
+    internal static string TestRunnerSceneSource()
+    {
+        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("GdUnit4.src.core.runners.GdUnit4TestRunnerScene.cs");
+        using var reader = new StreamReader(stream!);
+        return reader.ReadToEnd();
+    }
+
     internal bool VerifyGodotCSharpSupport(string godotBinary)
     {
         using var godotProcess = new Process();
@@ -395,19 +402,20 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             _ = Directory.CreateDirectory(destinationFolderPath);
 
         var sceneRunnerSource = Path.Combine(destinationFolderPath, "GdUnit4TestRunnerScene.cs");
+        var content = TestRunnerSceneSource();
 
-        // check if the scene runner already installed
         if (File.Exists(sceneRunnerSource))
-            return true;
+        {
+            if (IsSameSource(File.ReadAllText(sceneRunnerSource), content))
+                return true;
+            Logger.LogInfo("Updating the outdated GdUnit4TestRunner at");
+        }
+        else
+        {
+            Logger.LogInfo("Installing GdUnit4TestRunner at");
+        }
 
-        Logger.LogInfo("Installing GdUnit4TestRunner at");
         Logger.LogInfo(destinationFolderPath);
-
-        var assembly = Assembly.GetExecutingAssembly();
-        using var stream = assembly.GetManifestResourceStream("GdUnit4.src.core.runners.GdUnit4TestRunnerSceneTemplate.cs");
-        using var reader = new StreamReader(stream!);
-        var content = reader.ReadToEnd();
-        content = content.Replace("GdUnit4TestRunnerSceneTemplate", "GdUnit4TestRunnerScene", StringComparison.Ordinal);
         File.WriteAllText(sceneRunnerSource, content, Encoding.UTF8);
 
         if (!reCompile)
@@ -554,6 +562,9 @@ internal sealed class GodotRuntimeTestRunner : BaseTestRunner
             return null;
         }
     }
+
+    private static bool IsSameSource(string installed, string expected)
+        => installed.ReplaceLineEndings().Equals(expected.ReplaceLineEndings(), StringComparison.Ordinal);
 
     // The runtime mounts the references of the test project assembly, test suites of other assemblies carry paths relative to their own project.
     private static IEnumerable<string> TestProjectAssemblies(IEnumerable<string> assemblyPaths, string testProjectDir)

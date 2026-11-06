@@ -6,9 +6,13 @@ namespace GdUnit4.TestRunner;
 
 using Core.Runners;
 
+using Godot;
+
 /// <summary>
 ///     The GdUnit4Net test runner scene.
 /// </summary>
-public partial class GdUnit4TestRunnerSceneTemplate : GdUnit4TestRunnerSceneCore
+public partial class GdUnit4TestRunnerScene : SceneTree
 {
+    /// <inheritdoc />
+    public override void _Initialize() => GdUnit4TestRunnerHost.Initialize(this);
 }
