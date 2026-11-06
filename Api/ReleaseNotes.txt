@@ -3,13 +3,16 @@ v5.1.0
 **BREAKING CHANGES:**
 * GD-477, GD-522: The minimum supported Godot version is now 4.7, older Godot versions are no longer supported.
           Projects using Godot 4.6 or older must upgrade to Godot 4.7 or newer.
+* GD-545: A disposed scene runner throws an `ObjectDisposedException`, `Scene()` no longer returns null after `Dispose()`
+          and the input simulation and the time factor no longer run silently on a disposed runner.
+          Migration: tests that checked `Scene()` for null after `Dispose()` expect the exception instead.
 
 🪲 Bug Fixes
 * GD-305: Added missing AppendFailureMessage on assertions
 * GD-311: Catch possible exceptions on command execution and report them as InternalServerError.
 * GD-317: Fixing [IgnoreUntil] is not skipping the test.
 * GD-318: Fixing object deep equal comparison.
-* GD-319: Fixing SceneRunner.Scene() returns disposed object after the scene is auto freed.
+* GD-319: Fixing SceneRunner.Scene() returns disposed object after the scene is auto freed, since GD-545 it throws an `ObjectDisposedException` instead.
 * GD-320: Fixing method Chaining on Asserts breaks type inference after base interface methods,
           fixes also dynamic assert bindings (missing public access).
 * GD-331: Fixing SceneRunner SimulateKey to provide missing Unicode
@@ -75,6 +78,11 @@ v5.1.0
           Cache invalidation hashes project files and the Godot binary, so timestamp-preserving content changes are detected.
           Settings that require restart keep the test project's startup values.
           Set `<GdUnit4MountGodotProjectReferences>false</GdUnit4MountGodotProjectReferences>` to turn it off.
+* GD-545: Added the typed scene runner `ISceneRunner<TScene>` with typed access to the scene root node.
+          `ISceneRunner.Load(new Player())` infers the scene type, `ISceneRunner.Load<Player>("res://player.tscn")` loads by path
+          and fails with a message naming the expected and the actual type. `Scene()` is no longer nullable.
+          Tip: casts and null checks on `Scene()` are now redundant and can be removed, e.g. `(Player)runner.Scene()!` becomes `runner.Scene()`.
+          Loading by path without a type still returns `Node`, use `ISceneRunner.Load<Player>("res://player.tscn")` for the typed runner.
 
 v5.0.0
 

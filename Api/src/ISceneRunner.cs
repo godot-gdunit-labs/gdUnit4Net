@@ -49,6 +49,31 @@ public interface ISceneRunner : IDisposable
     static ISceneRunner Load(Node currentScene, bool autoFree = false, bool verbose = false) => new SceneRunner(currentScene, autoFree, verbose);
 
     /// <summary>
+    ///     Loads a scene into the SceneRunner to be simulated, with typed access to the scene root node.
+    /// </summary>
+    /// <typeparam name="TScene">The type of the scene root node.</typeparam>
+    /// <param name="resourcePath">The path to the scene resource.</param>
+    /// <param name="autoFree">If true, the loaded scene will be automatically freed when the runner is freed.</param>
+    /// <param name="verbose">Prints detailed info on scene simulation.</param>
+    /// <returns>ISceneRunner with the typed scene.</returns>
+    /// <exception cref="ArgumentException">The scene root node is not of type <typeparamref name="TScene" />.</exception>
+    static ISceneRunner<TScene> Load<TScene>(string resourcePath, bool autoFree = false, bool verbose = false)
+        where TScene : Node
+        => new SceneRunner<TScene>(resourcePath, autoFree, verbose);
+
+    /// <summary>
+    ///     Loads a scene into the SceneRunner to be simulated, with typed access to the scene root node.
+    /// </summary>
+    /// <typeparam name="TScene">The type of the scene root node, inferred from the given instance.</typeparam>
+    /// <param name="currentScene">The scene as an instance.</param>
+    /// <param name="autoFree">If true, the loaded scene will be automatically freed when the runner is freed.</param>
+    /// <param name="verbose">Prints detailed info on scene simulation.</param>
+    /// <returns>ISceneRunner with the typed scene.</returns>
+    static ISceneRunner<TScene> Load<TScene>(TScene currentScene, bool autoFree = false, bool verbose = false)
+        where TScene : Node
+        => new SceneRunner<TScene>(currentScene, autoFree, verbose);
+
+    /// <summary>
     ///     Simulates that an action has been pressed.
     /// </summary>
     /// <param name="action">The name of the action, e.g., "ui_up".</param>
@@ -292,7 +317,7 @@ public interface ISceneRunner : IDisposable
     /// </returns>
     async Task AwaitInputProcessed()
     {
-        if (Scene()?.ProcessMode != Node.ProcessModeEnum.Disabled)
+        if (Scene().ProcessMode != Node.ProcessModeEnum.Disabled)
             Input.FlushBufferedEvents();
 
         _ = await SyncProcessFrame;
@@ -302,24 +327,13 @@ public interface ISceneRunner : IDisposable
     /// <summary>
     ///     Access to the current running scene.
     ///     Returns the scene instance that is currently loaded and managed by this SceneRunner.
-    ///     The scene remains available for testing and interaction until the runner is disposed
-    ///     or the scene is explicitly freed.<br />
-    ///     <br />
-    ///     Lifecycle behavior:<br />
-    ///     - Returns valid Node instance when scene is loaded and active<br />
-    ///     - Returns null when the SceneRunner has been disposed<br />
-    ///     - Returns null when autoFree has cleaned up the scene<br />
-    ///     <br />
-    ///     Usage patterns:<br />
-    ///     - Check for null before accessing scene properties or methods<br />
-    ///     - Use in assertions to verify scene state and availability<br />
-    ///     - Access child nodes through the returned scene instance.<br />
+    ///     The scene runner always loads or receives a valid scene, the scene remains available
+    ///     for testing and interaction until the runner is disposed.
+    ///     When the scene frees itself, e.g. by calling <c>QueueFree()</c>, the returned instance is no longer valid.
     /// </summary>
-    /// <returns>
-    ///     The current scene Node instance, or null when the SceneRunner is disposed
-    ///     or the scene has been freed.
-    /// </returns>
-    Node? Scene();
+    /// <returns>The current scene Node instance.</returns>
+    /// <exception cref="ObjectDisposedException">The SceneRunner has been disposed.</exception>
+    Node Scene();
 
     /// <summary>
     ///     Shows the running scene and moves the window to the foreground.

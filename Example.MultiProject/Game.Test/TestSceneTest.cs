@@ -22,31 +22,30 @@ public class TestSceneTest
     [TestCase]
     public void TestSceneWithGameSubScene()
     {
-        var harness = ISceneRunner.Load("res://Scenes/PlayerTestScene.tscn", true).Scene() as PlayerTestHarness;
-        AssertObject(harness).IsNotNull();
-        AssertObject(harness!.Player).IsInstanceOf<Player>();
+        var harness = ISceneRunner.Load<PlayerTestHarness>("res://Scenes/PlayerTestScene.tscn", true).Scene();
+        AssertObject(harness.Player).IsInstanceOf<Player>();
     }
 
     [TestCase]
     public void TestSceneOverridesGameResourceWithTestResource()
     {
-        var harness = (PlayerTestHarness)ISceneRunner.Load("res://Scenes/PlayerTestScene.tscn", true).Scene()!;
+        var harness = ISceneRunner.Load<PlayerTestHarness>("res://Scenes/PlayerTestScene.tscn", true).Scene();
         AssertThat(harness.Player.Stats.Speed).IsEqual(1000f);
     }
 
     [TestCase]
     public async Task TestScriptReceivesGameSignals()
     {
-        var runner = ISceneRunner.Load("res://Scenes/PlayerTestScene.tscn", true);
+        var runner = ISceneRunner.Load<PlayerTestHarness>("res://Scenes/PlayerTestScene.tscn", true);
         runner.SimulateActionPressed("jump");
         await runner.AwaitInputProcessed();
-        AssertThat(((PlayerTestHarness)runner.Scene()!).JumpsSeen).IsEqual(1);
+        AssertThat(runner.Scene().JumpsSeen).IsEqual(1);
     }
 
     [TestCase]
     public void TestSceneExtendsNestedGameScenes()
     {
-        var scene = ISceneRunner.Load("res://Scenes/LevelTestScene.tscn", true).Scene()!;
+        var scene = ISceneRunner.Load("res://Scenes/LevelTestScene.tscn", true).Scene();
         var level = scene.GetNode<Level>("Level");
         AssertThat(level.Coins.Select(coin => coin.Value)).ContainsExactly(10, 25, 50);
 

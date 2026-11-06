@@ -95,8 +95,7 @@ public sealed class SceneRunnerCSharpSceneTest
             .IsInstanceOf<TestSceneWithInitialization>()
             .IsSame(currentScene);
 
-        // ReSharper disable once NullableWarningSuppressionIsUsed
-        var actualScene = (runner.Scene() as TestSceneWithInitialization)!;
+        var actualScene = runner.Scene();
         AssertThat(actualScene.MethodCalls.Count).IsEqual(2);
         AssertThat(actualScene.MethodCalls[0]).IsEqual("Initialize");
         AssertThat(actualScene.MethodCalls[1]).IsEqual("_Ready");
@@ -348,7 +347,7 @@ public sealed class SceneRunnerCSharpSceneTest
             .ContinueWith(result
                 => result.Result?
                     .HasMessage("Assertion: Timed out after 150ms.")
-                    .HasFileLineNumber(347));
+                    .HasFileLineNumber(346));
     }
 
     [TestCase]
@@ -367,9 +366,7 @@ public sealed class SceneRunnerCSharpSceneTest
     [TestCase]
     public async Task SceneAwaitSignal()
     {
-        var runner = ISceneRunner.Load("res://src/core/resources/scenes/TestSceneWithButton.tscn", true);
-        var scene = runner.Scene() as TestSceneWithButton;
-        Debug.Assert(scene != null, nameof(scene) + " != null");
+        var scene = ISceneRunner.Load<TestSceneWithButton>("res://src/core/resources/scenes/TestSceneWithButton.tscn", true).Scene();
 
         await ISceneRunner.SyncProcessFrame;
 
@@ -384,9 +381,7 @@ public sealed class SceneRunnerCSharpSceneTest
     [TestCase]
     public async Task MonitorSignalSequence()
     {
-        var runner = ISceneRunner.Load("res://src/core/resources/scenes/TestSceneWithButton.tscn", true);
-        var scene = runner.Scene() as TestSceneWithButton;
-        Debug.Assert(scene != null, nameof(scene) + " != null");
+        var scene = ISceneRunner.Load<TestSceneWithButton>("res://src/core/resources/scenes/TestSceneWithButton.tscn", true).Scene();
         var monitor = AssertSignal(scene).StartMonitoring();
 
         AssertThat(scene.GameState).IsEqual(TestSceneWithButton.GState.Initializing);

@@ -452,6 +452,9 @@ public class GodotRuntimeRequireAnalyzer : DiagnosticAnalyzer
             typeName,
             _ =>
             {
+                if (type.AllInterfaces.Any(i => GodotDependentTypes.Contains(i.ToDisplayString())))
+                    return true;
+
                 var current = type;
                 while (current != null)
                 {
