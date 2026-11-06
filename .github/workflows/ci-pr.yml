@@ -186,6 +186,11 @@ jobs:
             godot-version: '4.7.2'
             godot-status: 'stable'
             dotnet-version: 'net10.0'
+          # Latest prerelease
+          - gdunit-version: 'v6.2.2'
+            godot-version: '4.8'
+            godot-status: 'beta2'
+            dotnet-version: 'net10.0'
 
 
     name: "🧪 Test: API on Godot-v${{ matrix.godot-version }}-${{ matrix.godot-status }}"
