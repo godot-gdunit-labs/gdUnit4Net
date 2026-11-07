@@ -172,6 +172,56 @@ public sealed class SceneRunnerViewportTest
     }
 
     [TestCase]
+    public void SceneReceivesTouchOnceWithTouchAndMouseEmulation()
+    {
+        var emulateTouch = Input.EmulateTouchFromMouse;
+        var emulateMouse = ProjectSettings.GetSetting("input_devices/pointing/emulate_mouse_from_touch");
+        Input.EmulateTouchFromMouse = true;
+        ProjectSettings.SetSetting("input_devices/pointing/emulate_mouse_from_touch", true);
+        try
+        {
+            var scene = new TouchRecorderNode();
+            using var runner = ISceneRunner.Load(scene, true);
+
+            runner
+                .SimulateScreenTouchPress(0, new Vector2(100, 100))
+                .SimulateScreenTouchRelease(0);
+
+            AssertThat(scene.TouchEvents.Select(e => (e.GetClass(), e.IsPressed()))).ContainsExactly(
+                ("InputEventScreenTouch", true),
+                ("InputEventScreenTouch", false));
+        }
+        finally
+        {
+            Input.EmulateTouchFromMouse = emulateTouch;
+            ProjectSettings.SetSetting("input_devices/pointing/emulate_mouse_from_touch", emulateMouse);
+        }
+    }
+
+    [TestCase]
+    public async Task MoveWindowToForeground()
+    {
+        using var runner = ISceneRunner.Load(SimpleScene, true);
+        var windowMode = DisplayServer.WindowGetMode();
+
+        runner.MoveWindowToBackground();
+        await runner.SimulateFrames(1);
+        if (IsHeadless)
+        {
+            // there is no window in headless mode, the window stays as it is
+            AssertThat(DisplayServer.WindowGetMode()).IsEqual(windowMode);
+            return;
+        }
+
+        // Linux keeps the window in windowed mode, see https://github.com/godotengine/godot/issues/111119
+        AssertThat(DisplayServer.WindowGetMode()).IsEqual(OS.GetName() == "Linux" ? DisplayServer.WindowMode.Windowed : DisplayServer.WindowMode.Minimized);
+
+        runner.MoveWindowToForeground();
+        await runner.SimulateFrames(1);
+        AssertThat(DisplayServer.WindowGetMode()).IsEqual(DisplayServer.WindowMode.Windowed);
+    }
+
+    [TestCase]
     public void GlobalMousePositionIsInWindowCoordinates()
     {
         using var runner = ISceneRunner.Load(SimpleScene, true);

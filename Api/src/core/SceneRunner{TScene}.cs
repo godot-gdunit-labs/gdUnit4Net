@@ -23,21 +23,21 @@ internal sealed class SceneRunner<TScene> : SceneRunner, ISceneRunner<TScene>
     public new TScene Scene()
         => (TScene)base.Scene();
 
-    public new ISceneRunner<TScene> SimulateActionPressed(string action)
+    public new ISceneRunner<TScene> SimulateActionPressed(string action, int eventIndex = -1)
     {
-        _ = base.SimulateActionPressed(action);
+        _ = base.SimulateActionPressed(action, eventIndex);
         return this;
     }
 
-    public new ISceneRunner<TScene> SimulateActionPress(string action)
+    public new ISceneRunner<TScene> SimulateActionPress(string action, int eventIndex = -1)
     {
-        _ = base.SimulateActionPress(action);
+        _ = base.SimulateActionPress(action, eventIndex);
         return this;
     }
 
-    public new ISceneRunner<TScene> SimulateActionRelease(string action)
+    public new ISceneRunner<TScene> SimulateActionRelease(string action, int eventIndex = -1)
     {
-        _ = base.SimulateActionRelease(action);
+        _ = base.SimulateActionRelease(action, eventIndex);
         return this;
     }
 
@@ -92,6 +92,42 @@ internal sealed class SceneRunner<TScene> : SceneRunner, ISceneRunner<TScene>
     public new ISceneRunner<TScene> SetTimeFactor(double timeFactor = 1.0)
     {
         _ = base.SetTimeFactor(timeFactor);
+        return this;
+    }
+
+    public new ISceneRunner<TScene> SimulateScreenTouchPressed(int index, Vector2 position, bool doubleTap = false)
+    {
+        _ = base.SimulateScreenTouchPressed(index, position, doubleTap);
+        return this;
+    }
+
+    public new ISceneRunner<TScene> SimulateScreenTouchPress(int index, Vector2 position, bool doubleTap = false)
+    {
+        _ = base.SimulateScreenTouchPress(index, position, doubleTap);
+        return this;
+    }
+
+    public new ISceneRunner<TScene> SimulateScreenTouchRelease(int index, bool doubleTap = false)
+    {
+        _ = base.SimulateScreenTouchRelease(index, doubleTap);
+        return this;
+    }
+
+    public new ISceneRunner<TScene> SimulateScreenTouchDrag(int index, Vector2 position)
+    {
+        _ = base.SimulateScreenTouchDrag(index, position);
+        return this;
+    }
+
+    public new ISceneRunner<TScene> MoveWindowToForeground()
+    {
+        _ = base.MoveWindowToForeground();
+        return this;
+    }
+
+    public new ISceneRunner<TScene> MoveWindowToBackground()
+    {
+        _ = base.MoveWindowToBackground();
         return this;
     }
 

@@ -99,6 +99,14 @@ v5.1.0
           Loading by path without a type still returns `Node`, use `ISceneRunner.Load<Player>("res://player.tscn")` for the typed runner.
 * GD-577: The scene runner method `SetMousePosition` replaces `SetMousePos` to match the GdUnit4 scene runner API.
           `SetMousePos` is deprecated and calls `SetMousePosition`.
+* GD-578: The scene runner API matches the GdUnit4 scene runner, new methods:
+          - `SimulateScreenTouchPressed`, `SimulateScreenTouchPress`, `SimulateScreenTouchRelease` and `SimulateScreenTouchDrag` to simulate touch input
+          - `SimulateScreenTouchDragRelative`, `SimulateScreenTouchDragAbsolute` and `SimulateScreenTouchDragDrop` to simulate a touch drag and drop
+          - `GetScreenTouchDragPosition` to read the current touch position
+          - `MoveWindowToForeground` and `MoveWindowToBackground`
+          - `AwaitMethodOn` to wait for a method result of another object, `AwaitMethod` accepts method arguments
+          - `SimulateActionPressed`, `SimulateActionPress` and `SimulateActionRelease` accept the action `eventIndex`
+          Mouse input is emulated from touch input when the project setting `input_devices/pointing/emulate_mouse_from_touch` is enabled.
 
 v5.0.0
 

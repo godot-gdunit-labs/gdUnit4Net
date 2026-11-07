@@ -31,12 +31,15 @@ internal class SceneRunner : ISceneRunner
     private readonly Node currentScene;
     private readonly ICollection<Key> keyOnPress = new HashSet<Key>();
     private readonly ICollection<MouseButton> mouseButtonOnPress = new HashSet<MouseButton>();
+    private readonly Dictionary<int, Vector2> touchPositions = [];
 
     [SuppressMessage("Reliability", "CA2213:Disposable fields should be disposed", Justification = "The node is freed in Dispose")]
     private readonly SubViewport viewport;
 
     [SuppressMessage("Reliability", "CA2213:Disposable fields should be disposed", Justification = "The node is freed in Dispose")]
     private readonly SceneRunnerView? viewportView;
+
+    private bool isMouseEmulated;
 
     public SceneRunner(string resourcePath, bool autoFree = false, bool verbose = false)
         : this(LoadScene(resourcePath), autoFree, verbose)
@@ -67,6 +70,9 @@ internal class SceneRunner : ISceneRunner
 
     private static bool IsHeadless => DisplayServer.GetName() == "headless";
 
+    private static bool IsEmulateMouseFromTouch
+        => ProjectSettings.GetSetting("input_devices/pointing/emulate_mouse_from_touch", true).AsBool();
+
     private SceneTree SceneTree { get; }
 
     private bool Verbose { get; }
@@ -81,32 +87,34 @@ internal class SceneRunner : ISceneRunner
 
     private bool IsDisposed { get; set; }
 
-    public ISceneRunner SimulateActionPress(string action)
+    public ISceneRunner SimulateActionPress(string action, int eventIndex = -1)
     {
         ThrowIfDisposed();
         var inputEvent = new InputEventAction
         {
             Pressed = true,
-            Action = action
+            Action = action,
+            EventIndex = eventIndex
         };
         actionOnPress.Add(action);
         return HandleInputEvent(inputEvent);
     }
 
-    public ISceneRunner SimulateActionPressed(string action)
+    public ISceneRunner SimulateActionPressed(string action, int eventIndex = -1)
     {
-        _ = SimulateActionPress(action);
-        _ = SimulateActionRelease(action);
+        _ = SimulateActionPress(action, eventIndex);
+        _ = SimulateActionRelease(action, eventIndex);
         return this;
     }
 
-    public ISceneRunner SimulateActionRelease(string action)
+    public ISceneRunner SimulateActionRelease(string action, int eventIndex = -1)
     {
         ThrowIfDisposed();
         var inputEvent = new InputEventAction
         {
             Pressed = false,
-            Action = action
+            Action = action,
+            EventIndex = eventIndex
         };
         _ = actionOnPress.Remove(action);
         return HandleInputEvent(inputEvent);
@@ -220,6 +228,97 @@ internal class SceneRunner : ISceneRunner
         return HandleInputEvent(inputEvent);
     }
 
+    public ISceneRunner SimulateScreenTouchPressed(int index, Vector2 position, bool doubleTap = false)
+    {
+        _ = SimulateScreenTouchPress(index, position, doubleTap);
+        _ = SimulateScreenTouchRelease(index);
+        return this;
+    }
+
+    public ISceneRunner SimulateScreenTouchPress(int index, Vector2 position, bool doubleTap = false)
+    {
+        ThrowIfDisposed();
+        if (IsEmulateMouseFromTouch)
+        {
+            SimulateEmulatedMouse(() =>
+            {
+                _ = SetMousePosition(position);
+                _ = SimulateMouseButtonPress(MouseButton.Left);
+            });
+        }
+
+        touchPositions[index] = position;
+        using var inputEvent = new InputEventScreenTouch
+        {
+            WindowId = Scene().GetWindow().GetWindowId(),
+            Index = index,
+            Position = position,
+            DoubleTap = doubleTap,
+            Pressed = true
+        };
+        return PushTouchEvent(inputEvent);
+    }
+
+    public ISceneRunner SimulateScreenTouchRelease(int index, bool doubleTap = false)
+    {
+        ThrowIfDisposed();
+        if (IsEmulateMouseFromTouch)
+            SimulateEmulatedMouse(() => SimulateMouseButtonRelease(MouseButton.Left));
+
+        using var inputEvent = new InputEventScreenTouch
+        {
+            WindowId = Scene().GetWindow().GetWindowId(),
+            Index = index,
+            Position = GetScreenTouchDragPosition(index),
+            DoubleTap = doubleTap,
+            Pressed = false
+        };
+        return PushTouchEvent(inputEvent);
+    }
+
+    public async Task SimulateScreenTouchDragRelative(int index, Vector2 relative, double time = 1.0, Tween.TransitionType transitionType = Tween.TransitionType.Linear)
+        => await DoTouchDragAt(index, GetScreenTouchDragPosition(index) + relative, time, transitionType)
+            .ConfigureAwait(true);
+
+    public async Task SimulateScreenTouchDragAbsolute(int index, Vector2 position, double time = 1.0, Tween.TransitionType transitionType = Tween.TransitionType.Linear)
+        => await DoTouchDragAt(index, position, time, transitionType)
+            .ConfigureAwait(true);
+
+    public async Task SimulateScreenTouchDragDrop(int index, Vector2 position, Vector2 dropPosition, double time = 1.0, Tween.TransitionType transitionType = Tween.TransitionType.Linear)
+    {
+        _ = SimulateScreenTouchPress(index, position);
+        await DoTouchDragAt(index, dropPosition, time, transitionType)
+            .ConfigureAwait(true);
+    }
+
+    public ISceneRunner SimulateScreenTouchDrag(int index, Vector2 position)
+    {
+        ThrowIfDisposed();
+        if (IsEmulateMouseFromTouch)
+            SimulateEmulatedMouse(() => SimulateMouseMove(position));
+
+        var relative = touchPositions.GetValueOrDefault(index, position) - position;
+        touchPositions[index] = position;
+        using var inputEvent = new InputEventScreenDrag
+        {
+            WindowId = Scene().GetWindow().GetWindowId(),
+            Index = index,
+            Position = position,
+            Relative = relative,
+            Velocity = relative / (float)SceneTree.Root.GetProcessDeltaTime(),
+            Pressure = 1.0f
+        };
+        return PushTouchEvent(inputEvent);
+    }
+
+    public Vector2 GetScreenTouchDragPosition(int index)
+    {
+        ThrowIfDisposed();
+        if (touchPositions.TryGetValue(index, out var position))
+            return position;
+        throw new InvalidOperationException($"No touch drag position for index '{index}' is set.");
+    }
+
     public ISceneRunner SetTimeFactor(double timeFactor = 1.0)
     {
         ThrowIfDisposed();
@@ -255,9 +354,13 @@ internal class SceneRunner : ISceneRunner
         return currentScene;
     }
 
-    public IGodotMethodAwaitable<TVariant> AwaitMethod<[MustBeVariant] TVariant>(string methodName)
+    public IGodotMethodAwaitable<TVariant> AwaitMethod<[MustBeVariant] TVariant>(string methodName, params Variant[] args)
         where TVariant : notnull
-        => new GodotMethodAwaitable<TVariant>(new StackTrace(true), Scene(), methodName);
+        => new GodotMethodAwaitable<TVariant>(new StackTrace(true), Scene(), methodName, args);
+
+    public IGodotMethodAwaitable<TVariant> AwaitMethodOn<[MustBeVariant] TVariant>(GodotObject source, string methodName, params Variant[] args)
+        where TVariant : notnull
+        => new GodotMethodAwaitable<TVariant>(new StackTrace(true), source, methodName, args);
 
     public async Task AwaitMillis(uint timeMillis)
     {
@@ -301,11 +404,24 @@ internal class SceneRunner : ISceneRunner
         Scene().FindChild(name, recursive, owned);
 
     public void MaximizeView()
+        => MoveWindowToForeground();
+
+    public ISceneRunner MoveWindowToForeground()
     {
-        if (IsHeadless)
-            return;
+        if (IsHeadless || Engine.IsEmbeddedInEditor())
+            return this;
         DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
         DisplayServer.WindowMoveToForeground();
+        return this;
+    }
+
+    public ISceneRunner MoveWindowToBackground()
+    {
+        if (IsHeadless || Engine.IsEmbeddedInEditor())
+            return this;
+        DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
+        DisplayServer.WindowSetMode(DisplayServer.WindowMode.Minimized);
+        return this;
     }
 
     public void Dispose()
@@ -408,7 +524,7 @@ internal class SceneRunner : ISceneRunner
     /// </summary>
     private static InputEvent? EmulatedTouchEvent(InputEvent inputEvent)
     {
-        if (!Input.IsEmulatingTouchFromMouse())
+        if (!Input.IsEmulatingTouchFromMouse() || inputEvent.Device == InputEvent.DeviceIdEmulation)
             return null;
         return inputEvent switch
         {
@@ -550,6 +666,8 @@ internal class SceneRunner : ISceneRunner
     /// </summary>
     private SceneRunner HandleInputEvent(InputEvent inputEvent)
     {
+        if (isMouseEmulated && inputEvent is InputEventMouse)
+            inputEvent.Device = (int)InputEvent.DeviceIdEmulation;
         Input.ParseInputEvent(inputEvent);
         if (inputEvent is InputEventAction actionEvent)
             _ = HandleActionEvent(actionEvent);
@@ -566,6 +684,81 @@ internal class SceneRunner : ISceneRunner
 
         // save the last input event needs to be merged with the next InputEventMouseButton
         LastInputEvent = inputEvent;
+        return this;
+    }
+
+    private async Task DoTouchDragAt(int index, Vector2 dropPosition, double time, Tween.TransitionType transitionType)
+    {
+        var startPosition = GetScreenTouchDragPosition(index);
+        var windowId = Scene().GetWindow().GetWindowId();
+        var position = startPosition;
+        var elapsed = 0.0;
+        while (position != dropPosition)
+        {
+            _ = await ISceneRunner.SyncProcessFrame;
+            ThrowIfDisposed();
+            var delta = SceneTree.Root.GetProcessDeltaTime();
+            elapsed += delta;
+            var nextPosition = elapsed >= time
+                ? dropPosition
+                : Tween.InterpolateValue(startPosition, dropPosition - startPosition, elapsed, time, transitionType, Tween.EaseType.InOut).AsVector2();
+            if (IsEmulateMouseFromTouch)
+                SimulateEmulatedMouse(() => SimulateMouseMove(nextPosition));
+
+            using var dragEvent = new InputEventScreenDrag
+            {
+                WindowId = windowId,
+                Index = index,
+                Position = nextPosition,
+                Relative = nextPosition - position,
+                Velocity = (nextPosition - position) / (float)delta,
+                Pressure = 1.0f
+            };
+            _ = PushTouchEvent(dragEvent);
+            position = nextPosition;
+            touchPositions[index] = position;
+        }
+
+        if (IsEmulateMouseFromTouch)
+        {
+            SimulateEmulatedMouse(() =>
+            {
+                _ = SimulateMouseMove(dropPosition);
+                _ = SimulateMouseButtonRelease(MouseButton.Left);
+            });
+        }
+
+        using var dropEvent = new InputEventScreenTouch
+        {
+            WindowId = windowId,
+            Index = index,
+            Position = dropPosition,
+            Pressed = false
+        };
+        _ = PushTouchEvent(dropEvent);
+        _ = await ISceneRunner.SyncProcessFrame;
+    }
+
+    /// <summary>
+    ///     The mouse events emulated from touch input are marked as emulated, so no touch events are emulated from them again.
+    /// </summary>
+    private void SimulateEmulatedMouse(Action simulate)
+    {
+        isMouseEmulated = true;
+        try
+        {
+            simulate();
+        }
+        finally
+        {
+            isMouseEmulated = false;
+        }
+    }
+
+    private SceneRunner PushTouchEvent(InputEvent touchEvent)
+    {
+        viewport.PushInput(touchEvent);
+        Print(() => $"\tprocess event {Scene()} ({SceneName()}) <- {touchEvent.AsText()}");
         return this;
     }
 
@@ -633,7 +826,7 @@ internal class SceneRunner : ISceneRunner
     {
         private readonly StackTrace stackTrace;
 
-        public GodotMethodAwaitable(StackTrace stackTrace, Node instance, string methodName, params Variant[] args)
+        public GodotMethodAwaitable(StackTrace stackTrace, GodotObject instance, string methodName, params Variant[] args)
         {
             Instance = instance;
             MethodName = methodName;
@@ -645,7 +838,7 @@ internal class SceneRunner : ISceneRunner
 
         private string MethodName { get; }
 
-        private Node Instance { get; }
+        private GodotObject Instance { get; }
 
         private Variant[] Args { get; }
 

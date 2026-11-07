@@ -77,22 +77,25 @@ public interface ISceneRunner : IDisposable
     ///     Simulates that an action has been pressed.
     /// </summary>
     /// <param name="action">The name of the action, e.g., "ui_up".</param>
+    /// <param name="eventIndex">The index of the action event in the input map, -1 for all events of the action.</param>
     /// <returns>The SceneRunner instance.</returns>
-    ISceneRunner SimulateActionPressed(string action);
+    ISceneRunner SimulateActionPressed(string action, int eventIndex = -1);
 
     /// <summary>
     ///     Simulates that an action is press.
     /// </summary>
     /// <param name="action">The name of the action, e.g., "ui_up".</param>
+    /// <param name="eventIndex">The index of the action event in the input map, -1 for all events of the action.</param>
     /// <returns>The SceneRunner instance.</returns>
-    ISceneRunner SimulateActionPress(string action);
+    ISceneRunner SimulateActionPress(string action, int eventIndex = -1);
 
     /// <summary>
     ///     Simulates that an action has been released.
     /// </summary>
     /// <param name="action">The name of the action, e.g., "ui_up".</param>
+    /// <param name="eventIndex">The index of the action event in the input map, -1 for all events of the action.</param>
     /// <returns>The SceneRunner instance.</returns>
-    ISceneRunner SimulateActionRelease(string action);
+    ISceneRunner SimulateActionRelease(string action, int eventIndex = -1);
 
     /// <summary>
     ///     Simulates that a key has been pressed.
@@ -165,6 +168,101 @@ public interface ISceneRunner : IDisposable
     /// <param name="button">The mouse button identifier, one of the MouseButton or button wheel constants.</param>
     /// <returns>SceneRunner.</returns>
     ISceneRunner SimulateMouseButtonRelease(MouseButton button);
+
+    /// <summary>
+    ///     Simulates a screen touch is pressed and released.
+    /// </summary>
+    /// <param name="index">The touch index in the case of a multi-touch event.</param>
+    /// <param name="position">The position to touch the screen.</param>
+    /// <param name="doubleTap">If true, the touch's state is a double tap.</param>
+    /// <returns>The SceneRunner instance.</returns>
+    ISceneRunner SimulateScreenTouchPressed(int index, Vector2 position, bool doubleTap = false);
+
+    /// <summary>
+    ///     Simulates a screen touch press without releasing it, effectively simulating a "hold" action.
+    /// </summary>
+    /// <param name="index">The touch index in the case of a multi-touch event.</param>
+    /// <param name="position">The position to touch the screen.</param>
+    /// <param name="doubleTap">If true, the touch's state is a double tap.</param>
+    /// <returns>The SceneRunner instance.</returns>
+    ISceneRunner SimulateScreenTouchPress(int index, Vector2 position, bool doubleTap = false);
+
+    /// <summary>
+    ///     Simulates a screen touch is released at the current touch position.
+    /// </summary>
+    /// <param name="index">The touch index in the case of a multi-touch event.</param>
+    /// <param name="doubleTap">If true, the touch's state is a double tap.</param>
+    /// <returns>The SceneRunner instance.</returns>
+    ISceneRunner SimulateScreenTouchRelease(int index, bool doubleTap = false);
+
+    /// <summary>
+    ///     Simulates a touch drag and drop to a position relative to the current touch position.
+    /// </summary>
+    /// <example>
+    ///     <code>
+    ///     // start the drag at position 50,50
+    ///     runner.SimulateScreenTouchPress(1, new Vector2(50, 50));
+    ///     // and drop it at 150,50
+    ///     await runner.SimulateScreenTouchDragRelative(1, new Vector2(100, 0));
+    ///     </code>
+    /// </example>
+    /// <param name="index">The touch index in the case of a multi-touch event.</param>
+    /// <param name="relative">The offset to the current touch position to drop at.</param>
+    /// <param name="time">The time to move to the drop position in seconds.</param>
+    /// <param name="transitionType">The transition type of the movement.</param>
+    /// <returns>Task to wait until the drop is done.</returns>
+    Task SimulateScreenTouchDragRelative(int index, Vector2 relative, double time = 1.0, Tween.TransitionType transitionType = Tween.TransitionType.Linear);
+
+    /// <summary>
+    ///     Simulates a touch drag and drop to the given position.
+    /// </summary>
+    /// <example>
+    ///     <code>
+    ///     // start the drag at position 50,50
+    ///     runner.SimulateScreenTouchPress(1, new Vector2(50, 50));
+    ///     // and drop it at 100,50
+    ///     await runner.SimulateScreenTouchDragAbsolute(1, new Vector2(100, 50));
+    ///     </code>
+    /// </example>
+    /// <param name="index">The touch index in the case of a multi-touch event.</param>
+    /// <param name="position">The position to drop at.</param>
+    /// <param name="time">The time to move to the drop position in seconds.</param>
+    /// <param name="transitionType">The transition type of the movement.</param>
+    /// <returns>Task to wait until the drop is done.</returns>
+    Task SimulateScreenTouchDragAbsolute(int index, Vector2 position, double time = 1.0, Tween.TransitionType transitionType = Tween.TransitionType.Linear);
+
+    /// <summary>
+    ///     Simulates a complete touch drag and drop from one position to another.
+    /// </summary>
+    /// <example>
+    ///     <code>
+    ///     // start the drag at position 50,50 and drop it at 100,50
+    ///     await runner.SimulateScreenTouchDragDrop(1, new Vector2(50, 50), new Vector2(100, 50));
+    ///     </code>
+    /// </example>
+    /// <param name="index">The touch index in the case of a multi-touch event.</param>
+    /// <param name="position">The position to start the drag.</param>
+    /// <param name="dropPosition">The position to drop at.</param>
+    /// <param name="time">The time to move to the drop position in seconds.</param>
+    /// <param name="transitionType">The transition type of the movement.</param>
+    /// <returns>Task to wait until the drop is done.</returns>
+    Task SimulateScreenTouchDragDrop(int index, Vector2 position, Vector2 dropPosition, double time = 1.0, Tween.TransitionType transitionType = Tween.TransitionType.Linear);
+
+    /// <summary>
+    ///     Simulates a touch drag to the given position.
+    /// </summary>
+    /// <param name="index">The touch index in the case of a multi-touch event.</param>
+    /// <param name="position">The position to drag to.</param>
+    /// <returns>The SceneRunner instance.</returns>
+    ISceneRunner SimulateScreenTouchDrag(int index, Vector2 position);
+
+    /// <summary>
+    ///     Gets the current touch position of the given touch index.
+    /// </summary>
+    /// <param name="index">The touch index in the case of a multi-touch event.</param>
+    /// <returns>The touch position.</returns>
+    /// <exception cref="InvalidOperationException">No touch with the given index was pressed or dragged.</exception>
+    Vector2 GetScreenTouchDragPosition(int index);
 
     /// <summary>
     ///     Sets the mouse cursor to the given position in pixels, relative to the upper left corner of the scene viewport.
@@ -251,8 +349,26 @@ public interface ISceneRunner : IDisposable
     /// </example>
     /// <typeparam name="TValue">The expected result type.</typeparam>
     /// <param name="methodName">The name of the method to wait.</param>
+    /// <param name="args">The optional method arguments.</param>
     /// <returns>GodotMethodAwaiter.</returns>
-    IGodotMethodAwaitable<TValue> AwaitMethod<[MustBeVariant] TValue>(string methodName)
+    IGodotMethodAwaitable<TValue> AwaitMethod<[MustBeVariant] TValue>(string methodName, params Variant[] args)
+        where TValue : notnull;
+
+    /// <summary>
+    ///     Returns a method awaiter to wait for a specific method result of the given source object.
+    /// </summary>
+    /// <example>
+    ///     <code>
+    ///     // Waits until '100' is returned by the method 'CalculateScore()' of the score calculator.
+    ///     await runner.AwaitMethodOn&lt;int&gt;(scoreCalculator, "CalculateScore").IsEqual(100);
+    /// </code>
+    /// </example>
+    /// <typeparam name="TValue">The expected result type.</typeparam>
+    /// <param name="source">The object that implements the method.</param>
+    /// <param name="methodName">The name of the method to wait.</param>
+    /// <param name="args">The optional method arguments.</param>
+    /// <returns>GodotMethodAwaiter.</returns>
+    IGodotMethodAwaitable<TValue> AwaitMethodOn<[MustBeVariant] TValue>(GodotObject source, string methodName, params Variant[] args)
         where TValue : notnull;
 
     /// <summary>
@@ -342,6 +458,18 @@ public interface ISceneRunner : IDisposable
     ///     Shows the running scene and moves the window to the foreground, does nothing in headless mode.
     /// </summary>
     void MaximizeView();
+
+    /// <summary>
+    ///     Restores the window and moves it to the foreground, does nothing in headless mode or when embedded in the editor.
+    /// </summary>
+    /// <returns>The SceneRunner instance.</returns>
+    ISceneRunner MoveWindowToForeground();
+
+    /// <summary>
+    ///     Minimizes the window, does nothing in headless mode or when embedded in the editor.
+    /// </summary>
+    /// <returns>The SceneRunner instance.</returns>
+    ISceneRunner MoveWindowToBackground();
 
     /// <summary>
     ///     Invokes the method by given name and arguments.

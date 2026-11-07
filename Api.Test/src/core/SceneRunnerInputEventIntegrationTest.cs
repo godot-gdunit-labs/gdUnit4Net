@@ -162,6 +162,18 @@ public sealed class SceneRunnerInputEventIntegrationTest
     }
 
     [TestCase]
+    public async Task SimulateActionPressByEventIndex()
+    {
+        sceneRunner.SimulateActionPress("ui_up", 0);
+        await ISceneRunner.SyncProcessFrame;
+        AssertThat(Input.IsActionPressed("ui_up")).IsTrue();
+
+        sceneRunner.SimulateActionRelease("ui_up", 0);
+        await ISceneRunner.SyncProcessFrame;
+        AssertThat(Input.IsActionPressed("ui_up")).IsFalse();
+    }
+
+    [TestCase]
     public async Task SimulateActionRelease()
     {
         // setup do run actions as press

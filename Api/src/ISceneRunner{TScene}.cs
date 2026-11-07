@@ -29,13 +29,13 @@ public interface ISceneRunner<out TScene> : ISceneRunner
     new TScene Scene();
 
     /// <inheritdoc cref="ISceneRunner.SimulateActionPressed" />
-    new ISceneRunner<TScene> SimulateActionPressed(string action);
+    new ISceneRunner<TScene> SimulateActionPressed(string action, int eventIndex = -1);
 
     /// <inheritdoc cref="ISceneRunner.SimulateActionPress" />
-    new ISceneRunner<TScene> SimulateActionPress(string action);
+    new ISceneRunner<TScene> SimulateActionPress(string action, int eventIndex = -1);
 
     /// <inheritdoc cref="ISceneRunner.SimulateActionRelease" />
-    new ISceneRunner<TScene> SimulateActionRelease(string action);
+    new ISceneRunner<TScene> SimulateActionRelease(string action, int eventIndex = -1);
 
     /// <inheritdoc cref="ISceneRunner.SimulateKeyPressed" />
     new ISceneRunner<TScene> SimulateKeyPressed(Key keyCode);
@@ -68,4 +68,22 @@ public interface ISceneRunner<out TScene> : ISceneRunner
 
     /// <inheritdoc cref="ISceneRunner.SetTimeFactor" />
     new ISceneRunner<TScene> SetTimeFactor(double timeFactor = 1.0);
+
+    /// <inheritdoc cref="ISceneRunner.SimulateScreenTouchPressed" />
+    new ISceneRunner<TScene> SimulateScreenTouchPressed(int index, Vector2 position, bool doubleTap = false);
+
+    /// <inheritdoc cref="ISceneRunner.SimulateScreenTouchPress" />
+    new ISceneRunner<TScene> SimulateScreenTouchPress(int index, Vector2 position, bool doubleTap = false);
+
+    /// <inheritdoc cref="ISceneRunner.SimulateScreenTouchRelease" />
+    new ISceneRunner<TScene> SimulateScreenTouchRelease(int index, bool doubleTap = false);
+
+    /// <inheritdoc cref="ISceneRunner.SimulateScreenTouchDrag" />
+    new ISceneRunner<TScene> SimulateScreenTouchDrag(int index, Vector2 position);
+
+    /// <inheritdoc cref="ISceneRunner.MoveWindowToForeground" />
+    new ISceneRunner<TScene> MoveWindowToForeground();
+
+    /// <inheritdoc cref="ISceneRunner.MoveWindowToBackground" />
+    new ISceneRunner<TScene> MoveWindowToBackground();
 }
