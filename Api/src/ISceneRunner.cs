@@ -96,30 +96,27 @@ public interface ISceneRunner : IDisposable
 
     /// <summary>
     ///     Simulates that a key has been pressed.
+    ///     To simulate a key combination, simulate the modifier key first, e.g. 'SimulateKeyPress(Key.Shift)'.
     /// </summary>
     /// <param name="keyCode">the key code e.g. 'Key.Enter'.</param>
-    /// <param name="shift">false by default set to true if simulate shift is press.</param>
-    /// <param name="control">false by default set to true if simulate control is press.</param>
     /// <returns>SceneRunner.</returns>
-    ISceneRunner SimulateKeyPressed(Key keyCode, bool shift = false, bool control = false);
+    ISceneRunner SimulateKeyPressed(Key keyCode);
 
     /// <summary>
     ///     Simulates that a key is pressed.
+    ///     To simulate a key combination, simulate the modifier key first, e.g. 'SimulateKeyPress(Key.Shift)'.
     /// </summary>
     /// <param name="keyCode">the key code e.g. 'Key.Enter'.</param>
-    /// <param name="shift">false by default set to true if simulate shift is press.</param>
-    /// <param name="control">false by default set to true if simulate control is press.</param>
     /// <returns>SceneRunner.</returns>
-    ISceneRunner SimulateKeyPress(Key keyCode, bool shift = false, bool control = false);
+    ISceneRunner SimulateKeyPress(Key keyCode);
 
     /// <summary>
     ///     Simulates that a key has been released.
+    ///     To simulate a key combination, simulate the modifier key first, e.g. 'SimulateKeyPress(Key.Shift)'.
     /// </summary>
     /// <param name="keyCode">the key code e.g. 'Key.Enter'.</param>
-    /// <param name="shift">false by default set to true if simulate shift is press.</param>
-    /// <param name="control">false by default set to true if simulate control is press.</param>
     /// <returns>SceneRunner.</returns>
-    ISceneRunner SimulateKeyRelease(Key keyCode, bool shift = false, bool control = false);
+    ISceneRunner SimulateKeyRelease(Key keyCode);
 
     /// <summary>
     ///     Simulates a mouse moved to the final position.

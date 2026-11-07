@@ -41,21 +41,21 @@ internal sealed class SceneRunner<TScene> : SceneRunner, ISceneRunner<TScene>
         return this;
     }
 
-    public new ISceneRunner<TScene> SimulateKeyPressed(Key keyCode, bool shift = false, bool control = false)
+    public new ISceneRunner<TScene> SimulateKeyPressed(Key keyCode)
     {
-        _ = base.SimulateKeyPressed(keyCode, shift, control);
+        _ = base.SimulateKeyPressed(keyCode);
         return this;
     }
 
-    public new ISceneRunner<TScene> SimulateKeyPress(Key keyCode, bool shift = false, bool control = false)
+    public new ISceneRunner<TScene> SimulateKeyPress(Key keyCode)
     {
-        _ = base.SimulateKeyPress(keyCode, shift, control);
+        _ = base.SimulateKeyPress(keyCode);
         return this;
     }
 
-    public new ISceneRunner<TScene> SimulateKeyRelease(Key keyCode, bool shift = false, bool control = false)
+    public new ISceneRunner<TScene> SimulateKeyRelease(Key keyCode)
     {
-        _ = base.SimulateKeyRelease(keyCode, shift, control);
+        _ = base.SimulateKeyRelease(keyCode);
         return this;
     }
 

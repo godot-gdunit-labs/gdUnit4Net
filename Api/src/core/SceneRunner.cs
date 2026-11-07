@@ -96,50 +96,18 @@ internal class SceneRunner : ISceneRunner
         return HandleInputEvent(inputEvent);
     }
 
-    public ISceneRunner SimulateKeyPress(Key keyCode, bool shiftPressed = false, bool controlPressed = false)
-    {
-        ThrowIfDisposed();
-        PrintCurrentFocus();
-        var inputEvent = new InputEventKey
-        {
-            Pressed = true,
-            Keycode = keyCode,
-            PhysicalKeycode = keyCode,
-            Unicode = (long)keyCode,
-            AltPressed = keyCode == Key.Alt,
-            ShiftPressed = shiftPressed || keyCode == Key.Shift,
-            CtrlPressed = controlPressed || keyCode == Key.Ctrl
-        };
-        ApplyInputModifiers(inputEvent);
-        keyOnPress.Add(keyCode);
-        return HandleInputEvent(inputEvent);
-    }
+    public ISceneRunner SimulateKeyPress(Key keyCode)
+        => SimulateKey(keyCode, true);
 
-    public ISceneRunner SimulateKeyPressed(Key keyCode, bool shift = false, bool control = false)
+    public ISceneRunner SimulateKeyPressed(Key keyCode)
     {
-        _ = SimulateKeyPress(keyCode, shift, control);
-        _ = SimulateKeyRelease(keyCode, shift, control);
+        _ = SimulateKeyPress(keyCode);
+        _ = SimulateKeyRelease(keyCode);
         return this;
     }
 
-    public ISceneRunner SimulateKeyRelease(Key keyCode, bool shiftPressed = false, bool controlPressed = false)
-    {
-        ThrowIfDisposed();
-        PrintCurrentFocus();
-        var inputEvent = new InputEventKey
-        {
-            Pressed = false,
-            Keycode = keyCode,
-            PhysicalKeycode = keyCode,
-            Unicode = (long)keyCode,
-            AltPressed = keyCode == Key.Alt,
-            ShiftPressed = shiftPressed || keyCode == Key.Shift,
-            CtrlPressed = controlPressed || keyCode == Key.Ctrl
-        };
-        ApplyInputModifiers(inputEvent);
-        _ = keyOnPress.Remove(keyCode);
-        return HandleInputEvent(inputEvent);
-    }
+    public ISceneRunner SimulateKeyRelease(Key keyCode)
+        => SimulateKey(keyCode, false);
 
     public ISceneRunner SetMousePosition(Vector2 position)
     {
@@ -398,6 +366,28 @@ internal class SceneRunner : ISceneRunner
         actionOnPress.Clear();
 
         Input.FlushBufferedEvents();
+    }
+
+    private SceneRunner SimulateKey(Key keyCode, bool pressed)
+    {
+        ThrowIfDisposed();
+        PrintCurrentFocus();
+        var inputEvent = new InputEventKey
+        {
+            Pressed = pressed,
+            Keycode = keyCode,
+            PhysicalKeycode = keyCode,
+            Unicode = (long)keyCode,
+            AltPressed = keyCode == Key.Alt,
+            ShiftPressed = keyCode == Key.Shift,
+            CtrlPressed = keyCode == Key.Ctrl
+        };
+        ApplyInputModifiers(inputEvent);
+        if (pressed)
+            keyOnPress.Add(keyCode);
+        else
+            _ = keyOnPress.Remove(keyCode);
+        return HandleInputEvent(inputEvent);
     }
 
     private void ApplyInputModifiers(InputEventWithModifiers inputEvent)

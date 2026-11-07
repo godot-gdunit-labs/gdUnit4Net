@@ -38,13 +38,13 @@ public interface ISceneRunner<out TScene> : ISceneRunner
     new ISceneRunner<TScene> SimulateActionRelease(string action);
 
     /// <inheritdoc cref="ISceneRunner.SimulateKeyPressed" />
-    new ISceneRunner<TScene> SimulateKeyPressed(Key keyCode, bool shift = false, bool control = false);
+    new ISceneRunner<TScene> SimulateKeyPressed(Key keyCode);
 
     /// <inheritdoc cref="ISceneRunner.SimulateKeyPress" />
-    new ISceneRunner<TScene> SimulateKeyPress(Key keyCode, bool shift = false, bool control = false);
+    new ISceneRunner<TScene> SimulateKeyPress(Key keyCode);
 
     /// <inheritdoc cref="ISceneRunner.SimulateKeyRelease" />
-    new ISceneRunner<TScene> SimulateKeyRelease(Key keyCode, bool shift = false, bool control = false);
+    new ISceneRunner<TScene> SimulateKeyRelease(Key keyCode);
 
     /// <inheritdoc cref="ISceneRunner.SimulateMouseMove" />
     new ISceneRunner<TScene> SimulateMouseMove(Vector2 position);

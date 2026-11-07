@@ -6,6 +6,10 @@ v5.1.0
 * GD-545: A disposed scene runner throws an `ObjectDisposedException`, `Scene()` no longer returns null after `Dispose()`
           and the input simulation and the time factor no longer run silently on a disposed runner.
           Migration: tests that checked `Scene()` for null after `Dispose()` expect the exception instead.
+* GD-580: The `shift` and `control` arguments of the scene runner key methods `SimulateKeyPressed`, `SimulateKeyPress` and `SimulateKeyRelease`
+          are removed, as in the GdUnit4 v7 scene runner API.
+          Migration: simulate the modifier key as its own key, e.g. `runner.SimulateKeyPress(Key.A, true)` becomes
+          `runner.SimulateKeyPress(Key.Shift).SimulateKeyPress(Key.A)`.
 
 🪲 Bug Fixes
 * GD-305: Added missing AppendFailureMessage on assertions
