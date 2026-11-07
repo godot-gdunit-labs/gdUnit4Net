@@ -51,6 +51,8 @@ permissions:
 jobs:
 
   unit-test-runner:
+    # The example uses the published packages, which do not support Godot prereleases until rc7, see #587
+    if: ${{ inputs.godot-status == 'stable' }}
     permissions:
       actions: write
       contents: read
@@ -216,6 +218,8 @@ jobs:
 
   unit-test-example:
     name: "Run Test Examples"
+    # The example uses the published packages, which do not support Godot prereleases until rc7, see #587
+    if: ${{ inputs.godot-status == 'stable' }}
     runs-on: ${{ inputs.os }}
     timeout-minutes: 3
 
