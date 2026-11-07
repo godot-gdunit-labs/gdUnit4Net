@@ -2,7 +2,7 @@
 # Copyright & License Information
 ##########################################
 #
-# Copyright (c) 2025 Mike Schulze
+# Copyright (c) 2026 Mike Schulze
 # MIT License - See LICENSE file in the repository root for full license text
 #
 # This .editorconfig file is part of the GdUnit4Net project and is licensed
@@ -86,7 +86,7 @@ end_of_line = lf
 dotnet_analyzer_diagnostic.severity = warning
 
 # GdUnit4 File header configuration
-file_header_template = Copyright (c) 2025 Mike Schulze\nMIT License - See LICENSE file in the repository root for full license text
+file_header_template = Copyright (c) 2026 Mike Schulze\nMIT License - See LICENSE file in the repository root for full license text
 
 ##########################################
 # Language Rules - .NET Style Rules
