@@ -342,6 +342,10 @@ jobs:
         env:
           GODOT_BIN: "/home/runner/godot-linux/godot"
         run: |
+          # Launch Godot to build both projects, it sets the Godot SDK of the projects to the tested Godot version
+          $GODOT_BIN --path ./Example.MultiProject/Game --headless --build-solutions --quit-after 20
+          $GODOT_BIN --path ./Example.MultiProject/Game.Test --headless --build-solutions --quit-after 20
+
           # The test project references the game project, the test runner imports the game assets and mounts the game at runtime
           cd ./Example.MultiProject/Game.Test
           dotnet test Game.Test.csproj --settings .runsettings-ci
