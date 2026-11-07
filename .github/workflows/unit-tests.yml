@@ -51,6 +51,8 @@ permissions:
 jobs:
 
   unit-test-runner:
+    # The example uses the published packages, which do not support Godot prereleases until rc7, see #587
+    if: ${{ inputs.godot-status == 'stable' }}
     permissions:
       actions: write
       contents: read
@@ -216,6 +218,8 @@ jobs:
 
   unit-test-example:
     name: "Run Test Examples"
+    # The example uses the published packages, which do not support Godot prereleases until rc7, see #587
+    if: ${{ inputs.godot-status == 'stable' }}
     runs-on: ${{ inputs.os }}
     timeout-minutes: 3
 
@@ -342,6 +346,10 @@ jobs:
         env:
           GODOT_BIN: "/home/runner/godot-linux/godot"
         run: |
+          # Launch Godot to build both projects, it sets the Godot SDK of the projects to the tested Godot version
+          $GODOT_BIN --path ./Example.MultiProject/Game --headless --build-solutions --quit-after 20
+          $GODOT_BIN --path ./Example.MultiProject/Game.Test --headless --build-solutions --quit-after 20
+
           # The test project references the game project, the test runner imports the game assets and mounts the game at runtime
           cd ./Example.MultiProject/Game.Test
           dotnet test Game.Test.csproj --settings .runsettings-ci

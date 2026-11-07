@@ -3,74 +3,24 @@
 
 namespace GdUnit4.Core.Runners;
 
-using System.Diagnostics.CodeAnalysis;
-
-using Api;
-
-using Godot;
-
-using Logging;
-
-using Projects;
+using System.ComponentModel;
 
 /// <summary>
-///     The GdUnit4Net test runner scene.
+///     Compatibility type for runner scenes installed by older versions, it is not used by the test runner.
 /// </summary>
-public partial class GdUnit4TestRunnerSceneCore : SceneTree
-{
-    /// <inheritdoc />
-    [SuppressMessage(
-        "Reliability",
-        "CA2000:Dispose objects before losing scope",
-        Justification = "TestRunner disposal is managed by Godot internals.")]
-    public override void _Initialize()
-    {
-        try
-        {
-            GodotProjectMounter.MountReferencedProjects(Root, new GodotLogger());
-            Root.AddChild(new TestRunner());
-        }
-
-        // Godot callback boundary: an exception escaping the scene tree initialization does not end the Godot process, so it exits with an error code instead
-#pragma warning disable CA1031
-        catch (Exception e)
-#pragma warning restore CA1031
-        {
-            GD.PrintErr("Exception", e.Message);
-            Quit(100); // Exit with error code
-        }
-    }
-
-    // ReSharper disable once PartialTypeWithSinglePart
-    private sealed partial class TestRunner : Node
-    {
-        public TestRunner()
-        {
-            Logger = new GodotLogger();
-            Server = new GodotGdUnit4RestServer(Logger, ResolvePipeName());
-        }
-
-        private ITestEngineLogger Logger { get; }
-
-        private GodotGdUnit4RestServer Server { get; }
-
-        public override void _Ready() => _ = Server.Start();
-
-        public override void _Process(double delta) => _ = Server.Process();
-
-        public override void _Notification(int what)
-        {
-            if (what == NotificationPredelete)
-                Server.Stop();
-        }
-
-        private static string ResolvePipeName()
-        {
-            var args = OS.GetCmdlineArgs();
-            var index = Array.IndexOf(args, "--pipe-name");
-            if (index < 0 || index >= args.Length - 1)
-                throw new InvalidOperationException("Missing required '--pipe-name' argument.");
-            return args[index + 1];
-        }
-    }
-}
+/// <remarks>
+///     Up to 5.1.0-rc6 the test adapter installed <c>gdunit4_testadapter_v5/GdUnit4TestRunnerScene.cs</c> into the test project,
+///     its runner scene derives from this type, which was a <c>SceneTree</c> compiled into this assembly.
+///     From Godot 4.8 on, the source generators of the test project call generated members of such a base type
+///     that an assembly built for an older Godot version does not have, so the test project fails to compile.
+///     <para>
+///         The current runner scene derives from <c>SceneTree</c> and calls <see cref="GdUnit4TestRunnerHost.Initialize" />.
+///         This type stays as a plain class only to not break existing projects: an outdated runner scene still compiles,
+///         and the next test run detects that it differs from the current runner scene and replaces it.
+///     </para>
+///     <para>
+///         Remove this type in the next major version.
+///     </para>
+/// </remarks>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public class GdUnit4TestRunnerSceneCore;
