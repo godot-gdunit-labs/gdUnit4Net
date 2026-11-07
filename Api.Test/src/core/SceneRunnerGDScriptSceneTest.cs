@@ -35,7 +35,7 @@ public class SceneRunnerGDScriptSceneTest
     {
         sceneRunner = ISceneRunner.Load("res://src/core/resources/scenes/TestSceneGDScript.tscn", true);
         AssertThat(sceneRunner).IsNotNull();
-        sceneRunner.SetMousePos(new Vector2(600, 600));
+        sceneRunner.SetMousePosition(new Vector2(600, 600));
     }
 
     [TestCase]
@@ -222,7 +222,7 @@ public class SceneRunnerGDScriptSceneTest
         AssertObject(box3.Color).IsEqual(Colors.White);
 
         // set mouse position to button one and simulate is pressed
-        sceneRunner.SetMousePos(new Vector2(60, 20))
+        sceneRunner.SetMousePosition(new Vector2(60, 20))
             .SimulateMouseButtonPressed(MouseButton.Left);
 
         // wait until next frame
@@ -234,7 +234,7 @@ public class SceneRunnerGDScriptSceneTest
         AssertObject(box3.Color).IsEqual(Colors.White);
 
         // set mouse position to button two and simulate is pressed
-        sceneRunner.SetMousePos(new Vector2(160, 20))
+        sceneRunner.SetMousePosition(new Vector2(160, 20))
             .SimulateMouseButtonPressed(MouseButton.Left);
 
         // verify box two is changed to Gray
@@ -243,7 +243,7 @@ public class SceneRunnerGDScriptSceneTest
         AssertObject(box3.Color).IsEqual(Colors.White);
 
         // set mouse position to button three and simulate is pressed
-        sceneRunner.SetMousePos(new Vector2(260, 20))
+        sceneRunner.SetMousePosition(new Vector2(260, 20))
             .SimulateMouseButtonPressed(MouseButton.Left);
 
         // verify box three is changed to red and after around 1s to Gray

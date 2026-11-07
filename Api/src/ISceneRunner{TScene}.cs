@@ -58,8 +58,13 @@ public interface ISceneRunner<out TScene> : ISceneRunner
     /// <inheritdoc cref="ISceneRunner.SimulateMouseButtonRelease" />
     new ISceneRunner<TScene> SimulateMouseButtonRelease(MouseButton button);
 
-    /// <inheritdoc cref="ISceneRunner.SetMousePos" />
-    new ISceneRunner<TScene> SetMousePos(Vector2 position);
+    /// <inheritdoc cref="ISceneRunner.SetMousePosition" />
+    new ISceneRunner<TScene> SetMousePosition(Vector2 position);
+
+    /// <inheritdoc cref="ISceneRunner.SetMousePosition" />
+    [Obsolete("SetMousePos is deprecated, please use SetMousePosition instead.")]
+    new ISceneRunner<TScene> SetMousePos(Vector2 position)
+        => SetMousePosition(position);
 
     /// <inheritdoc cref="ISceneRunner.SetTimeFactor" />
     new ISceneRunner<TScene> SetTimeFactor(double timeFactor = 1.0);

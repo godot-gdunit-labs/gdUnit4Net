@@ -141,7 +141,7 @@ internal class SceneRunner : ISceneRunner
         return HandleInputEvent(inputEvent);
     }
 
-    public ISceneRunner SetMousePos(Vector2 position)
+    public ISceneRunner SetMousePosition(Vector2 position)
     {
         ThrowIfDisposed();
         var inputEvent = new InputEventMouseMotion

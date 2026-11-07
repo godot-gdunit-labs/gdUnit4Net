@@ -31,7 +31,7 @@ public sealed class SceneRunnerInputDispatchTest
         var runner = ISceneRunner.Load(new InputCountingNode(), true);
         runner.MaximizeView();
 
-        runner.SetMousePos(new Vector2(50, 50));
+        runner.SetMousePosition(new Vector2(50, 50));
         runner.SimulateMouseButtonPressed(MouseButton.Left);
         await runner.AwaitInputProcessed();
 
@@ -47,7 +47,7 @@ public sealed class SceneRunnerInputDispatchTest
         var runner = ISceneRunner.Load(new InputCountingControl { Size = new Vector2(200, 200) }, true);
         runner.MaximizeView();
 
-        runner.SetMousePos(new Vector2(50, 50));
+        runner.SetMousePosition(new Vector2(50, 50));
         runner.SimulateMouseButtonPressed(MouseButton.Left);
         await runner.AwaitInputProcessed();
 
