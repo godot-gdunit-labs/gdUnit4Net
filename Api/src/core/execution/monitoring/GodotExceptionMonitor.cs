@@ -3,7 +3,7 @@
 
 namespace GdUnit4.Core.Execution.Monitoring;
 
-using System.Diagnostics;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -14,83 +14,66 @@ using Extensions;
 
 using Godot;
 
-internal class GodotExceptionMonitor
+/// <summary>
+///     Reports the exceptions and errors Godot catches and logs while a test stage runs, which the test would not see otherwise.
+/// </summary>
+/// <remarks>
+///     Every exception thrown while the monitor runs is remembered, Godot reports the exceptions it catches in C# code it called
+///     to the registered <see cref="GodotErrorLogger" />, and the reported exception is rethrown with its original stack trace.
+/// </remarks>
+internal sealed class GodotExceptionMonitor : IDisposable
 {
+    // Godot reports the exceptions it catches in C# code through this class, unless the script debugger is active
+    private const string GodotExceptionLoggerType = "Godot.NativeInterop.ExceptionUtils";
+
+    // the test engine calls the test from this namespace, its frames are not part of the reported stack trace
+    private const string TestEngineNamespace = "GdUnit4.Core.";
+
     // Types of exceptions that should be ignored during test execution
     private static readonly HashSet<Type> IgnoredExceptionTypes =
     [
         typeof(TestFailedException)
     ];
 
-    private static readonly List<Exception> CaughtExceptions = [];
+    private readonly ConcurrentQueue<Exception> thrownExceptions = new();
+    private readonly GodotErrorLogger errorLogger = new();
+    private bool isRunning;
 
-    private readonly string godotLogFile;
-    private long eof;
-
-    public GodotExceptionMonitor()
+    private GodotExceptionMonitor()
     {
-        godotLogFile = ProjectSettings.GlobalizePath((string)ProjectSettings.GetSetting("debug/file_logging/log_path"));
-        if (!(IsLogFileAvailable = File.Exists(godotLogFile)))
-            Console.WriteLine($"The Godot logfile is not available: {godotLogFile}");
     }
 
-    private bool IsLogFileAvailable { get; }
-
-    public void Start()
+    public static GodotExceptionMonitor Start()
     {
-        AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
-        if (!IsLogFileAvailable)
-            return;
-
-        try
-        {
-            using var fileStream = new FileStream(godotLogFile, FileMode.Open, System.IO.FileAccess.Read, FileShare.ReadWrite);
-            using var reader = new StreamReader(fileStream);
-            _ = fileStream.Seek(0, SeekOrigin.End);
-            eof = fileStream.Length;
-        }
-        catch (IOException ex)
-        {
-            GD.PrintErr($"Failed to open log file: {ex.Message}");
-        }
+        var monitor = new GodotExceptionMonitor();
+        AppDomain.CurrentDomain.FirstChanceException += monitor.OnFirstChanceException;
+        OS.AddLogger(monitor.errorLogger);
+        monitor.isRunning = true;
+        return monitor;
     }
 
     public async Task StopThrow()
     {
-        AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
-
-        if (!IsLogFileAvailable)
-            return;
-
-        // we need to wait the current Godot main tread has processed all nodes
+        // we need to wait the current Godot main tread has processed all nodes, including the deferred calls
         _ = await GodotObjectExtensions.SyncProcessFrame;
+        Stop();
 
-        try
+        foreach (var error in errorLogger.Errors)
         {
-            foreach (var logEntry in ScanGodotLogFile())
-            {
-                switch (logEntry.EntryType)
-                {
-                    case ErrorLogEntry.ErrorType.Exception:
-                        var exception = CaughtExceptions.FirstOrDefault(e => e.GetType() == logEntry.ExceptionType && e.Message == logEntry.Message);
-                        if (exception != null)
-                            ExceptionDispatchInfo.Capture(exception).Throw();
-                        break;
-                    case ErrorLogEntry.ErrorType.PushError:
-                        throw ToTestFailedException(logEntry);
-                    case ErrorLogEntry.ErrorType.PushWarning:
-                        break;
+            var exception = FindThrownException(error);
+            if (exception != null)
+                ExceptionDispatchInfo.Capture(exception).Throw();
 
-                    // ReSharper disable once RedundantEmptySwitchSection
-                    default:
-                        break;
-                }
-            }
+            // an exception thrown before the monitor started cannot be rethrown
+            if (!IsExceptionReport(error))
+                throw ToTestFailedException(error);
         }
-        finally
-        {
-            CaughtExceptions.Clear();
-        }
+    }
+
+    public void Dispose()
+    {
+        Stop();
+        errorLogger.Dispose();
     }
 
     /// <summary>
@@ -105,25 +88,31 @@ internal class GodotExceptionMonitor
     private static string NormalizedPath(string path) =>
         path.StartsWith("res://") || path.StartsWith("user://") ? ProjectSettings.GlobalizePath(path) : path;
 
-    private static TestFailedException ToTestFailedException(ErrorLogEntry logEntry)
+    private static bool IsExceptionReport(GodotErrorLogger.ReportedError error)
+        => error.Function.Contains(GodotExceptionLoggerType, StringComparison.Ordinal);
+
+    private static TestFailedException ToTestFailedException(GodotErrorLogger.ReportedError error)
     {
         var stackFrames = new StringBuilder();
-        var fileName = string.Empty;
-        var lineNumber = 0;
-        foreach (var stackTraceLine in logEntry.Details.Split("\n"))
-        {
-            var match = GodotPushErrorPattern.Match(stackTraceLine);
-            if (match.Success)
-            {
-                var methodInfo = match.Groups[1].Value;
-                fileName = NormalizedPath(match.Groups[2].Value);
-                lineNumber = int.Parse(match.Groups[3].Value);
-                _ = stackFrames.Append($"  at: {methodInfo} in {fileName}:line {lineNumber}");
-                _ = stackFrames.AppendLine();
-            }
-        }
+        foreach (var frame in CallerFrames(error))
+            _ = stackFrames.Append($"  at: {frame.Function} in {NormalizedPath(frame.File)}:line {frame.Line}").AppendLine();
+        return new TestFailedException(error.Code, stackFrames.ToString(), NormalizedPath(error.File), error.Line);
+    }
 
-        return new TestFailedException(logEntry.Message, stackFrames.ToString(), fileName, lineNumber);
+    // the C# backtrace starts with the Godot method that pushed the error, the frames from the caller on up to the test engine are reported
+    private static IEnumerable<GodotErrorLogger.BacktraceFrame> CallerFrames(GodotErrorLogger.ReportedError error)
+    {
+        var callerIndex = error.Backtrace
+            .Select((frame, index) => (frame, index))
+            .FirstOrDefault(entry => entry.frame.Function == error.Function && entry.frame.Line == error.Line, (default, -1))
+            .index;
+        if (callerIndex < 0)
+            return [new GodotErrorLogger.BacktraceFrame(error.Function, error.File, error.Line)];
+
+        return error.Backtrace
+            .Skip(callerIndex)
+            .TakeWhile(frame => !frame.Function.Contains(TestEngineNamespace, StringComparison.Ordinal))
+            .Where(frame => frame.Line > 0);
     }
 
     private static bool ShouldIgnoreException(Exception ex)
@@ -137,88 +126,30 @@ internal class GodotExceptionMonitor
         return IgnoredExceptionTypes.Contains(ex.GetType());
     }
 
-    private static bool IsSceneProcessing()
+    // Godot logs the full exception text, with the script debugger active it logs the type name and the message separately
+    private Exception? FindThrownException(GodotErrorLogger.ReportedError error)
     {
-        // Look for scene processing methods in the stack trace
-        var stackTrace = new StackTrace(true);
-        foreach (var frame in stackTrace.GetFrames())
-        {
-            var method = frame.GetMethod();
-            if (method == null)
-                continue;
+        var exception = thrownExceptions.FirstOrDefault(e => error.Code == e.ToString());
+        if (exception != null)
+            return exception;
 
-            var declaringType = method.DeclaringType;
-            if (declaringType == null)
-                continue;
-
-            // Check for scene processing methods
-            if (IsSceneProcessingMethod(method.Name, declaringType))
-                return true;
-        }
-
-        return false;
+        var report = $"{error.Code}\n{error.Rationale}";
+        return thrownExceptions.FirstOrDefault(e => report.Contains($"{e.GetType().FullName}: {e.Message}", StringComparison.Ordinal));
     }
 
-    private static bool IsSceneProcessingMethod(string methodName, Type declaringType)
+    private void Stop()
     {
-        // Check for common Godot processing methods
-        if (methodName is "_Process" or "_PhysicsProcess" or "_Input" or "_UnhandledInput" or "_Ready" or "InvokeGodotClassMethod")
+        if (!isRunning)
+            return;
 
-            // Check if the declaring type is or inherits from Node
-            return typeof(Node).IsAssignableFrom(declaringType) || typeof(RefCounted).IsAssignableFrom(declaringType);
-        return false;
+        isRunning = false;
+        AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
+        OS.RemoveLogger(errorLogger);
     }
 
     private void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
     {
-        if (ShouldIgnoreException(e.Exception))
-            return;
-        if (IsSceneProcessing())
-            CaughtExceptions.Add(e.Exception);
-    }
-
-    private List<ErrorLogEntry> ScanGodotLogFile()
-    {
-        var logEntries = new List<ErrorLogEntry?>();
-        try
-        {
-            using var fileStream = new FileStream(godotLogFile, FileMode.Open, System.IO.FileAccess.Read, FileShare.ReadWrite);
-            using var reader = new StreamReader(fileStream);
-
-            // Seek to the last known position
-            _ = fileStream.Seek(eof, SeekOrigin.Begin);
-
-            var records = new List<string>();
-            while (reader.ReadLine() is { } line)
-                records.Add(line);
-
-            // Update the EOF position
-            eof = fileStream.Position;
-
-            for (var index = 0; index < records.Count; index++)
-            {
-                var extractException = ErrorLogEntry.ExtractException([.. records], index);
-                if (extractException != null)
-                {
-                    logEntries.Add(extractException);
-                    continue;
-                }
-
-                var extractPushError = ErrorLogEntry.ExtractPushError([.. records], index);
-                if (extractPushError != null)
-                {
-                    logEntries.Add(extractPushError);
-                    continue;
-                }
-
-                logEntries.Add(ErrorLogEntry.ExtractPushWarning([.. records], index));
-            }
-        }
-        catch (IOException ex)
-        {
-            GD.PrintErr($"Failed to read log file: {ex.Message}");
-        }
-
-        return logEntries.Where(e => e != null).ToList()!;
+        if (!ShouldIgnoreException(e.Exception))
+            thrownExceptions.Enqueue(e.Exception);
     }
 }

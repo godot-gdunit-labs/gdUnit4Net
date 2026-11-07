@@ -22,8 +22,6 @@ using static Api.ReportType;
 
 internal abstract class ExecutionStage<T> : IExecutionStage
 {
-    private GodotExceptionMonitor? godotExceptionMonitor;
-
     protected ExecutionStage(string name, Type type)
     {
         var method = type
@@ -70,14 +68,9 @@ internal abstract class ExecutionStage<T> : IExecutionStage
                 return;
             }
 
-            if (IsMonitoringOnGodotExceptionsEnabled && context.IsEngineMode)
-            {
-                godotExceptionMonitor = new GodotExceptionMonitor();
-                godotExceptionMonitor.Start();
-            }
-
+            using var godotExceptionMonitor = IsMonitoringOnGodotExceptionsEnabled && context.IsEngineMode ? GodotExceptionMonitor.Start() : null;
             await ExecuteStage(context).ConfigureAwait(true);
-            if (godotExceptionMonitor != null && IsMonitoringOnGodotExceptionsEnabled && context.IsEngineMode)
+            if (godotExceptionMonitor != null)
             {
                 await godotExceptionMonitor
                     .StopThrow()
