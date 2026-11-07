@@ -173,7 +173,7 @@ public sealed class SceneRunnerLiveCycleTest
 
         AssertThrown(() => runner.GetMousePosition()).IsInstanceOf<ObjectDisposedException>();
         AssertThrown(() => runner.SimulateMouseMove(new Vector2(20, 20))).IsInstanceOf<ObjectDisposedException>();
-        AssertThrown(() => runner.SetMousePos(new Vector2(20, 20))).IsInstanceOf<ObjectDisposedException>();
+        AssertThrown(() => runner.SetMousePosition(new Vector2(20, 20))).IsInstanceOf<ObjectDisposedException>();
         AssertThrown(() => runner.SimulateMouseButtonPress(MouseButton.Left)).IsInstanceOf<ObjectDisposedException>();
         AssertThrown(() => runner.SimulateMouseButtonRelease(MouseButton.Left)).IsInstanceOf<ObjectDisposedException>();
         AssertThrown(() => runner.SimulateKeyPress(Key.A)).IsInstanceOf<ObjectDisposedException>();

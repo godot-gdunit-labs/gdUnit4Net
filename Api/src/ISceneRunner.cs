@@ -174,7 +174,12 @@ public interface ISceneRunner : IDisposable
     /// </summary>
     /// <param name="position">The absolute mouse position.</param>
     /// <returns>SceneRunner.</returns>
-    ISceneRunner SetMousePos(Vector2 position);
+    ISceneRunner SetMousePosition(Vector2 position);
+
+    /// <inheritdoc cref="SetMousePosition" />
+    [Obsolete("SetMousePos is deprecated, please use SetMousePosition instead.")]
+    ISceneRunner SetMousePos(Vector2 position)
+        => SetMousePosition(position);
 
     /// <summary>
     ///     Gets the current mouse position of the current viewport.
@@ -307,7 +312,7 @@ public interface ISceneRunner : IDisposable
     /// </summary>
     /// <example>
     ///     <code>
-    ///     runner.SetMousePos(new Vector2(60, 20))
+    ///     runner.SetMousePosition(new Vector2(60, 20))
     ///         .SimulateMouseButtonPressed(MouseButton.Left);
     ///     await runner.AwaitInputProcessed()  // Ensure all inputs are processed before continuing
     ///     </code>

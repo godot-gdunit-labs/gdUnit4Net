@@ -86,6 +86,8 @@ v5.1.0
           and fails with a message naming the expected and the actual type. `Scene()` is no longer nullable.
           Tip: casts and null checks on `Scene()` are now redundant and can be removed, e.g. `(Player)runner.Scene()!` becomes `runner.Scene()`.
           Loading by path without a type still returns `Node`, use `ISceneRunner.Load<Player>("res://player.tscn")` for the typed runner.
+* GD-577: The scene runner method `SetMousePosition` replaces `SetMousePos` to match the GdUnit4 scene runner API.
+          `SetMousePos` is deprecated and calls `SetMousePosition`.
 
 v5.0.0
 

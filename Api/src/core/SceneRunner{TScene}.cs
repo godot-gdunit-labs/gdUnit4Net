@@ -83,9 +83,9 @@ internal sealed class SceneRunner<TScene> : SceneRunner, ISceneRunner<TScene>
         return this;
     }
 
-    public new ISceneRunner<TScene> SetMousePos(Vector2 position)
+    public new ISceneRunner<TScene> SetMousePosition(Vector2 position)
     {
-        _ = base.SetMousePos(position);
+        _ = base.SetMousePosition(position);
         return this;
     }
 

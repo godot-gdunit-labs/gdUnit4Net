@@ -87,7 +87,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
     public async Task ResetToInitialStateOnRelease()
     {
         // move mouse out of button range to avoid scene button interactions
-        sceneRunner.SetMousePos(new Vector2(400, 400));
+        sceneRunner.SetMousePosition(new Vector2(400, 400));
 
         // simulate mouse buttons and key press but we never released it
         sceneRunner.SimulateMouseButtonPress(MouseButton.Left);
@@ -256,13 +256,13 @@ public sealed class SceneRunnerInputEventIntegrationTest
     }
 
     [TestCase]
-    public async Task SimulateSetMousePos()
+    public async Task SimulateSetMousePosition()
     {
         // save current global mouse pos
         var gmp = sceneRunner.GetGlobalMousePosition();
 
         // set mouse to pos 100, 100
-        sceneRunner.SetMousePos(new Vector2(100, 100));
+        sceneRunner.SetMousePosition(new Vector2(100, 100));
         await ISceneRunner.SyncProcessFrame;
 
         AssertThat(ActualMousePos()).IsEqual(new Vector2(100, 100));
@@ -277,7 +277,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
 
         // set mouse to pos 800, 400
         gmp = sceneRunner.GetGlobalMousePosition();
-        sceneRunner.SetMousePos(new Vector2(800, 400));
+        sceneRunner.SetMousePosition(new Vector2(800, 400));
         await ISceneRunner.SyncProcessFrame;
 
         AssertThat(ActualMousePos()).IsEqual(new Vector2(800, 400));
@@ -292,7 +292,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
 
         // and again back to 100,100
         gmp = sceneRunner.GetGlobalMousePosition();
-        sceneRunner.SetMousePos(new Vector2(100, 100));
+        sceneRunner.SetMousePosition(new Vector2(100, 100));
         await ISceneRunner.SyncProcessFrame;
 
         AssertThat(ActualMousePos()).IsEqual(new Vector2(100, 100));
@@ -307,7 +307,20 @@ public sealed class SceneRunnerInputEventIntegrationTest
     }
 
     [TestCase]
-    public async Task SimulateSetMousePosWithModifiers()
+    public void SetMousePosIsDeprecatedAlias()
+    {
+#pragma warning disable CS0618
+        sceneRunner.SetMousePos(new Vector2(120, 80));
+        AssertThat(sceneRunner.GetMousePosition()).IsEqual(new Vector2(120, 80));
+
+        using var typedRunner = ISceneRunner.Load(new Node2D(), true);
+        AssertThat(typedRunner.SetMousePos(new Vector2(30, 40)).Scene()).IsSame(typedRunner.Scene());
+#pragma warning restore CS0618
+        AssertThat(typedRunner.GetMousePosition()).IsEqual(new Vector2(30, 40));
+    }
+
+    [TestCase]
+    public async Task SimulateSetMousePositionWithModifiers()
     {
         var isAlt = false;
         var isControl = false;
@@ -328,7 +341,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
                 var gmp = sceneRunner.GetGlobalMousePosition();
 
                 sceneRunner.SimulateKeyPress(modifier);
-                sceneRunner.SetMousePos(Vector2.Zero);
+                sceneRunner.SetMousePosition(Vector2.Zero);
                 sceneRunner.SimulateMouseButtonPress(mouse_button);
                 await ISceneRunner.SyncProcessFrame;
 
@@ -809,7 +822,7 @@ public sealed class SceneRunnerInputEventIntegrationTest
         // set initial mouse pos over the left slot
         var mouse_pos = slot_left.GlobalPosition + new Vector2(10, 10);
 
-        dragAndDropSceneRunner.SetMousePos(mouse_pos);
+        dragAndDropSceneRunner.SetMousePosition(mouse_pos);
         await dragAndDropSceneRunner.AwaitMillis(1000);
         await ISceneRunner.SyncProcessFrame;
 
