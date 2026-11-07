@@ -100,11 +100,13 @@ public sealed class SceneRunnerLiveCycleTest
         var parent = AutoFree(new Node());
         var scene = AutoFree(new Node2D());
         var runner = ISceneRunner.Load(scene);
+        var viewport = scene.GetViewport();
         scene.Reparent(parent);
 
         runner.Dispose();
 
         AssertThat(scene.GetParent()).IsSame(parent);
+        AssertThat(GodotObject.IsInstanceValid(viewport)).IsFalse();
     }
 
     [TestCase]

@@ -4,6 +4,7 @@
 namespace GdUnit4.Core;
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using Api;
@@ -31,6 +32,12 @@ internal class SceneRunner : ISceneRunner
     private readonly ICollection<Key> keyOnPress = new HashSet<Key>();
     private readonly ICollection<MouseButton> mouseButtonOnPress = new HashSet<MouseButton>();
 
+    [SuppressMessage("Reliability", "CA2213:Disposable fields should be disposed", Justification = "The node is freed in Dispose")]
+    private readonly SubViewport viewport;
+
+    [SuppressMessage("Reliability", "CA2213:Disposable fields should be disposed", Justification = "The node is freed in Dispose")]
+    private readonly SceneRunnerView? viewportView;
+
     public SceneRunner(string resourcePath, bool autoFree = false, bool verbose = false)
         : this(LoadScene(resourcePath), autoFree, verbose)
     {
@@ -46,10 +53,19 @@ internal class SceneRunner : ISceneRunner
         ExecutionContext.RegisterDisposable(this);
         SceneTree = (SceneTree)Engine.GetMainLoop();
         this.currentScene = currentScene;
-        SceneTree.Root.AddChild(this.currentScene);
+        viewport = CreateSceneViewport(SceneTree.Root, currentScene);
+        SceneTree.Root.AddChild(viewport);
+        if (!IsHeadless)
+        {
+            viewportView = new SceneRunnerView(viewport);
+            SceneTree.Root.AddChild(viewportView);
+        }
+
         SavedIterationsPerSecond = Engine.PhysicsTicksPerSecond;
         _ = SetTimeFactor();
     }
+
+    private static bool IsHeadless => DisplayServer.GetName() == "headless";
 
     private SceneTree SceneTree { get; }
 
@@ -115,7 +131,7 @@ internal class SceneRunner : ISceneRunner
         var inputEvent = new InputEventMouseMotion
         {
             Position = position,
-            GlobalPosition = GetGlobalMousePosition()
+            GlobalPosition = ToGlobalPosition(position)
         };
         ApplyInputModifiers(inputEvent);
         return HandleInputEvent(inputEvent);
@@ -126,11 +142,17 @@ internal class SceneRunner : ISceneRunner
         ThrowIfDisposed();
         if (LastInputEvent is InputEventMouse me)
             return me.Position;
-        return Scene().GetViewport().GetMousePosition();
+        return viewport.GetMousePosition();
     }
 
-    public Vector2 GetGlobalMousePosition() =>
-        SceneTree.Root.GetMousePosition();
+    public Vector2 GetGlobalMousePosition()
+    {
+        if (LastInputEvent is InputEventMouse mouseEvent)
+            return mouseEvent.GlobalPosition;
+        if (GodotObject.IsInstanceValid(viewport))
+            return ToGlobalPosition(viewport.GetMousePosition());
+        return Vector2.Zero;
+    }
 
     public ISceneRunner SimulateMouseMove(Vector2 position)
     {
@@ -138,6 +160,7 @@ internal class SceneRunner : ISceneRunner
         var inputEvent = new InputEventMouseMotion
         {
             Position = position,
+            GlobalPosition = ToGlobalPosition(position),
             Relative = position - GetMousePosition()
         };
         ApplyInputMouseMask(inputEvent);
@@ -279,6 +302,8 @@ internal class SceneRunner : ISceneRunner
 
     public void MaximizeView()
     {
+        if (IsHeadless)
+            return;
         DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
         DisplayServer.WindowMoveToForeground();
     }
@@ -298,11 +323,16 @@ internal class SceneRunner : ISceneRunner
             IsDisposed = true;
             if (GodotObject.IsInstanceValid(scene))
             {
-                if (scene.GetParent() == SceneTree.Root)
-                    SceneTree.Root.RemoveChild(scene);
+                if (scene.GetParent() == viewport)
+                    viewport.RemoveChild(scene);
                 if (SceneAutoFree)
                     scene.Free();
             }
+
+            if (GodotObject.IsInstanceValid(viewportView))
+                viewportView.Free();
+            if (GodotObject.IsInstanceValid(viewport))
+                viewport.Free();
         }
     }
 
@@ -316,6 +346,26 @@ internal class SceneRunner : ISceneRunner
         return (MouseButtonMask)Enum.ToObject(typeof(MouseButtonMask), button_mask);
     }
 
+    /// <summary>
+    ///     The scene viewport size follows the window and stretch settings, the size the scene has in the game.
+    /// </summary>
+    /// <param name="root">The root window.</param>
+    /// <returns>The scene viewport size.</returns>
+    internal static Vector2I ViewportSize(Window root)
+    {
+        var contentScaleSize = root.ContentScaleSize;
+        if (root.ContentScaleMode != Window.ContentScaleModeEnum.Disabled && contentScaleSize.X > 0 && contentScaleSize.Y > 0)
+            return contentScaleSize;
+        var windowOverride = new Vector2I(
+            ProjectSettings.GetSetting("display/window/size/window_width_override", 0).AsInt32(),
+            ProjectSettings.GetSetting("display/window/size/window_height_override", 0).AsInt32());
+        if (windowOverride.X > 0 && windowOverride.Y > 0)
+            return windowOverride;
+        return new Vector2I(
+            ProjectSettings.GetSetting("display/window/size/viewport_width").AsInt32(),
+            ProjectSettings.GetSetting("display/window/size/viewport_height").AsInt32());
+    }
+
     private protected static Node LoadScene(string resourcePath)
     {
         if (!ResourceLoader.Exists(resourcePath))
@@ -324,6 +374,66 @@ internal class SceneRunner : ISceneRunner
             throw new ArgumentException($"GdUnitSceneRunner: The given resource: '{resourcePath}' is not a scene.");
 
         return ((PackedScene)ResourceLoader.Load(resourcePath)).Instantiate();
+    }
+
+    /// <summary>
+    ///     The scene must run like in the game, Godot applies the project settings to the root viewport only,
+    ///     so the scene viewport takes over all its settings and embeds the popups opened by the scene.
+    /// </summary>
+    private static SubViewport CreateSceneViewport(Window root, Node scene)
+    {
+        var sceneViewport = new SubViewport
+        {
+            Name = "GdUnitSceneRunnerViewport",
+            Size = ViewportSize(root),
+            RenderTargetUpdateMode = SubViewport.UpdateMode.Always
+        };
+        foreach (var property in ClassDB.ClassGetPropertyList("Viewport", true))
+        {
+            if ((property["usage"].AsInt64() & (long)PropertyUsageFlags.Storage) != 0)
+            {
+                var propertyName = property["name"].AsStringName();
+                sceneViewport.Set(propertyName, root.Get(propertyName));
+            }
+        }
+
+        sceneViewport.GuiEmbedSubwindows = true;
+        sceneViewport.Notification((int)Node.NotificationVpMouseEnter);
+        sceneViewport.AddChild(scene);
+        return sceneViewport;
+    }
+
+    /// <summary>
+    ///     Godot sends the touch events emulated from mouse input to the root window only, the scene viewport needs its own.
+    /// </summary>
+    private static InputEvent? EmulatedTouchEvent(InputEvent inputEvent)
+    {
+        if (!Input.IsEmulatingTouchFromMouse())
+            return null;
+        return inputEvent switch
+        {
+            InputEventMouseButton { ButtonIndex: MouseButton.Left } mouseButton => new InputEventScreenTouch
+            {
+                Device = (int)InputEvent.DeviceIdEmulation,
+                Position = mouseButton.Position,
+                Pressed = mouseButton.Pressed,
+                Canceled = mouseButton.Canceled,
+                DoubleTap = mouseButton.DoubleClick
+            },
+            InputEventMouseMotion mouseMotion when (mouseMotion.ButtonMask & MouseButtonMask.Left) != 0 => new InputEventScreenDrag
+            {
+                Device = (int)InputEvent.DeviceIdEmulation,
+                Position = mouseMotion.Position,
+                Relative = mouseMotion.Relative,
+                ScreenRelative = mouseMotion.ScreenRelative,
+                Velocity = mouseMotion.Velocity,
+                ScreenVelocity = mouseMotion.ScreenVelocity,
+                Pressure = mouseMotion.Pressure,
+                Tilt = mouseMotion.Tilt,
+                PenInverted = mouseMotion.PenInverted
+            },
+            _ => null
+        };
     }
 
     // ReSharper disable once UnusedMethodReturnValue.Local
@@ -419,7 +529,20 @@ internal class SceneRunner : ISceneRunner
     private void ApplyInputMousePosition(InputEvent inputEvent)
     {
         if (LastInputEvent is InputEventMouse lastInputEvent && inputEvent is InputEventMouseButton ie)
+        {
             ie.Position = lastInputEvent.Position;
+            ie.GlobalPosition = lastInputEvent.GlobalPosition;
+        }
+    }
+
+    /// <summary>
+    ///     The scene viewport is shown scaled in the window, Godot reports the global position of mouse events in window coordinates.
+    /// </summary>
+    private Vector2 ToGlobalPosition(Vector2 viewportPosition)
+    {
+        if (GodotObject.IsInstanceValid(viewportView))
+            return viewportView.Position + viewportView.ToViewPosition(viewportPosition);
+        return viewportPosition;
     }
 
     /// <summary>
@@ -427,15 +550,19 @@ internal class SceneRunner : ISceneRunner
     /// </summary>
     private SceneRunner HandleInputEvent(InputEvent inputEvent)
     {
-        if (inputEvent is InputEventMouse mouseEvent)
-            Input.WarpMouse(mouseEvent.Position);
         Input.ParseInputEvent(inputEvent);
         if (inputEvent is InputEventAction actionEvent)
             _ = HandleActionEvent(actionEvent);
         Input.FlushBufferedEvents();
 
         if (GodotObject.IsInstanceValid(Scene()))
+        {
+            using var touchEvent = EmulatedTouchEvent(inputEvent);
+            if (touchEvent != null)
+                viewport.PushInput(touchEvent);
+            viewport.PushInput(inputEvent);
             Print(() => $"	process event {Scene()} ({SceneName()}) <- {inputEvent.AsText()}");
+        }
 
         // save the last input event needs to be merged with the next InputEventMouseButton
         LastInputEvent = inputEvent;

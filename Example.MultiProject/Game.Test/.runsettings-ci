@@ -23,8 +23,8 @@
     </LoggerRunSettings>
 
     <GdUnit4>
-        <!-- Godot runtime parameters for the headless CI runners -->
-        <Parameters>--audio-driver Dummy --display-driver x11 --rendering-driver opengl3 --screen 0</Parameters>
+        <!-- The tests run headless, the CI runners have no display -->
+        <Parameters>--headless --audio-driver Dummy</Parameters>
         <DisplayName>FullyQualifiedName</DisplayName>
     </GdUnit4>
 </RunSettings>
