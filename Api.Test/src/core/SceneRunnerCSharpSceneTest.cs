@@ -426,4 +426,36 @@ public sealed class SceneRunnerCSharpSceneTest
         // use global AwaitSignalOn
         await AwaitSignalOn(spell, Spell.SignalName.SpellExplode, spell.GetInstanceId()).WithTimeout(1100);
     }
+
+    [TestCase]
+    public async Task AwaitSignalWithTimeFactor()
+    {
+        var box1 = sceneRunner.GetProperty<ColorRect>("Box1")!;
+        sceneRunner.SetTimeFactor(10);
+        sceneRunner.Invoke("StartColorCycle");
+
+        await sceneRunner.AwaitSignal(TestScene.SignalName.PanelColorChange, box1, new Color(1, 0, 0)).WithTimeout(100); // Red
+        await sceneRunner.AwaitSignal(TestScene.SignalName.PanelColorChange, box1, new Color(0, 0, 1)).WithTimeout(100); // Blue
+        await sceneRunner.AwaitSignal(TestScene.SignalName.PanelColorChange, box1, new Color(0, 1, 0)).WithTimeout(100); // Green
+    }
+
+    [TestCase]
+    public void ManipulateTimeScale()
+    {
+        sceneRunner.SetTimeFactor(5.3);
+
+        AssertThat(Engine.TimeScale).IsEqual(5.3);
+    }
+
+    [TestCase]
+    public void ManipulateTimeScaleUsingMultipleSceneRunners()
+    {
+        sceneRunner.SetTimeFactor(5.3);
+        AssertThat(Engine.TimeScale).IsEqual(5.3);
+
+        using var secondRunner = ISceneRunner.Load(new Node3D(), true);
+        secondRunner.SetTimeFactor(7.3);
+
+        AssertThat(Engine.TimeScale).IsEqual(7.3);
+    }
 }

@@ -10,6 +10,13 @@ v5.1.0
           are removed, as in the GdUnit4 v7 scene runner API.
           Migration: simulate the modifier key as its own key, e.g. `runner.SimulateKeyPress(Key.A, true)` becomes
           `runner.SimulateKeyPress(Key.Shift).SimulateKeyPress(Key.A)`.
+* GD-549: The scene runner runs the scene in its own `SubViewport` instead of the engine root, so scene runner tests run in headless mode.
+          The scene viewport takes over the root viewport settings and embeds the popups and dialogs of the scene,
+          simulated input is pushed to that viewport only and no longer moves the real mouse cursor.
+          Mouse positions are scene viewport coordinates, `GetGlobalMousePosition()` returns window coordinates.
+          With a display, the scene is shown scaled in the test window with a drawn mouse cursor.
+          Headless mode does not render: screenshots and viewport textures, shader output and visibility notifiers need a display.
+          Migration: find nodes relative to the scene, e.g. `scene.GetNode("Player")`, absolute paths like `/root/MyScene/Player` no longer resolve.
 
 🪲 Bug Fixes
 * GD-305: Added missing AppendFailureMessage on assertions

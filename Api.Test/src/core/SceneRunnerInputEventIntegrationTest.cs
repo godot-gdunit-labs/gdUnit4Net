@@ -3,6 +3,7 @@
 namespace GdUnit4.Tests.Core;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -814,25 +815,39 @@ public sealed class SceneRunnerInputEventIntegrationTest
         var dragAndDropSceneRunner = ISceneRunner.Load("res://src/core/resources/scenes/DragAndDrop/DragAndDropTestScene.tscn", true);
 
         var scene = dragAndDropSceneRunner.Scene();
-        var slot_left = scene.GetNode<TextureRect>(new NodePath("/root/DragAndDropScene/left/TextureRect"));
-        var slot_right = scene.GetNode<TextureRect>(new NodePath("/root/DragAndDropScene/right/TextureRect"));
+        var slot_left = scene.GetNode<TextureRect>(new NodePath("left/TextureRect"));
+        var slot_right = scene.GetNode<TextureRect>(new NodePath("right/TextureRect"));
 
-        var save_mouse_pos = dragAndDropSceneRunner.GetMousePosition();
+        var rootMotions = new List<Vector2>();
+        var slotMotions = new List<Vector2>();
+        ((Control)scene).GuiInput += inputEvent =>
+        {
+            if (inputEvent is InputEventMouseMotion motion)
+                rootMotions.Add(motion.Position);
+        };
+        slot_left.GuiInput += inputEvent =>
+        {
+            if (inputEvent is InputEventMouseMotion motion)
+                slotMotions.Add(motion.Position);
+        };
+
+        // the root receives the mouse motion when the mouse is over its own area
+        var rootPosition = new Vector2(100, 400);
+        dragAndDropSceneRunner.SetMousePosition(rootPosition);
+        await ISceneRunner.SyncProcessFrame;
+        AssertThat(rootMotions).ContainsExactly(rootPosition);
+        AssertThat(slotMotions).IsEmpty();
+        rootMotions.Clear();
 
         // set initial mouse pos over the left slot
         var mouse_pos = slot_left.GlobalPosition + new Vector2(10, 10);
 
         dragAndDropSceneRunner.SetMousePosition(mouse_pos);
-        await dragAndDropSceneRunner.AwaitMillis(1000);
         await ISceneRunner.SyncProcessFrame;
 
-        var mouseEvent = new InputEventMouseMotion
-        {
-            Position = mouse_pos,
-            GlobalPosition = save_mouse_pos
-        };
-
-        // verify(spy_scene, 1)._gui_input(mouseEvent)
+        // the slot passes the mouse motion to the left panel, which consumes it, so the root receives nothing
+        AssertThat(slotMotions).ContainsExactly(new Vector2(10, 10));
+        AssertThat(rootMotions).IsEmpty();
         dragAndDropSceneRunner.SimulateMouseButtonPress(MouseButton.Left);
         await ISceneRunner.SyncProcessFrame;
 

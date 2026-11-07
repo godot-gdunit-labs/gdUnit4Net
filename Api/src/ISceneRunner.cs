@@ -167,7 +167,7 @@ public interface ISceneRunner : IDisposable
     ISceneRunner SimulateMouseButtonRelease(MouseButton button);
 
     /// <summary>
-    ///     Sets the mouse cursor to the given position relative to the viewport.
+    ///     Sets the mouse cursor to the given position in pixels, relative to the upper left corner of the scene viewport.
     /// </summary>
     /// <param name="position">The absolute mouse position.</param>
     /// <returns>SceneRunner.</returns>
@@ -179,13 +179,14 @@ public interface ISceneRunner : IDisposable
         => SetMousePosition(position);
 
     /// <summary>
-    ///     Gets the current mouse position of the current viewport.
+    ///     Gets the current mouse position in the coordinates of the scene viewport.
     /// </summary>
     /// <returns>Vector2.</returns>
     Vector2 GetMousePosition();
 
     /// <summary>
-    ///     Gets the current global mouse position of the current window.
+    ///     Gets the current global mouse position in window coordinates, the scene viewport is shown scaled in the window.
+    ///     In headless mode there is no window and it is equal to <see cref="GetMousePosition" />.
     /// </summary>
     /// <returns>Vector2.</returns>
     Vector2 GetGlobalMousePosition();
@@ -338,7 +339,7 @@ public interface ISceneRunner : IDisposable
     Node Scene();
 
     /// <summary>
-    ///     Shows the running scene and moves the window to the foreground.
+    ///     Shows the running scene and moves the window to the foreground, does nothing in headless mode.
     /// </summary>
     void MaximizeView();
 

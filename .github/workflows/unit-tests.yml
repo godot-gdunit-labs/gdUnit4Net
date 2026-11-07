@@ -147,9 +147,11 @@ jobs:
           # The headless flag runs without UI, and quit-after ensures it doesn't hang
           $GODOT_BIN --path . --headless --build-solutions --quit-after 200 --verbosity normal
 
-          # Run the actual tests with xvfb (X Virtual FrameBuffer) to support GUI operations in headless environment
+          # Run the tests headless without a display, the end-to-end tests need rendered output and run in their own job
           # Using CI-specific settings file and skipping the build step since we already built above
-          xvfb-run --auto-servernum dotnet test GdUnit4ApiTest.csproj --no-build --settings .runsettings-ci --verbosity normal
+          dotnet test GdUnit4ApiTest.csproj --no-build --settings .runsettings-ci --verbosity normal \
+            --filter "FullyQualifiedName!~GdUnit4.Tests.E2E." \
+            -- "GdUnit4.Parameters=--headless --audio-driver Dummy --verbose"
           # -verbosity:diag --blame
 
       - name: "Upload Unit Test Reports"
@@ -157,6 +159,60 @@ jobs:
         uses: ./.github/actions/upload-test-report
         with:
           report-name: api_tests_Godot${{ inputs.godot-version }}-${{ inputs.godot-status }}
+
+  unit-test-api-e2e:
+    name: "Run API E2E Tests"
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: "Install Godot Net ${{ inputs.godot-version }}"
+        uses: ./.github/actions/godot-install
+        with:
+          godot-version: ${{ inputs.godot-version }}
+          godot-mono: true
+          godot-status-version: ${{ inputs.godot-status }}
+          godot-bin-name: 'linux_x86_64'
+          godot-cache-path: '~/godot-linux'
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: 'global.json'
+
+      - name: "Restore Build Cache"
+        if: ${{ !cancelled() }}
+        uses: actions/cache@v6
+        with:
+          path: |
+            **/obj
+            **/bin
+            **/nupkg
+          key: ${{ runner.os }}-build-${{ github.sha }}-${{ github.run_id }}
+
+      - name: "Run E2E Tests"
+        if: ${{ !cancelled() }}
+        timeout-minutes: 5
+        env:
+          GODOT_BIN: "/home/runner/godot-linux/godot"
+        run: |
+          cd ./Api.Test
+          # Style checks are disabled to prevent formatting errors from blocking tests
+          dotnet build /p:EnforceCodeStyleInBuild=false /p:TreatWarningsAsErrors=false
+          $GODOT_BIN --path . --headless --build-solutions --quit-after 200 --verbosity normal
+
+          # The end-to-end tests need rendered output, xvfb (X Virtual FrameBuffer) provides the display
+          xvfb-run --auto-servernum dotnet test GdUnit4ApiTest.csproj --no-build --settings .runsettings-ci --verbosity normal \
+            --filter "FullyQualifiedName~GdUnit4.Tests.E2E."
+
+      - name: "Upload E2E Test Reports"
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/upload-test-report
+        with:
+          report-name: api_e2e_tests_Godot${{ inputs.godot-version }}-${{ inputs.godot-status }}
 
   unit-test-example:
     name: "Run Test Examples"
@@ -288,7 +344,7 @@ jobs:
         run: |
           # The test project references the game project, the test runner imports the game assets and mounts the game at runtime
           cd ./Example.MultiProject/Game.Test
-          xvfb-run --auto-servernum dotnet test Game.Test.csproj --settings .runsettings-ci
+          dotnet test Game.Test.csproj --settings .runsettings-ci
 
       - name: "Upload Unit Test Reports"
         if: ${{ !cancelled() }}
