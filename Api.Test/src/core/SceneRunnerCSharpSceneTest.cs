@@ -458,4 +458,18 @@ public sealed class SceneRunnerCSharpSceneTest
 
         AssertThat(Engine.TimeScale).IsEqual(7.3);
     }
+
+    [TestCase]
+    public async Task AwaitMethodWithArguments()
+        => await sceneRunner.AwaitMethod<int>("Add", 10, 12).IsEqual(22).WithTimeout(500);
+
+    [TestCase]
+    public async Task AwaitMethodOn()
+    {
+        var spell = AutoFree(new Spell());
+
+        await sceneRunner.AwaitMethodOn<int>(sceneRunner.Scene(), "Add", 2, 3).IsEqual(5).WithTimeout(500);
+        AssertThrown(() => sceneRunner.AwaitMethodOn<int>(spell, "NotExisting"))
+            .IsInstanceOf<MissingMethodException>();
+    }
 }
