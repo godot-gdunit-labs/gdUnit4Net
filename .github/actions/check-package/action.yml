@@ -130,20 +130,30 @@ runs:
           git log --since="$1" --format='%s' -- "$2/"
         }
 
-        # Prints the labels of the issue or pull request, one per line
+        # Prints the labels of the issue or pull request, one per line, returns 1 when the issue was deleted
         labels_of() {
-          if ! gh api "repos/$GITHUB_REPOSITORY/issues/$1" --jq '.labels[].name' < /dev/null; then
-            echo "::error::Requesting the labels of #$1 failed." >&2
-            exit 2
+          if gh api "repos/$GITHUB_REPOSITORY/issues/$1" --jq '.labels[].name' < /dev/null 2> "$WORK/gh-error.txt"; then
+            return 0
           fi
+          if grep -qF '(HTTP 410)' "$WORK/gh-error.txt"; then
+            return 1
+          fi
+          cat "$WORK/gh-error.txt" >&2
+          echo "::error::Requesting the labels of #$1 failed." >&2
+          exit 2
         }
 
         # Returns 0 when the release notes of the package must not list the issue, because the issue or pull request
-        # is labeled to be excluded from the release notes or names only other packages by their package labels
+        # is labeled to be excluded from the release notes, names only other packages by their package labels or was deleted
         is_not_required() {
           local id=$1 number labels="$WORK/labels.txt"
           shift
-          for number in "$@"; do labels_of "$number"; done > "$labels"
+          for number in "$@"; do
+            if ! labels_of "$number"; then
+              echo "::warning::The issue #$number was deleted, it is not verified." >&2
+              return 0
+            fi
+          done > "$labels"
           if grep -qxF "$EXCLUDE_LABEL" "$labels"; then
             return 0
           fi
