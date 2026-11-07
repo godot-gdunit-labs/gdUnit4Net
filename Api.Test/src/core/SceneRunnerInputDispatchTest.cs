@@ -90,6 +90,18 @@ public sealed class SceneRunnerInputDispatchTest
         AssertThat(scene.UnhandledCount).IsEqual(2);
     }
 
+    [TestCase]
+    public void KeyEventsUpdateInputStateOfDisabledScene()
+    {
+        using var runner = ISceneRunner.Load(new InputCountingNode { ProcessMode = Node.ProcessModeEnum.Disabled }, true);
+
+        runner.SimulateKeyPress(Key.A);
+        AssertThat(Input.IsKeyPressed(Key.A)).IsTrue();
+
+        runner.SimulateKeyRelease(Key.A);
+        AssertThat(Input.IsKeyPressed(Key.A)).IsFalse();
+    }
+
     // only the simulated key and button count, Input.WarpMouse and real input can add events from the OS
     internal static bool IsSimulated(InputEvent inputEvent)
         => inputEvent is InputEventKey { Keycode: Key.A } or InputEventMouseButton { ButtonIndex: MouseButton.Left };
