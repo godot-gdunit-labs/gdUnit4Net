@@ -8,16 +8,16 @@ namespace GdUnit4;
 using System;
 
 /// <summary>
-///     Indicates that a test method or class should monitor exceptions that occur during Godot's main thread execution.
-///     This attribute enables monitoring of exceptions that are caught by CSharpInstanceBridge.Call, which handles
-///     exceptions from Godot callbacks and scene tree processing.
+///     Indicates that a test method or class should monitor the exceptions and errors Godot catches and logs while the test runs.
+///     This attribute enables monitoring of exceptions Godot catches in C# code it calls, such as node callbacks, signal callbacks
+///     and deferred calls, and of errors pushed with <c>push_error</c>, which Godot reports through its logger.
 /// </summary>
 /// <remarks>
 ///     This attribute is particularly useful for:
 ///     <list type="bullet">
 ///         <li>Testing exception handling in Godot node callbacks (_Ready, _Process, etc.)</li>
 ///         <li>Verifying exceptions during scene tree operations</li>
-///         <li>Monitoring exceptions that would normally be caught silently by Godot's bridge</li>
+///         <li>Monitoring exceptions that Godot would otherwise only log</li>
 ///     </list>
 ///     Example usage for a test method:
 ///     <code>
