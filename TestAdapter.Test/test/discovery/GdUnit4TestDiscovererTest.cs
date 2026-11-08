@@ -232,7 +232,6 @@ public class GdUnit4TestDiscovererTest
     {
         var test = tests.FirstOrDefault(t => t.FullyQualifiedName == fullyQualifiedName);
         Assert.IsNotNull(test, $"Test {fullyQualifiedName} not found");
-        Assert.IsNotNull(test.Id);
         Assert.AreEqual(fullyQualifiedName, test.FullyQualifiedName);
         Assert.AreEqual(displayName, test.DisplayName);
         Assert.AreEqual(new Uri(GdUnit4TestExecutor.EXECUTOR_URI), test.ExecutorUri);

@@ -135,9 +135,11 @@ public class AssertionsTest
             // we want to test against english culture
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
+#pragma warning disable MSTEST0025
             var assertion = AssertThrown(() => Assert.AreEqual(1, 2))
+#pragma warning restore MSTEST0025
                 .IsInstanceOf<AssertFailedException>()
-                .StartsWithMessage("Assert.AreEqual failed. Expected:<1>. Actual:<2>.");
+                .StartsWithMessage("Assertion failed. Expected values to be equal.");
             AssertTrimmedExceptionStackTrace(assertion)
                 .NotContains("Microsoft.VisualStudio.TestTools");
         }
