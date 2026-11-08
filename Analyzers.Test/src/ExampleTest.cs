@@ -21,7 +21,7 @@ public class ExampleTest
     {
     }
 
-    [TestMethod("Test with display name")]
+    [TestMethod(DisplayName = "Test with display name")]
     public void SingeTestNamed()
     {
     }

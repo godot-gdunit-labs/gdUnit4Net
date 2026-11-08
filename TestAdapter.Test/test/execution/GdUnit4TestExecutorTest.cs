@@ -46,7 +46,7 @@ public class GdUnit4TestExecutorTest
     public void SetupRunnerEnvironment()
     {
         // pretest the environment is not set
-        Assert.AreEqual(Environment.GetEnvironmentVariable("TestEnvironmentA"), null);
+        Assert.IsNull(Environment.GetEnvironmentVariable("TestEnvironmentA"));
         Environment.SetEnvironmentVariable("TestEnvironmentB", "666");
 
         var frameworkHandle = new Mock<IFrameworkHandle>().Object;
@@ -60,8 +60,8 @@ public class GdUnit4TestExecutorTest
         GdUnit4TestExecutor.SetupRunnerEnvironment(mockRunContext.Object, frameworkHandle);
 
         // verify the TestEnvironmentA=23 and TestEnvironmentB is overwritten by 42
-        Assert.AreEqual(Environment.GetEnvironmentVariable("TestEnvironmentA"), "23");
-        Assert.AreEqual(Environment.GetEnvironmentVariable("TestEnvironmentB"), "42");
+        Assert.AreEqual("23", Environment.GetEnvironmentVariable("TestEnvironmentA"));
+        Assert.AreEqual("42", Environment.GetEnvironmentVariable("TestEnvironmentB"));
     }
 
     [TestMethod]
