@@ -76,13 +76,13 @@ public partial class VerifyDocumentationTest
 
         Assert.IsTrue(firstLine == expectedHeader, $"required header '{expectedHeader}' on the first line in {docPath}.");
         Assert.IsTrue(lines.Length > 2 && string.IsNullOrEmpty(lines[1]), $"Expected an empty line after the header in {docPath}.");
-        StringAssert.Contains(docContent, "# Problem Description", $"Documentation should contain ` Problem Description` section in {docPath}", StringComparison.Ordinal);
-        StringAssert.Contains(docContent, $"## {descriptor.Title}", $"Documentation should contain the diagnostic title in {docPath}", StringComparison.Ordinal);
+        StringAssert.Contains(docContent, "# Problem Description", StringComparison.Ordinal, $"Documentation should contain ` Problem Description` section in {docPath}");
+        StringAssert.Contains(docContent, $"## {descriptor.Title}", StringComparison.Ordinal, $"Documentation should contain the diagnostic title in {docPath}");
         StringAssert.Contains(
             WhitespaceRegex().Replace(docContent, " "),
             WhitespaceRegex().Replace(descriptor.Description.ToString(), " "),
-            $"Documentation should contain the diagnostic description in {docPath}",
-            StringComparison.Ordinal);
+            StringComparison.Ordinal,
+            $"Documentation should contain the diagnostic description in {docPath}");
     }
 
     private static IEnumerable<(DiagnosticDescriptor Descriptor, string Name)> GetAllDiagnosticDescriptors()
