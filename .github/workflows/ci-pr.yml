@@ -21,8 +21,20 @@ permissions:
 
 jobs:
 
+  # Pull requests of the `gdunit4-bot` come from branches of this repository, so GitHub runs them without the approval
+  # it requires for forks. For them the gate uses the `bot-approval` environment, which requires a review by a maintainer
+  # before the tests start. For all other pull requests it passes right away.
+  approval:
+    name: "✅ Approval"
+    runs-on: 'ubuntu-24.04'
+    timeout-minutes: 1
+    environment: ${{ github.event.pull_request.user.login == 'gdunit4-bot[bot]' && 'bot-approval' || '' }}
+    steps:
+      - run: echo "The tests of this pull request were approved."
+
   setup-dotnet:
     name: "🔧 Setup .NET"
+    needs: approval
     runs-on: 'ubuntu-24.04'
     timeout-minutes: 1
     steps:
@@ -207,7 +219,7 @@ jobs:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     name: Final Results
-    needs: [example-style-check, analyzer-tests, api-tests, test-adapter-test]
+    needs: [approval, example-style-check, analyzer-tests, api-tests, test-adapter-test]
     steps:
       - run: exit 1
         if: >-
