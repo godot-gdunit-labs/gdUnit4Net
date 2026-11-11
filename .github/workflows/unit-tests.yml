@@ -41,10 +41,6 @@ on: # yamllint disable-line rule:truthy
         type: boolean
         default: false
 
-concurrency:
-  group: unit-tests-${{ github.head_ref || github.ref_name }}-${{ inputs.godot-version }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
 
