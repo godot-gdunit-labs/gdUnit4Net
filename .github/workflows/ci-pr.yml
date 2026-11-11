@@ -188,7 +188,7 @@ jobs:
       # The only definition of the Godot test matrix, the report publishing follows the uploaded test artifacts
       matrix:
         gdunit-version: ['v6.2.2']
-        godot-version: ['4.7.2']
+        godot-version: ['4.7', '4.7.1']
         godot-status: ['stable']
         dotnet-version: ['net10.0']
         include:
@@ -201,7 +201,7 @@ jobs:
           # Latest prerelease
           - gdunit-version: 'v6.2.2'
             godot-version: '4.8'
-            godot-status: 'beta3'
+            godot-status: 'beta2'
             dotnet-version: 'net10.0'
 
 
