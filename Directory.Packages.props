@@ -11,8 +11,8 @@
   <ItemGroup>
     <!-- Microsoft Test Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)"/>
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.11.0"/>
-    <PackageVersion Include="Microsoft.TestPlatform.AdapterUtilities" Version="18.11.0"/>
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.12.0"/>
+    <PackageVersion Include="Microsoft.TestPlatform.AdapterUtilities" Version="18.12.0"/>
     <PackageVersion Include="MSTest.TestAdapter" Version="$(MSTestTestFrameworkVersion)"/>
     <PackageVersion Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)"/>
 

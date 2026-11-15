@@ -8,7 +8,7 @@
 
   <!-- Code Analyzers (also referenced by the Godot test project, which cannot use Central Package Management) -->
   <PropertyGroup>
-    <StyleCopAnalyzersVersion>1.2.0-beta.556</StyleCopAnalyzersVersion>
+    <StyleCopAnalyzersVersion>1.3.180</StyleCopAnalyzersVersion>
     <!-- Keep Microsoft.CodeAnalysis.Analyzers on the compiler version of the .NET SDK in global.json -->
     <MicrosoftCodeAnalysisAnalyzersVersion>5.9.0</MicrosoftCodeAnalysisAnalyzersVersion>
     <!--
@@ -20,8 +20,8 @@
 
   <!-- Test Packages (also referenced by the Godot test project, which cannot use Central Package Management) -->
   <PropertyGroup>
-    <MicrosoftNETTestSdkVersion>18.11.0</MicrosoftNETTestSdkVersion>
-    <MSTestTestFrameworkVersion>4.5.2</MSTestTestFrameworkVersion>
+    <MicrosoftNETTestSdkVersion>18.12.0</MicrosoftNETTestSdkVersion>
+    <MSTestTestFrameworkVersion>4.5.3</MSTestTestFrameworkVersion>
     <MoqVersion>4.21.0</MoqVersion>
   </PropertyGroup>
 
