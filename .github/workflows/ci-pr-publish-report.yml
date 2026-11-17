@@ -16,25 +16,47 @@ permissions:
   actions: read
 
 jobs:
-  # The Godot test matrix is defined only in ci-pr.yml, the reports to publish follow the artifacts of the triggering run
   find-reports:
-    name: "Find Test Reports"
+    name: "Find Test Report Artifacts"
     runs-on: ubuntu-24.04
     outputs:
       reports: ${{ steps.find.outputs.reports }}
     steps:
-      - name: "Collect the Godot Reports of the Test Run"
+      - name: "Collect Report Artifacts"
         id: find
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
           RUN_ID: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
         run: |
-          # Each Godot test run uploads 'artifact_api_tests_Godot<version>-<status>', the suffix names the report of one matrix entry
+          # The single-quoted jq program intentionally keeps its expressions literal to the shell.
+          # shellcheck disable=SC2016
           reports=$(gh api --paginate "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts" \
-            --jq '.artifacts[] | select(.expired | not) | .name
-              | select(test("^artifact_api_tests_Godot[0-9][0-9.]*-[a-z0-9]+$")) | ltrimstr("artifact_api_tests_")' \
-            | jq --raw-input --null-input --compact-output '[inputs | select(length > 0)] | unique')
+            --jq '.artifacts[] | select(.expired | not) | .name as $artifact
+              | if $artifact == "artifact_analyzer" then
+                  {artifact: $artifact, path: "*.trx", title: "Analyzer Tests", coverage: false}
+                elif $artifact == "artifact_adapter_tests" then
+                  {artifact: $artifact, path: "*.trx", title: "TestAdapter Tests", coverage: false}
+                elif ($artifact | startswith("artifact_action_example_")) then
+                  ($artifact | sub("^artifact_action_example_"; "")) as $version
+                  | {artifact: $artifact, path: "**/Example/reports/*.xml", title: ("gdUnit4-action Tests " + $version), coverage: false}
+                elif ($artifact | startswith("artifact_api_tests_")) then
+                  ($artifact | sub("^artifact_api_tests_"; "")) as $version
+                  | {artifact: $artifact, path: "**/Api.Test/TestResults/*.trx", title: ("API Tests " + $version), coverage: false}
+                elif ($artifact | startswith("artifact_api_e2e_tests_")) then
+                  ($artifact | sub("^artifact_api_e2e_tests_"; "")) as $version
+                  | {artifact: $artifact, path: "**/Api.Test/TestResults/*.trx", title: ("API E2E Tests " + $version), coverage: false}
+                elif ($artifact | startswith("artifact_example_tests_")) then
+                  ($artifact | sub("^artifact_example_tests_"; "")) as $version
+                  | {artifact: $artifact, path: "**/Example/TestResults/test-result.trx", title: ("Example Tests " + $version), coverage: ($artifact == "artifact_example_tests_Godot4.7-stable")}
+                elif ($artifact | startswith("artifact_multi_project_example_tests_")) then
+                  ($artifact | sub("^artifact_multi_project_example_tests_"; "")) as $version
+                  | {artifact: $artifact, path: "**/*.trx", title: ("Multi-Project Example Tests " + $version), coverage: false}
+                elif ($artifact | startswith("artifact_windows_tests_")) then
+                  ($artifact | sub("^artifact_windows_tests_"; "")) as $version
+                  | {artifact: $artifact, path: "**/*.trx", title: ("Windows Tests " + $version), coverage: false}
+                else empty end' \
+            | jq --slurp --compact-output 'unique_by(.artifact) | sort_by(.artifact)')
           echo "Found reports: $reports"
           echo "reports=$reports" >> "$GITHUB_OUTPUT"
 
@@ -46,107 +68,34 @@ jobs:
       fail-fast: false
       max-parallel: 10
       matrix:
-        report: ${{ fromJSON(needs.find-reports.outputs.reports) }}
+        include: ${{ fromJSON(needs.find-reports.outputs.reports) }}
 
     steps:
-      - uses: actions/checkout@v7
-        with:
-          sparse-checkout: .github
-
-      - name: Publish Analyzer Test Results
-        if: ${{ matrix.report == 'Godot4.7-stable' }}
-        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
-        with:
-          artifact: artifact_analyzer
-          name: report_analyzer
-          path: '*.trx'
-          report-title: Analyzer Tests
-          reporter: dotnet-trx
-          fail-on-error: 'false'
-          fail-on-empty: 'false'
-          use-actions-summary: 'true'
-
-      - name: Publish TestAdapter Test Results
-        if: ${{ matrix.report == 'Godot4.7-stable' }}
-        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
-        with:
-          artifact: artifact_adapter_tests
-          name: report_adapter_tests
-          path: '*.trx'
-          report-title: TestAdapter Tests
-          reporter: dotnet-trx
-          fail-on-error: 'false'
-          fail-on-empty: 'false'
-          use-actions-summary: 'true'
-
-
-      # publish Run gdUnit4-action results
-      - name: Publish action Test Results
-        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
-        with:
-          artifact: artifact_action_example_${{ matrix.report }}
-          name: report_action_example_${{ matrix.report }}
-          path: '**/Example/reports/*.xml'
-          report-title: gdUnit4-action — ${{ matrix.report }}
-          reporter: dotnet-trx
-          fail-on-error: 'false'
-          fail-on-empty: 'false'
-          use-actions-summary: 'true'
-
-      # publish API Tests results
-      - name: Publish API Test Results
-        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
-        with:
-          artifact: artifact_api_tests_${{ matrix.report }}
-          name: report_api_tests_${{ matrix.report }}
-          path: '**/Api.Test/TestResults/*.trx'
-          report-title: API Tests — ${{ matrix.report }}
-          reporter: dotnet-trx
-          fail-on-error: 'false'
-          fail-on-empty: 'false'
-          use-actions-summary: 'true'
-
-      # publish API E2E Tests results
-      - name: Publish API E2E Test Results
-        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
-        with:
-          artifact: artifact_api_e2e_tests_${{ matrix.report }}
-          name: report_api_e2e_tests_${{ matrix.report }}
-          path: '**/Api.Test/TestResults/*.trx'
-          report-title: API E2E Tests — ${{ matrix.report }}
-          reporter: dotnet-trx
-          fail-on-error: 'false'
-          fail-on-empty: 'false'
-          use-actions-summary: 'true'
-
-      # publish Example Tests results
-      - name: Download Example artifacts for code coverage
-        if: ${{ matrix.report == 'Godot4.7-stable' }}
+      - name: "Download ${{ matrix.artifact }}"
         uses: actions/download-artifact@v8.0.2
         with:
-          name: artifact_example_tests_${{ matrix.report }}
-          path: ./example-artifacts
+          name: ${{ matrix.artifact }}
+          path: ./report-artifact
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: godot-gdunit-labs/gdUnit4Net
           run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
 
-      - name: Publish Example Test Results
+      - name: "Publish ${{ matrix.title }}"
         uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
-          artifact: artifact_example_tests_${{ matrix.report }}
-          name: report_example_tests_${{ matrix.report }}
-          path: '**/Example/TestResults/test-result.trx'
-          report-title: Example Tests — ${{ matrix.report }}
+          name: report_${{ matrix.artifact }}
+          path: report-artifact/${{ matrix.path }}
+          report-title: ${{ matrix.title }}
           reporter: dotnet-trx
           fail-on-error: 'false'
           fail-on-empty: 'false'
           use-actions-summary: 'true'
 
       - name: Publish Code Coverage Summary
-        if: ${{ matrix.report == 'Godot4.7-stable' }}
+        if: ${{ matrix.coverage }}
         uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 # v1.3.0
         with:
-          filename: './example-artifacts/**/*.cobertura.xml'
+          filename: './report-artifact/**/*.cobertura.xml'
           badge: true
           format: markdown
           output: both
