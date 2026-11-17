@@ -32,17 +32,7 @@ jobs:
           # The single-quoted jq program intentionally keeps its expressions literal to the shell.
           # shellcheck disable=SC2016
           reports=$(gh api --paginate "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts" \
-            --jq 'def report_types: {
-                    analyzer: {path: "*.trx"},
-                    adapter_tests: {path: "*.trx"},
-                    action_example: {path: "**/Example/reports/*.xml"},
-                    api_tests: {path: "**/Api.Test/TestResults/*.trx"},
-                    api_e2e_tests: {path: "**/Api.Test/TestResults/*.trx"},
-                    example_tests: {path: "**/Example/TestResults/test-result.trx"},
-                    multi_project_example_tests: {path: "**/*.trx"},
-                    windows_tests: {path: "**/*.trx"}
-                  };
-                  def artifact_title($artifact):
+            --jq 'def artifact_title($artifact):
                     ($artifact | sub("^artifact_"; "") | split("_")
                       | map((.[0:1] | ascii_upcase) + .[1:]) | join(" "))
                     | gsub("Api"; "API")
@@ -51,16 +41,13 @@ jobs:
                     | gsub("Analyzer$"; "Analyzer Tests")
                     | gsub("Multi Project"; "Multi-Project");
                   .artifacts[] | select(.expired | not) | .name as $artifact
-                  | ($artifact | capture(
-                      "^artifact_(?<kind>analyzer|adapter_tests|action_example|api_e2e_tests|" +
+                  | select($artifact | test(
+                      "^artifact_(analyzer|adapter_tests|action_example|api_e2e_tests|" +
                       "api_tests|example_tests|multi_project_example_tests|windows_tests)" +
-                      "(?:_(?<version>Godot.*))?$"
-                    )?) as $match
-                  | select($match != null)
-                  | report_types[$match.kind] as $type
+                      "(?:_Godot.*)?$"
+                    ))
                   | {
                       artifact: $artifact,
-                      path: $type.path,
                       title: artifact_title($artifact),
                       coverage: ($artifact == "artifact_example_tests_Godot4.7-stable")
                     }' \
@@ -92,7 +79,7 @@ jobs:
         uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
           name: report_${{ matrix.artifact }}
-          path: report-artifact/${{ matrix.path }}
+          path: 'report-artifact/**/*.trx,report-artifact/**/Example/reports/results.xml'
           report-title: ${{ matrix.title }}
           reporter: dotnet-trx
           fail-on-error: 'false'
