@@ -34,17 +34,17 @@ internal sealed class TestSuiteExecutionStage : IExecutionStage
     [SuppressMessage(
         "Reliability",
         "CA2000:Dispose objects before losing scope",
-        Justification = "testSuiteContext ownership is transferred to ExecutionContext which handles disposal")]
-    public async Task Execute(ExecutionContext testSuiteContext)
+        Justification = "context ownership is transferred to ExecutionContext which handles disposal")]
+    public async Task Execute(ExecutionContext context)
     {
         await BeforeStage
-            .Execute(testSuiteContext)
+            .Execute(context)
             .ConfigureAwait(true);
-        using (var stdoutHook = testSuiteContext.IsCaptureStdOut ? StdOutHookFactory.CreateStdOutHook() : null)
+        using (var stdoutHook = context.IsCaptureStdOut ? StdOutHookFactory.CreateStdOutHook() : null)
         {
-            foreach (var testCase in testSuiteContext.TestSuite.TestCases)
+            foreach (var testCase in context.TestSuite.TestCases)
             {
-                using var testCaseContext = new ExecutionContext(testSuiteContext, testCase);
+                using var testCaseContext = new ExecutionContext(context, testCase);
                 if (testCase.HasDataPoint)
                 {
                     await RunTestCaseWithDataPoint(stdoutHook, testCaseContext, testCase)
@@ -59,7 +59,7 @@ internal sealed class TestSuiteExecutionStage : IExecutionStage
         }
 
         await AfterStage
-            .Execute(testSuiteContext)
+            .Execute(context)
             .ConfigureAwait(true);
     }
 

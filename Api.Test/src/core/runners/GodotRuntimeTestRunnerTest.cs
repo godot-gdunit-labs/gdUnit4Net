@@ -660,11 +660,9 @@ public class GodotRuntimeTestRunnerTest
     /// </summary>
     private void CreateSuccessScript()
     {
+        // Windows batch file that succeeds immediately
         var content = Environment.OSVersion.Platform == PlatformID.Win32NT
-            ?
-
-            // Windows batch file that succeeds immediately
-            """
+            ? """
             @echo off
 
             echo Godot Engine v4.1.stable.mono - https://godotengine.org
@@ -673,10 +671,9 @@ public class GodotRuntimeTestRunnerTest
             echo Compilation successful!
             exit 0
             """
-            :
 
             // Unix shell script that succeeds immediately
-            """
+            : """
             #!/bin/bash
 
             echo 'Godot Engine v4.1.stable.mono - https://godotengine.org'
@@ -695,11 +692,9 @@ public class GodotRuntimeTestRunnerTest
     /// </summary>
     private void CreateNearTimeoutScript()
     {
+        // Windows batch file that sleeps for 4 seconds
         var content = Environment.OSVersion.Platform == PlatformID.Win32NT
-            ?
-
-            // Windows batch file that sleeps for 4 seconds
-            """
+            ? """
             @echo off
 
             echo Godot Engine v4.1.stable.mono - https://godotengine.org
@@ -710,10 +705,9 @@ public class GodotRuntimeTestRunnerTest
             echo Compilation complete!
             exit 0
             """
-            :
 
             // Unix shell script that sleeps for 4 seconds
-            """
+            : """
             #!/bin/bash
 
             echo 'Godot Engine v4.1.stable.mono - https://godotengine.org'
@@ -734,11 +728,9 @@ public class GodotRuntimeTestRunnerTest
     /// </summary>
     private void CreateTimeoutScript()
     {
+        // Windows batch file that sleeps longer than our timeout
         var content = Environment.OSVersion.Platform == PlatformID.Win32NT
-            ?
-
-            // Windows batch file that sleeps longer than our timeout
-            """
+            ? """
             @echo off
 
             echo Godot Engine v4.1.stable.mono - https://godotengine.org
@@ -747,10 +739,9 @@ public class GodotRuntimeTestRunnerTest
             ping 127.0.0.1 -n 10 > nul
             exit 0
             """
-            :
 
             // Unix shell script that sleeps longer than our timeout
-            """
+            : """
             #!/bin/bash
 
             echo 'Godot Engine v4.1.stable.mono - https://godotengine.org'

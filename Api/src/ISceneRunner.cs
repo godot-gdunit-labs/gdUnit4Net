@@ -74,6 +74,24 @@ public interface ISceneRunner : IDisposable
         => new SceneRunner<TScene>(currentScene, autoFree, verbose);
 
     /// <summary>
+    ///     Waits for the specified signal to be emitted by a particular source node.
+    ///     If the signal is not emitted within the given timeout, the operation fails.
+    /// </summary>
+    /// <example>
+    ///     <code>
+    ///      // Waits for the signal "mySignal" is emitted by myNode.
+    ///      await runner.AwaitSignalOn(myNode, "mySignal");
+    ///   </code>
+    /// </example>
+    /// <param name="source">The object from which the signal is emitted.</param>
+    /// <param name="signal">The name of the signal to wait.</param>
+    /// <param name="args">An optional set of signal arguments.</param>
+    /// <returns>Task to wait.</returns>
+    static Task<ISignalConstraint> AwaitSignalOn(GodotObject source, string signal, params Variant[] args) =>
+        new SignalAssert(source)
+            .IsEmitted(signal, args);
+
+    /// <summary>
     ///     Simulates that an action has been pressed.
     /// </summary>
     /// <param name="action">The name of the action, e.g., "ui_up".</param>
@@ -385,24 +403,6 @@ public interface ISceneRunner : IDisposable
     /// <param name="args">An optional set of signal arguments.</param>
     /// <returns>Task to wait.</returns>
     Task<ISignalConstraint> AwaitSignal(string signal, params Variant[] args);
-
-    /// <summary>
-    ///     Waits for the specified signal to be emitted by a particular source node.
-    ///     If the signal is not emitted within the given timeout, the operation fails.
-    /// </summary>
-    /// <example>
-    ///     <code>
-    ///      // Waits for the signal "mySignal" is emitted by myNode.
-    ///      await runner.AwaitSignalOn(myNode, "mySignal");
-    ///   </code>
-    /// </example>
-    /// <param name="source">The object from which the signal is emitted.</param>
-    /// <param name="signal">The name of the signal to wait.</param>
-    /// <param name="args">An optional set of signal arguments.</param>
-    /// <returns>Task to wait.</returns>
-    static Task<ISignalConstraint> AwaitSignalOn(GodotObject source, string signal, params Variant[] args) =>
-        new SignalAssert(source)
-            .IsEmitted(signal, args);
 
     /// <summary>
     ///     Waits for a specific number of milliseconds.

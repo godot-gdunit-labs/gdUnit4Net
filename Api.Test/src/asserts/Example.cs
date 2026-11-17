@@ -20,8 +20,8 @@ internal sealed partial class ExampleNode : Godot.Node, IEquatable<ExampleNode>
             && Value == example.Value
             && Msg == example.Msg;
 
-    public bool Equals(ExampleNode? obj)
-        => obj is ExampleNode example
+    public bool Equals(ExampleNode? other)
+        => other is ExampleNode example
             && Value == example.Value
             && Msg == example.Msg;
 

@@ -37,6 +37,21 @@ public interface ITestEngine : IDisposable
     static ITestEngine GetInstance(TestEngineSettings settings, ITestEngineLogger logger) => new GdUnit4TestEngine(settings, logger);
 
     /// <summary>
+    ///     Gets the version of the GdUnit4 test engine.
+    /// </summary>
+    /// <returns>Version information of the engine, or null if the gdUnit4Api is not installed.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when GdUnit4Api is not properly installed.</exception>
+    /// <remarks>
+    ///     The version is retrieved from the assembly containing the GdUnit4TestEngine type.
+    ///     This method helps verify the correct installation and versioning of the test engine.
+    /// </remarks>
+    static Version? EngineVersion()
+    {
+        var assembly = typeof(GdUnit4TestEngine).Assembly ?? throw new InvalidOperationException("No 'GdUnit4Api' is installed!");
+        return assembly.GetName().Version;
+    }
+
+    /// <summary>
     ///     Discovers test cases in the specified test assembly.
     /// </summary>
     /// <param name="testAssembly">Full path to the test assembly file to scan.</param>
@@ -59,21 +74,6 @@ public interface ITestEngine : IDisposable
     ///     Tests can be canceled via the Cancel() method.
     /// </remarks>
     void Execute(IReadOnlyCollection<TestAssemblyNode> testAssemblyNodes, ITestEventListener eventListener, IDebuggerFramework debuggerFramework);
-
-    /// <summary>
-    ///     Gets the version of the GdUnit4 test engine.
-    /// </summary>
-    /// <returns>Version information of the engine, or null if the gdUnit4Api is not installed.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when GdUnit4Api is not properly installed.</exception>
-    /// <remarks>
-    ///     The version is retrieved from the assembly containing the GdUnit4TestEngine type.
-    ///     This method helps verify the correct installation and versioning of the test engine.
-    /// </remarks>
-    static Version? EngineVersion()
-    {
-        var assembly = typeof(GdUnit4TestEngine).Assembly ?? throw new InvalidOperationException("No 'GdUnit4Api' is installed!");
-        return assembly.GetName().Version;
-    }
 
     /// <summary>
     ///     Cancels any currently executing test operations.

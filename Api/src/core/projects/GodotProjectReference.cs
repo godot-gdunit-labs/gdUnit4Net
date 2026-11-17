@@ -35,10 +35,6 @@ internal sealed record GodotProjectReference(string ProjectDir)
 
     internal static string WorkingDir(string testProjectDir) => Path.Combine(testProjectDir, ".godot", "gdunit4");
 
-    // Named by its content, a pack mounted by a running test process is never rewritten.
-    internal string PackFile(string testProjectDir, string contentFingerprint)
-        => Path.Combine(WorkingDir(testProjectDir), $"{Id}-{contentFingerprint[..16]}.zip");
-
     internal static IReadOnlyList<GodotProjectReference> FromAssembly(Assembly assembly, string testProjectDir)
         => Resolve(
             assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -83,6 +79,10 @@ internal sealed record GodotProjectReference(string ProjectDir)
                 .Select(attribute => attribute.ConstructorArguments[1].Value as string),
             testProjectDir);
     }
+
+    // Named by its content, a pack mounted by a running test process is never rewritten.
+    internal string PackFile(string testProjectDir, string contentFingerprint)
+        => Path.Combine(WorkingDir(testProjectDir), $"{Id}-{contentFingerprint[..16]}.zip");
 
     // A reference to the test project itself is skipped, the test project is never mounted into itself.
     private static List<GodotProjectReference> Resolve(IEnumerable<string?> relativePaths, string testProjectDir)
