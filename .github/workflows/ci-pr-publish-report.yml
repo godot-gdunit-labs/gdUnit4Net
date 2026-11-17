@@ -32,30 +32,42 @@ jobs:
           # The single-quoted jq program intentionally keeps its expressions literal to the shell.
           # shellcheck disable=SC2016
           reports=$(gh api --paginate "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts" \
-            --jq '.artifacts[] | select(.expired | not) | .name as $artifact
-              | if $artifact == "artifact_analyzer" then
-                  {artifact: $artifact, path: "*.trx", title: "Analyzer Tests", coverage: false}
-                elif $artifact == "artifact_adapter_tests" then
-                  {artifact: $artifact, path: "*.trx", title: "TestAdapter Tests", coverage: false}
-                elif ($artifact | startswith("artifact_action_example_")) then
-                  ($artifact | sub("^artifact_action_example_"; "")) as $version
-                  | {artifact: $artifact, path: "**/Example/reports/*.xml", title: ("gdUnit4-action Tests " + $version), coverage: false}
-                elif ($artifact | startswith("artifact_api_tests_")) then
-                  ($artifact | sub("^artifact_api_tests_"; "")) as $version
-                  | {artifact: $artifact, path: "**/Api.Test/TestResults/*.trx", title: ("API Tests " + $version), coverage: false}
-                elif ($artifact | startswith("artifact_api_e2e_tests_")) then
-                  ($artifact | sub("^artifact_api_e2e_tests_"; "")) as $version
-                  | {artifact: $artifact, path: "**/Api.Test/TestResults/*.trx", title: ("API E2E Tests " + $version), coverage: false}
-                elif ($artifact | startswith("artifact_example_tests_")) then
-                  ($artifact | sub("^artifact_example_tests_"; "")) as $version
-                  | {artifact: $artifact, path: "**/Example/TestResults/test-result.trx", title: ("Example Tests " + $version), coverage: ($artifact == "artifact_example_tests_Godot4.7-stable")}
-                elif ($artifact | startswith("artifact_multi_project_example_tests_")) then
-                  ($artifact | sub("^artifact_multi_project_example_tests_"; "")) as $version
-                  | {artifact: $artifact, path: "**/*.trx", title: ("Multi-Project Example Tests " + $version), coverage: false}
-                elif ($artifact | startswith("artifact_windows_tests_")) then
-                  ($artifact | sub("^artifact_windows_tests_"; "")) as $version
-                  | {artifact: $artifact, path: "**/*.trx", title: ("Windows Tests " + $version), coverage: false}
-                else empty end' \
+            --jq 'def humanize:
+                    if . == "api" then "API"
+                    elif . == "e2e" then "E2E"
+                    elif . == "adapter" then "TestAdapter"
+                    elif . == "multi-project" then "Multi-Project"
+                    else (.[0:1] | ascii_upcase) + .[1:] end;
+                  def artifact_title($artifact):
+                    ($artifact | sub("^artifact_"; "")) as $name
+                    | if $name == "analyzer" then "Analyzer Tests"
+                      elif $name == "adapter_tests" then "TestAdapter Tests"
+                      else ($name | sub("^multi_project_"; "multi-project_")) as $normalized
+                        | if ($normalized | contains("_Godot")) then
+                            ($normalized | split("_Godot")) as $parts
+                            | ($parts[0] | split("_") | map(humanize) | join(" "))
+                              + " Godot" + $parts[1]
+                          else ($normalized | split("_") | map(humanize) | join(" ")) end
+                      end;
+                  .artifacts[] | select(.expired | not) | .name as $artifact
+                  | (if $artifact == "artifact_analyzer" then
+                       {path: "*.trx", coverage: false}
+                     elif $artifact == "artifact_adapter_tests" then
+                       {path: "*.trx", coverage: false}
+                     elif ($artifact | startswith("artifact_action_example_")) then
+                       {path: "**/Example/reports/*.xml", coverage: false}
+                     elif ($artifact | startswith("artifact_api_tests_")) then
+                       {path: "**/Api.Test/TestResults/*.trx", coverage: false}
+                     elif ($artifact | startswith("artifact_api_e2e_tests_")) then
+                       {path: "**/Api.Test/TestResults/*.trx", coverage: false}
+                     elif ($artifact | startswith("artifact_example_tests_")) then
+                       {path: "**/Example/TestResults/test-result.trx", coverage: ($artifact == "artifact_example_tests_Godot4.7-stable")}
+                     elif ($artifact | startswith("artifact_multi_project_example_tests_")) then
+                       {path: "**/*.trx", coverage: false}
+                     elif ($artifact | startswith("artifact_windows_tests_")) then
+                       {path: "**/*.trx", coverage: false}
+                     else empty end) as $details
+                  | $details + {artifact: $artifact, title: artifact_title($artifact)}' \
             | jq --slurp --compact-output 'unique_by(.artifact) | sort_by(.artifact)')
           echo "Found reports: $reports"
           echo "reports=$reports" >> "$GITHUB_OUTPUT"
