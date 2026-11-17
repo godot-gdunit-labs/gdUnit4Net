@@ -51,10 +51,19 @@ jobs:
                     | gsub("Analyzer$"; "Analyzer Tests")
                     | gsub("Multi Project"; "Multi-Project");
                   .artifacts[] | select(.expired | not) | .name as $artifact
-                  | ($artifact | capture("^artifact_(?<kind>analyzer|adapter_tests|action_example|api_e2e_tests|api_tests|example_tests|multi_project_example_tests|windows_tests)(?:_(?<version>Godot.*))?$")?) as $match
+                  | ($artifact | capture(
+                      "^artifact_(?<kind>analyzer|adapter_tests|action_example|api_e2e_tests|" +
+                      "api_tests|example_tests|multi_project_example_tests|windows_tests)" +
+                      "(?:_(?<version>Godot.*))?$"
+                    )?) as $match
                   | select($match != null)
                   | report_types[$match.kind] as $type
-                  | {artifact: $artifact, path: $type.path, title: artifact_title($artifact), coverage: ($artifact == "artifact_example_tests_Godot4.7-stable")}' \
+                  | {
+                      artifact: $artifact,
+                      path: $type.path,
+                      title: artifact_title($artifact),
+                      coverage: ($artifact == "artifact_example_tests_Godot4.7-stable")
+                    }' \
             | jq --slurp --compact-output 'unique_by(.artifact) | sort_by(.artifact)')
           echo "Found reports: $reports"
           echo "reports=$reports" >> "$GITHUB_OUTPUT"
