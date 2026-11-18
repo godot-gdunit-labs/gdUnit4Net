@@ -18,7 +18,7 @@ on: # yamllint disable-line rule:truthy
         required: true
         type: string
       windows:
-        description: 'Also runs the API and the test adapter tests on Windows'
+        description: 'Runs Windows API/TestAdapter tests; skips Linux jobs'
         required: false
         type: boolean
         default: false
@@ -36,7 +36,7 @@ on: # yamllint disable-line rule:truthy
         required: true
         type: string
       windows:
-        description: 'Also runs the API and the test adapter tests on Windows'
+        description: 'Runs Windows API/TestAdapter tests; skips Linux jobs'
         required: false
         type: boolean
         default: false
@@ -47,6 +47,7 @@ permissions:
 jobs:
 
   unit-test-runner:
+    if: ${{ !inputs.windows }}
     permissions:
       actions: write
       contents: read
@@ -95,6 +96,7 @@ jobs:
 
 
   unit-test-adapter:
+    if: ${{ !inputs.windows }}
     name: "Run API Tests"
     runs-on: ${{ inputs.os }}
     timeout-minutes: 5
@@ -157,6 +159,7 @@ jobs:
           report-name: api_tests_Godot${{ inputs.godot-version }}-${{ inputs.godot-status }}
 
   unit-test-api-e2e:
+    if: ${{ !inputs.windows }}
     name: "Run API E2E Tests"
     runs-on: ${{ inputs.os }}
     timeout-minutes: 5
@@ -211,6 +214,7 @@ jobs:
           report-name: api_e2e_tests_Godot${{ inputs.godot-version }}-${{ inputs.godot-status }}
 
   unit-test-example:
+    if: ${{ !inputs.windows }}
     name: "Run Test Examples"
     runs-on: ${{ inputs.os }}
     timeout-minutes: 3
@@ -304,6 +308,7 @@ jobs:
           report-name: example_tests_Godot${{ inputs.godot-version }}-${{ inputs.godot-status }}
 
   unit-test-multi-project-example:
+    if: ${{ !inputs.windows }}
     name: "Run Multi-Project Example Tests"
     runs-on: ${{ inputs.os }}
     timeout-minutes: 5

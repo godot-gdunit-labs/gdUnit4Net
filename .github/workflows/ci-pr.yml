@@ -180,7 +180,7 @@ jobs:
         godot-status: ['stable']
         dotnet-version: ['net10.0']
         include:
-          # Latest, also tested on Windows
+          # Latest, tested on Windows instead of the Linux test jobs
           - gdunit-version: 'latest'
             windows: true
             godot-version: '4.7.2'
