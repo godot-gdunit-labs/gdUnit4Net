@@ -18,6 +18,7 @@
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <Rule Id="SA1633" Action="None"/> <!-- File should have header -->
     <Rule Id="SA1635" Action="None"/> <!-- File header must have copyright text -->
+    <Rule Id="SA1636" Action="None"/> <!-- File header copyright text must match -->
     <Rule Id="SA1600" Action="None"/> <!-- Disable ElementsMustBeDocumented -->
     <Rule Id="SA1601" Action="None"/> <!-- Disable Partial elements should be documented -->
     <Rule Id="SA1206" Action="None"/> <!-- Disable StyleCop specific Ordering Rules-->

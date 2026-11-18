@@ -29,7 +29,7 @@ internal sealed class WindowsStdOutHook : IStdOutHook
     // Written to the pipe when the capture stops, the pipe keeps the order, so all output before it was read when the marker is read
     private const string END_OF_CAPTURE = "\u001EGdUnit4-EndOfCapture\u001E";
 
-    private readonly IntPtr originalStdOutHandle;
+    private readonly nint originalStdOutHandle;
     private readonly SafeFileHandle pipeReadHandle;
     private readonly SafeFileHandle pipeWriteHandle;
     private readonly StdOutConsoleHook stdOutHook = new();
@@ -39,10 +39,10 @@ internal sealed class WindowsStdOutHook : IStdOutHook
     public WindowsStdOutHook()
     {
         originalStdOutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-        if (originalStdOutHandle == IntPtr.Zero)
+        if (originalStdOutHandle == nint.Zero)
             throw new InvalidOperationException("Failed to get original stdout handle.");
 
-        if (!CreatePipe(out pipeReadHandle, out pipeWriteHandle, IntPtr.Zero, 0))
+        if (!CreatePipe(out pipeReadHandle, out pipeWriteHandle, nint.Zero, 0))
             throw new InvalidOperationException("Failed to create pipe.");
     }
 
@@ -71,7 +71,7 @@ internal sealed class WindowsStdOutHook : IStdOutHook
         if (readThread != null)
         {
             var marker = Encoding.UTF8.GetBytes(END_OF_CAPTURE);
-            if (WriteFile(pipeWriteHandle, marker, (uint)marker.Length, out _, IntPtr.Zero))
+            if (WriteFile(pipeWriteHandle, marker, (uint)marker.Length, out _, nint.Zero))
                 _ = readThread.Join(TimeSpan.FromSeconds(5));
             readThread = null;
         }
@@ -108,7 +108,7 @@ internal sealed class WindowsStdOutHook : IStdOutHook
         var decoder = Encoding.UTF8.GetDecoder();
         var pending = new StringBuilder();
 
-        while (ReadFile(pipeReadHandle, buffer, (uint)buffer.Length, out var bytesRead, IntPtr.Zero) && bytesRead > 0)
+        while (ReadFile(pipeReadHandle, buffer, (uint)buffer.Length, out var bytesRead, nint.Zero) && bytesRead > 0)
         {
             var chars = new char[decoder.GetCharCount(buffer, 0, (int)bytesRead)];
             _ = decoder.GetChars(buffer, 0, (int)bytesRead, chars, 0);
@@ -133,22 +133,22 @@ internal sealed class WindowsStdOutHook : IStdOutHook
 #pragma warning disable SYSLIB1054
     [DllImport("kernel32.dll", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32 | DllImportSearchPath.UserDirectories)]
-    private static extern IntPtr GetStdHandle(int nStdHandle);
+    private static extern nint GetStdHandle(int nStdHandle);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32 | DllImportSearchPath.UserDirectories)]
-    private static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
+    private static extern bool SetStdHandle(int nStdHandle, nint hHandle);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32 | DllImportSearchPath.UserDirectories)]
-    private static extern bool CreatePipe(out SafeFileHandle hReadPipe, out SafeFileHandle hWritePipe, IntPtr lpPipeAttributes, uint nSize);
+    private static extern bool CreatePipe(out SafeFileHandle hReadPipe, out SafeFileHandle hWritePipe, nint lpPipeAttributes, uint nSize);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32 | DllImportSearchPath.UserDirectories)]
-    private static extern bool ReadFile(SafeFileHandle hFile, [Out] byte[] lpBuffer, uint nNumberOfBytesToRead, out uint lpNumberOfBytesRead, IntPtr lpOverlapped);
+    private static extern bool ReadFile(SafeFileHandle hFile, [Out] byte[] lpBuffer, uint nNumberOfBytesToRead, out uint lpNumberOfBytesRead, nint lpOverlapped);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32 | DllImportSearchPath.UserDirectories)]
-    private static extern bool WriteFile(SafeFileHandle hFile, byte[] lpBuffer, uint nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten, IntPtr lpOverlapped);
+    private static extern bool WriteFile(SafeFileHandle hFile, byte[] lpBuffer, uint nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten, nint lpOverlapped);
 #pragma warning restore SYSLIB1054
 }

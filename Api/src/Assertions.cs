@@ -307,9 +307,9 @@ public abstract partial class Assertions
 
 // ###################### INumberAssert ############################################################################################
 
-/// <summary>
+/// <content>
 ///     A collection of assertions on Number types.
-/// </summary>
+/// </content>
 public abstract partial class Assertions
 {
     /// <summary>
@@ -406,9 +406,9 @@ public abstract partial class Assertions
 
 // ###################### IDictionaryAssert ############################################################################################
 
-/// <summary>
+/// <content>
 ///     A collection of assertions on Dictionary types.
-/// </summary>
+/// </content>
 public abstract partial class Assertions
 {
     /// <summary>
@@ -506,9 +506,9 @@ public abstract partial class Assertions
 
 // ###################### IEnumerableAssert ############################################################################################
 
-/// <summary>
+/// <content>
 ///     A collection of assertions on Array/List types.
-/// </summary>
+/// </content>
 public abstract partial class Assertions
 {
     /// <summary>
@@ -595,9 +595,9 @@ public abstract partial class Assertions
 
 // ###################### IVectorAssert ############################################################################################
 
-/// <summary>
+/// <content>
 ///     A collection of assertions on Vector types.
-/// </summary>
+/// </content>
 public abstract partial class Assertions
 {
     /// <summary>

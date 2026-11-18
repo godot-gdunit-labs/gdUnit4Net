@@ -14,5 +14,5 @@ internal sealed class TestCaseDiscoverySink : ITestCaseDiscoverySink
 
     public IReadOnlyList<TestCase> TestCases => [.. testCases.OrderBy(tc => tc.FullyQualifiedName)];
 
-    public void SendTestCase(TestCase test) => testCases.Add(test);
+    public void SendTestCase(TestCase discoveredTest) => testCases.Add(discoveredTest);
 }

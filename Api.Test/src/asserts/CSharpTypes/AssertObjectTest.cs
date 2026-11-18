@@ -156,34 +156,34 @@ public class SpyEqualityComparerPlayer(string name, int level, float health, boo
 
     public bool LastEqualsResult { get; private set; }
 
-    public bool Equals(Player? p1, Player? p2)
+    public bool Equals(Player? x, Player? y)
     {
         // Track the call
         EqualsCallCount++;
-        LastEqualsArgument = p2;
+        LastEqualsArgument = y;
 
-        if (ReferenceEquals(p1, p2))
+        if (ReferenceEquals(x, y))
         {
             LastEqualsResult = true;
             return true;
         }
 
-        if (p2 is null || p1 is null)
+        if (y is null || x is null)
         {
             LastEqualsResult = false;
             return false;
         }
 
-        var result = p1.Level == p2.Level
-                     && Math.Abs(p1.Health - p2.Health) <= 0.0
-                     && p1.IsAlive == p2.IsAlive
-                     && p1.Name == p2.Name;
+        var result = x.Level == y.Level
+                     && Math.Abs(x.Health - y.Health) <= 0.0
+                     && x.IsAlive == y.IsAlive
+                     && x.Name == y.Name;
         LastEqualsResult = result;
         return result;
     }
 
-    public int GetHashCode(Player player)
-        => HashCode.Combine(player.Level, player.Health, player.IsAlive, player.Name);
+    public int GetHashCode(Player obj)
+        => HashCode.Combine(obj.Level, obj.Health, obj.IsAlive, obj.Name);
 
     public void ResetSpy()
     {

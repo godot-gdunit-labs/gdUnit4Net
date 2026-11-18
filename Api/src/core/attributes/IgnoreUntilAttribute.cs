@@ -58,9 +58,7 @@ public sealed class IgnoreUntilAttribute : TestStageAttribute
     public string Until
     {
         get => string.Empty;
-        set => untilDateUtc = DateTime
-            .Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal)
-            .ToUniversalTime();
+        set => untilDateUtc = DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal).ToUniversalTime();
     }
 
     /// <summary>
@@ -70,10 +68,7 @@ public sealed class IgnoreUntilAttribute : TestStageAttribute
     public string UntilUtc
     {
         get => string.Empty;
-        set => untilDateUtc = DateTime.Parse(
-            value,
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+        set => untilDateUtc = DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
     }
 
     /// <summary>

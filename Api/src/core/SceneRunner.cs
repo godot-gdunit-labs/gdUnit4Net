@@ -187,41 +187,41 @@ internal class SceneRunner : ISceneRunner
             .ConfigureAwait(true);
     }
 
-    public ISceneRunner SimulateMouseButtonPressed(MouseButton buttonIndex, bool doubleClick = false)
+    public ISceneRunner SimulateMouseButtonPressed(MouseButton button, bool doubleClick = false)
     {
-        _ = SimulateMouseButtonPress(buttonIndex, doubleClick);
-        _ = SimulateMouseButtonRelease(buttonIndex);
+        _ = SimulateMouseButtonPress(button, doubleClick);
+        _ = SimulateMouseButtonRelease(button);
         return this;
     }
 
-    public ISceneRunner SimulateMouseButtonPress(MouseButton buttonIndex, bool doubleClick = false)
+    public ISceneRunner SimulateMouseButtonPress(MouseButton button, bool doubleClick = false)
     {
         ThrowIfDisposed();
         PrintCurrentFocus();
         var inputEvent = new InputEventMouseButton
         {
-            ButtonIndex = buttonIndex,
+            ButtonIndex = button,
             Pressed = true,
             DoubleClick = doubleClick
         };
 
-        mouseButtonOnPress.Add(buttonIndex);
+        mouseButtonOnPress.Add(button);
         ApplyInputMousePosition(inputEvent);
         ApplyInputMouseMask(inputEvent);
         ApplyInputModifiers(inputEvent);
         return HandleInputEvent(inputEvent);
     }
 
-    public ISceneRunner SimulateMouseButtonRelease(MouseButton buttonIndex)
+    public ISceneRunner SimulateMouseButtonRelease(MouseButton button)
     {
         ThrowIfDisposed();
         var inputEvent = new InputEventMouseButton
         {
-            ButtonIndex = buttonIndex,
+            ButtonIndex = button,
             Pressed = false
         };
 
-        _ = mouseButtonOnPress.Remove(buttonIndex);
+        _ = mouseButtonOnPress.Remove(button);
         ApplyInputMousePosition(inputEvent);
         ApplyInputMouseMask(inputEvent);
         ApplyInputModifiers(inputEvent);

@@ -28,7 +28,7 @@ internal sealed class UnixStdOutHook : IStdOutHook
     private const short POLLIN = 0x0001;
     private readonly int originalFlags;
 
-    private readonly IntPtr originalStdOutHandle;
+    private readonly nint originalStdOutHandle;
     private readonly int[] pipeHandles = new int[2];
     private readonly StdOutConsoleHook stdOutHook = new();
     private readonly Decoder decoder = Encoding.UTF8.GetDecoder();
@@ -39,7 +39,7 @@ internal sealed class UnixStdOutHook : IStdOutHook
     {
         // Get original stdout handle
         originalStdOutHandle = dup(STD_OUTPUT_HANDLE);
-        if (originalStdOutHandle == IntPtr.Zero)
+        if (originalStdOutHandle == nint.Zero)
             throw new InvalidOperationException("Failed to get original stdout handle.");
 
         // Create pipe
