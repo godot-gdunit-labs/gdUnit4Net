@@ -10,7 +10,7 @@
   <PropertyGroup>
     <StyleCopAnalyzersVersion>1.3.180</StyleCopAnalyzersVersion>
     <!-- Keep Microsoft.CodeAnalysis.Analyzers on the compiler version of the .NET SDK in global.json -->
-    <MicrosoftCodeAnalysisAnalyzersVersion>5.9.0</MicrosoftCodeAnalysisAnalyzersVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>5.12.0</MicrosoftCodeAnalysisAnalyzersVersion>
     <!--
     The analyzers run only in a compiler at least as new as the Roslyn version they are built against.
     Keep it on Roslyn 4.8, which ships with the .NET SDK 8.0.100 and Visual Studio 17.8, the oldest toolchain of net8.0.
