@@ -189,7 +189,7 @@ jobs:
           # Latest prerelease
           - gdunit-version: 'v6.2.2'
             godot-version: '4.8'
-            godot-status: 'beta3'
+            godot-status: 'beta4'
             dotnet-version: 'net10.0'
 
 
