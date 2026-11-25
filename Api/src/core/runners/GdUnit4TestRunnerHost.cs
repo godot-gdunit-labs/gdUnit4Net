@@ -27,6 +27,9 @@ public static class GdUnit4TestRunnerHost
     public static void Initialize(SceneTree sceneTree)
     {
         ArgumentNullException.ThrowIfNull(sceneTree);
+
+        // First, so that this Godot runtime ends with its test host whatever happens next
+        TestHostWatch.Start();
         try
         {
             GodotProjectMounter.MountReferencedProjects(sceneTree.Root, new GodotLogger());
