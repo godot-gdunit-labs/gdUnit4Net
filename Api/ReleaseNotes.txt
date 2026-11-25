@@ -54,6 +54,9 @@ v5.1.0
           Simulated events now pass the Godot input pipeline only, `_GuiInput` of an unfocused Control no longer receives key events.
 * GD-547: Fixing the test runner scene failing to compile with Godot 4.8 (`'GdUnit4TestRunnerSceneCore' does not contain a definition for 'GodotInternal'`).
           The installed runner scene derives from `SceneTree`, an outdated runner scene is replaced on the next test run.
+* GD-621: Fixing the pipe read looping forever when the other side of the pipe is gone, a read of 0 bytes or a disconnected pipe now ends it.
+          The test host reports the running test as interrupted when the Godot runtime disappears, instead of looping at full load on Unix
+          and on empty messages on Windows.
 
 ✨ Improvements
 * GD-311: Verify the Godot binary has C# support before running godot runtime tests to avoid invalid test execution.
