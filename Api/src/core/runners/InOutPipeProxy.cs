@@ -42,29 +42,13 @@ internal class InOutPipeProxy<TPipe> : IAsyncDisposable
     protected async Task<object?> ReadInData(CancellationToken cancellationToken)
     {
         var responseLengthBytes = new byte[4];
-        await ReadExactBytesAsync(responseLengthBytes, 0, 4, cancellationToken)
-            .ConfigureAwait(false);
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return new Response
-            {
-                StatusCode = HttpStatusCode.Gone,
-                Payload = "Connection interrupted by cancellation requested."
-            };
-        }
+        if (!await ReadExactBytesAsync(responseLengthBytes, 0, 4, cancellationToken).ConfigureAwait(false))
+            return ConnectionGone(cancellationToken);
 
         var responseLength = BinaryPrimitives.ReadInt32LittleEndian(responseLengthBytes);
         var responseBytes = new byte[responseLength];
-        await ReadExactBytesAsync(responseBytes, 0, responseLength, cancellationToken)
-            .ConfigureAwait(false);
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return new Response
-            {
-                StatusCode = HttpStatusCode.Gone,
-                Payload = "Connection interrupted by cancellation requested."
-            };
-        }
+        if (!await ReadExactBytesAsync(responseBytes, 0, responseLength, cancellationToken).ConfigureAwait(false))
+            return ConnectionGone(cancellationToken);
 
         var json = Encoding.UTF8.GetString(responseBytes);
         if (json.Length == 0)
@@ -80,18 +64,13 @@ internal class InOutPipeProxy<TPipe> : IAsyncDisposable
         where TCommand : BaseCommand
     {
         var responseLengthBytes = new byte[4];
-        await ReadExactBytesAsync(responseLengthBytes, 0, 4, cancellationToken)
-            .ConfigureAwait(false);
+        if (!await ReadExactBytesAsync(responseLengthBytes, 0, 4, cancellationToken).ConfigureAwait(false))
+            throw ConnectionLost(cancellationToken);
+
         var responseLength = BinaryPrimitives.ReadInt32LittleEndian(responseLengthBytes);
-
-        if (!IsConnected)
-            throw new IOException("Client not connected");
-
         var responseBytes = new byte[responseLength];
-        await ReadExactBytesAsync(responseBytes, 0, responseLength, cancellationToken)
-            .ConfigureAwait(false);
-        if (!IsConnected)
-            throw new IOException("Client not connected");
+        if (!await ReadExactBytesAsync(responseBytes, 0, responseLength, cancellationToken).ConfigureAwait(false))
+            throw ConnectionLost(cancellationToken);
 
         var json = Encoding.UTF8.GetString(responseBytes);
         return PipeMessageSerializer.Deserialize<TCommand>(json);
@@ -141,24 +120,49 @@ internal class InOutPipeProxy<TPipe> : IAsyncDisposable
         }
     }
 
-    private async Task ReadExactBytesAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    private static Response ConnectionGone(CancellationToken cancellationToken) => new()
+    {
+        StatusCode = HttpStatusCode.Gone,
+        Payload = cancellationToken.IsCancellationRequested
+            ? "Connection interrupted by cancellation requested."
+            : "Connection closed by the other side."
+    };
+
+    private static Exception ConnectionLost(CancellationToken cancellationToken) => cancellationToken.IsCancellationRequested
+        ? new OperationCanceledException(cancellationToken)
+        : new IOException("Client not connected");
+
+    /// <summary>
+    ///     Reads exactly <paramref name="count" /> bytes from the pipe.
+    /// </summary>
+    /// <returns>
+    ///     True when every byte was read; false when the read was cancelled or the other side closed the pipe: a read of
+    ///     0 byte, which a closed pipe returns forever on Unix, or the pipe disconnected, as on Windows.
+    /// </returns>
+    private async Task<bool> ReadExactBytesAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         var totalBytesRead = 0;
-        while (IsConnected && totalBytesRead < count)
+        while (totalBytesRead < count)
         {
+            if (!IsConnected)
+                return false;
             try
             {
                 var bytesRead = await Pipe
                     .ReadAsync(buffer.AsMemory(offset + totalBytesRead, count - totalBytesRead), cancellationToken)
                     .ConfigureAwait(false);
+                if (bytesRead == 0)
+                    return false;
                 totalBytesRead += bytesRead;
             }
             catch (OperationCanceledException)
             {
                 if (!cancellationToken.IsCancellationRequested)
                     throw;
-                break;
+                return false;
             }
         }
+
+        return true;
     }
 }
